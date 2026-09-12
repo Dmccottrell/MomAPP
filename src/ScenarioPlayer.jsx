@@ -6,7 +6,7 @@ import NoteEditor from "./components/NoteEditor";
 import NoteFeedback from "./components/NoteFeedback";
 import { gradeNote } from "./utils/grading";
 import { addMinutes } from "./utils/time";
-import { loadRun, saveRun, clearRun, saveHistory } from "./utils/storage";
+import { loadRun, saveRun, clearRun, addHistoryEntry } from "./utils/storage";
 
 /**
  * Runs a single scenario from start to finish.
@@ -88,14 +88,15 @@ export default function ScenarioPlayer({ scenario, onExit }) {
 
   /**
    * Grades the note against the scenario's documentation requirements,
-   * records the result to history for the home screen, and advances to
-   * the feedback screen.
+   * records the attempt to history, and advances to the feedback screen.
    */
   function submitNote() {
     const result = gradeNote(note, scenario.documentation.requirements);
     setGraded(result);
     setPhase("feedback");
-    saveHistory(scenario.id, {
+    addHistoryEntry({
+      scenarioId: scenario.id,
+      scenarioTitle: scenario.title,
       score: result.filter((g) => g.status === "met").length,
       total: result.length,
       missteps,

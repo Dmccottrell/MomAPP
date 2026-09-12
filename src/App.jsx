@@ -1,7 +1,12 @@
 import { useState } from "react";
+import NavBar from "./components/NavBar";
 import ScenarioPlayer from "./ScenarioPlayer";
+import Home from "./screens/Home";
+import History from "./screens/History";
+import Settings from "./screens/Settings";
+import ProfilePicker from "./screens/ProfilePicker";
+import { getCurrentProfile, signOut } from "./utils/profiles";
 import fall01 from "./scenarios/fall-01.json";
-import { loadHistory } from "./utils/storage";
 
 // Add new scenarios here. One import line per file — that's the only
 // code change needed when Mom writes a new case. See SCENARIOS.md for the
@@ -9,53 +14,62 @@ import { loadHistory } from "./utils/storage";
 const SCENARIOS = [fall01];
 
 /**
- * Top-level screen switch: shows the list of scenarios, or hands off to
- * ScenarioPlayer to run whichever one the learner picked. `active` holds
- * the chosen scenario object itself (not just its id), and clearing it
- * back to `null` is what returns the learner to this list.
+ * App shell: gates everything behind a profile, then renders a persistent
+ * NavBar over whichever of Home / History / Settings / an active
+ * ScenarioPlayer is current. `view` and `activeScenario` are mutually
+ * exclusive — picking a scenario or a nav item clears the other.
  */
 export default function App() {
-  const [active, setActive] = useState(null);
+  const [profile, setProfile] = useState(getCurrentProfile);
+  const [view, setView] = useState("home");
+  const [activeScenario, setActiveScenario] = useState(null);
 
-  if (active) {
-    return <ScenarioPlayer scenario={active} onExit={() => setActive(null)} />;
+  if (!profile) {
+    return <ProfilePicker onSelect={setProfile} />;
+  }
+
+  function navigate(nextView) {
+    setActiveScenario(null);
+    setView(nextView);
+  }
+
+  function switchProfile() {
+    signOut();
+    setProfile(null);
+    setActiveScenario(null);
+    setView("home");
+  }
+
+  let content;
+  if (activeScenario) {
+    content = (
+      <ScenarioPlayer
+        scenario={activeScenario}
+        onExit={() => setActiveScenario(null)}
+      />
+    );
+  } else if (view === "history") {
+    content = (
+      <History scenarios={SCENARIOS} onSelectScenario={setActiveScenario} />
+    );
+  } else if (view === "settings") {
+    content = <Settings profile={profile} onSwitchProfile={switchProfile} />;
+  } else {
+    content = <Home scenarios={SCENARIOS} onSelect={setActiveScenario} />;
   }
 
   return (
-    <div className="home">
-      <header className="home__head">
-        <h1>Charting Practice</h1>
-        <p>
-          Work a patient scenario from start to finish, then write the note.
-          Every patient here is fictional.
-        </p>
-      </header>
-
-      <ul className="cases">
-        {SCENARIOS.map((s) => {
-          // Re-read on every render (cheap) so returning from a finished
-          // run immediately reflects the new score, with no extra state.
-          const history = loadHistory(s.id);
-          return (
-            <li key={s.id}>
-              <button className="case" onClick={() => setActive(s)}>
-                <span className="case__cat">{s.category}</span>
-                <span className="case__title">{s.title}</span>
-                <span className="case__meta">
-                  {s.unit} · {s.difficulty} · about {s.estimatedMinutes} min
-                </span>
-                <span className="case__objectives">{s.objectives[0]}</span>
-                {history && (
-                  <span className="case__history">
-                    Last run: {history.score}/{history.total} ·{" "}
-                    {new Date(history.completedAt).toLocaleDateString()}
-                  </span>
-                )}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+    <div className="app-shell">
+      <NavBar
+        profile={profile}
+        view={activeScenario ? null : view}
+        onNavigate={navigate}
+        onSwitchProfile={switchProfile}
+      />
+      {/* Keying on the current screen restarts its entrance animation on every switch. */}
+      <div className="app-content" key={activeScenario ? `scenario-${activeScenario.id}` : view}>
+        {content}
+      </div>
     </div>
   );
 }

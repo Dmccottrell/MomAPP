@@ -18,7 +18,10 @@ export default function PatientChart({ patient, vitals }) {
 
       <dl className="vitals">
         {Object.entries(vitals).map(([k, v]) => (
-          <div key={k} className="vitals__cell">
+          // Keying on the value (not just k) remounts a cell when its
+          // reading changes, which replays the "just updated" flash
+          // animation defined in index.css — no extra state needed.
+          <div key={`${k}-${v}`} className="vitals__cell">
             <dt>{k}</dt>
             <dd>{v}</dd>
           </div>
