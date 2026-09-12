@@ -1,0 +1,200 @@
+{
+  "id": "fall-01",
+  "title": "Unwitnessed fall",
+  "category": "Risk management",
+  "unit": "Med-Surg",
+  "difficulty": "Foundational",
+  "estimatedMinutes": 12,
+  "objectives": [
+    "Assess a resident after a fall before moving them",
+    "Escalate to the provider with the right information",
+    "Write a factual fall note with no conclusions about cause"
+  ],
+  "patient": {
+    "name": "Harold Brenner",
+    "age": 78,
+    "sex": "M",
+    "room": "412-B",
+    "mrn": "SIM-0041",
+    "admitted": "Day 3",
+    "diagnosis": "Community-acquired pneumonia",
+    "history": ["Atrial fibrillation", "Hypertension", "Osteoarthritis"],
+    "medications": ["Apixaban 5 mg BID", "Metoprolol 25 mg BID", "Ceftriaxone IV"],
+    "allergies": ["Penicillin"],
+    "code": "Full code",
+    "fallRisk": "High — Morse 55"
+  },
+  "vitals": {
+    "bp": "142/88",
+    "hr": "92",
+    "rr": "20",
+    "temp": "98.4",
+    "spo2": "94%",
+    "pain": "3/10"
+  },
+  "opening": "You are starting your 2100 rounds. As you approach room 412, you find Mr. Brenner sitting on the floor beside his bed, next to the overturned bedside commode. He is awake and talking. His call light is clipped to the sheet, out of reach. No one saw him get up.",
+  "clock": {
+    "start": "21:04",
+    "label": "Time since found"
+  },
+  "actions": [
+    {
+      "id": "stay-assess",
+      "label": "Stay with him and assess before moving",
+      "detail": "Do not lift him yet. Check responsiveness, pain, and obvious injury where he sits.",
+      "correct": true,
+      "order": 1,
+      "response": "He is alert and oriented to person, place, and time. He says he was trying to reach the commode. He reports pain in his right hip, 6/10, and denies hitting his head. No obvious deformity. A skin tear is visible on his right forearm, approximately 3 cm, oozing.",
+      "reveals": { "pain": "6/10" },
+      "timeCost": 2
+    },
+    {
+      "id": "lift-immediately",
+      "label": "Help him up into bed right away",
+      "detail": "He looks uncomfortable on the floor.",
+      "correct": false,
+      "response": "You move him before assessing. If he has a hip fracture or spinal injury, lifting can worsen it — and you have lost the chance to document his position as found. Slow down: assess first, then move.",
+      "penalty": "Moved before assessment",
+      "timeCost": 1
+    },
+    {
+      "id": "neuro-check",
+      "label": "Perform neuro checks",
+      "detail": "He is on apixaban. Head injury matters more here than usual.",
+      "correct": true,
+      "order": 2,
+      "response": "Pupils equal and reactive at 3 mm. Grip strength equal bilaterally. No slurred speech. He continues to deny head strike, but the fall was unwitnessed, so you cannot rule it out.",
+      "timeCost": 2,
+      "critical": true,
+      "criticalWhy": "Anticoagulated patient with an unwitnessed fall — a head bleed can present late."
+    },
+    {
+      "id": "vitals-recheck",
+      "label": "Take a full set of vitals",
+      "detail": "Including orthostatic readings if he tolerates them.",
+      "correct": true,
+      "order": 3,
+      "response": "BP 128/76 supine, 108/64 sitting. HR 96. RR 20. SpO2 93% on room air. Temp 98.6. He reports mild dizziness on sitting.",
+      "reveals": { "bp": "108/64 sitting", "hr": "96", "spo2": "93%" },
+      "timeCost": 3
+    },
+    {
+      "id": "call-family",
+      "label": "Call his daughter first",
+      "detail": "She asked to be told about any change.",
+      "correct": false,
+      "response": "Family notification is required, but not before the patient is assessed and the provider is notified. Stabilize and escalate first.",
+      "penalty": "Out of order",
+      "timeCost": 3
+    },
+    {
+      "id": "notify-provider",
+      "label": "Notify the provider",
+      "detail": "Report the fall, findings, and anticoagulation status.",
+      "correct": true,
+      "order": 4,
+      "response": "You reach the on-call provider at 2118. New orders: STAT head CT, right hip X-ray, hold the next apixaban dose pending imaging, neuro checks q1h x 4 then q4h x 24h.",
+      "timeCost": 4
+    },
+    {
+      "id": "wound-care",
+      "label": "Treat the forearm skin tear",
+      "detail": "Clean, approximate, and dress.",
+      "correct": true,
+      "order": 5,
+      "response": "Cleansed with normal saline, edges approximated, non-adherent dressing applied. Bleeding controlled. You mark the dressing with the date and time.",
+      "timeCost": 3
+    },
+    {
+      "id": "notify-family-after",
+      "label": "Notify his daughter",
+      "detail": "Now that he is assessed and orders are in.",
+      "correct": true,
+      "order": 6,
+      "response": "You reach his daughter at 2135, explain what was found, the assessment, and the pending imaging. She asks to be called with results.",
+      "timeCost": 3
+    },
+    {
+      "id": "chart-cause",
+      "label": "Note in the chart that he fell climbing over the rail",
+      "detail": "It seems like the obvious explanation.",
+      "correct": false,
+      "response": "No one saw the fall. Writing a cause you did not observe puts a guess into the permanent record — and into any future legal review. Document what you found, not what you think happened.",
+      "penalty": "Documented an unobserved conclusion",
+      "timeCost": 1
+    }
+  ],
+  "hints": [
+    "He is on an anticoagulant. What does that change about an unwitnessed fall?",
+    "Before he moves an inch, what do you need to know?",
+    "Order matters: assess, escalate, treat, notify."
+  ],
+  "documentation": {
+    "prompt": "Write your nursing progress note for this fall.",
+    "placeholder": "Begin with the time and what you found...",
+    "requirements": [
+      {
+        "id": "found-as",
+        "label": "Patient's position as found, and that the fall was unwitnessed",
+        "keywords": ["floor", "unwitnessed", "found"],
+        "why": "The record should show exactly what you walked in on. 'Unwitnessed' is the single most important word in a fall note."
+      },
+      {
+        "id": "no-cause",
+        "label": "No stated cause you did not observe",
+        "keywords": [],
+        "forbidden": ["climbed over", "tried to climb", "fell out of bed", "slipped on"],
+        "why": "You did not see it happen. A cause in the note becomes a fact in the record."
+      },
+      {
+        "id": "assessment",
+        "label": "Physical assessment findings, including neuro checks",
+        "keywords": ["alert", "oriented", "pupils", "neuro", "grip"],
+        "why": "Shows you assessed before acting, and establishes the baseline everyone compares against later."
+      },
+      {
+        "id": "injury",
+        "label": "Injuries found, with location and size",
+        "keywords": ["skin tear", "forearm", "hip", "pain"],
+        "why": "Measurements and locations, not 'small wound noted'."
+      },
+      {
+        "id": "vitals",
+        "label": "Vital signs taken after the fall",
+        "keywords": ["bp", "blood pressure", "hr", "vitals", "o2", "spo2"],
+        "why": "Post-fall vitals are the objective evidence of his condition at that moment."
+      },
+      {
+        "id": "anticoag",
+        "label": "Anticoagulation status",
+        "keywords": ["apixaban", "anticoagul", "blood thinner", "eliquis"],
+        "why": "This is why the head CT was ordered. A reviewer should see you knew."
+      },
+      {
+        "id": "notify",
+        "label": "Provider notified, with time and new orders",
+        "keywords": ["notified", "provider", "md", "np", "orders"],
+        "why": "Times and names. 'MD made aware' with no time is not documentation."
+      },
+      {
+        "id": "family",
+        "label": "Family notified",
+        "keywords": ["daughter", "family", "notified"],
+        "why": "Required after a fall, and it protects you when the family calls back."
+      },
+      {
+        "id": "interventions",
+        "label": "Interventions and continued monitoring",
+        "keywords": ["dressing", "monitor", "neuro checks", "call light", "safety"],
+        "why": "Closes the loop: what you did and what happens next."
+      }
+    ],
+    "modelNote": "2104 — Found resident sitting on floor at right bedside, next to overturned bedside commode. Fall unwitnessed. Resident alert and oriented x3, responsive to voice, denies head strike. Reports right hip pain 6/10. No obvious deformity or shortening of extremity. 3 cm skin tear noted to right forearm with scant oozing. Pupils equal and reactive at 3 mm, grip strength equal bilaterally, speech clear. VS post-fall: BP 128/76 supine, 108/64 sitting, HR 96, RR 20, SpO2 93% RA, temp 98.6. Reports mild dizziness on sitting. Resident receives apixaban 5 mg BID.\n\n2118 — Dr. Okafor notified of fall, assessment findings, and anticoagulation status. New orders received: STAT head CT, right hip X-ray, hold next apixaban dose pending imaging, neuro checks q1h x 4 then q4h x 24h.\n\nSkin tear cleansed with NS, edges approximated, non-adherent dressing applied and dated. Resident assisted to bed with two-person assist using gait belt, no distress during transfer. Bed in low position, call light placed within reach, non-skid socks applied. Daughter notified at 2135. Transport to radiology pending. Will continue neuro checks per order and monitor for change in condition.",
+    "pitfalls": [
+      "Writing 'patient fell' when no one saw it — say 'found on floor'.",
+      "'Patient appears fine' — appears is not an assessment.",
+      "Leaving out the time the provider was reached.",
+      "Charting the incident report in the note. The note and the report are separate documents."
+    ]
+  }
+}
