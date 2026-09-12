@@ -66,6 +66,8 @@ src/
 │   └── NoteFeedback.jsx      Score, rubric, model note
 ├── utils/
 │   ├── grading.js            Note-checking rules
+│   ├── highlight.js          Marks up a note with its grading matches
+│   ├── storage.js            localStorage persistence and run history
 │   └── time.js               Clock helpers
 └── scenarios/
     └── fall-01.json          One scenario, entirely as data
@@ -94,8 +96,11 @@ Worth being honest about these:
   in the note. It cannot judge whether the note is clinically sound. A
   well-written note using unexpected phrasing may be marked as missing an
   element; a nonsense note containing the right words will pass.
-- **Nothing persists.** Refreshing loses progress. No accounts, no history, no
-  instructor view of who completed what.
+- **Progress is per-browser only.** An in-progress run and each scenario's last
+  score are saved to `localStorage` (see `utils/storage.js`), so a refresh
+  resumes and the home screen shows the last result — but that's local to one
+  browser. No accounts, no login, and no instructor view of who completed what
+  or how a group of learners is doing.
 - **No mobile layout testing beyond basic responsiveness.**
 - **One scenario so far.** The engine is general, but the format hasn't been
   proven against note types other than an incident note.
@@ -104,10 +109,12 @@ Worth being honest about these:
 
 - More scenarios, especially other note types (discharge, change of condition,
   new wound) to stress-test whether the JSON format generalizes
-- Save progress to `localStorage` so a refresh doesn't lose a session
+- A guided, in-browser scenario builder so a non-developer can create a
+  scenario without hand-editing JSON
 - AI-assisted grading that reads the note for clinical accuracy rather than
   keywords — contained to `utils/grading.js` by design
-- An instructor view showing completion and common misses across learners
+- An instructor view showing completion and common misses across learners,
+  which would need real accounts and a backend, not just `localStorage`
 - Print or export a completed session for classroom review
 
 ## Built with

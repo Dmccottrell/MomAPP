@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import PatientChart from "./components/PatientChart";
 import ActionList from "./components/ActionList";
 import ShiftLog from "./components/ShiftLog";
@@ -6,6 +6,7 @@ import NoteEditor from "./components/NoteEditor";
 import NoteFeedback from "./components/NoteFeedback";
 import { gradeNote } from "./utils/grading";
 import { addMinutes } from "./utils/time";
+import { loadRun, saveRun, clearRun, saveHistory } from "./utils/storage";
 
 /**
  * Runs a single scenario from start to finish.
@@ -15,16 +16,34 @@ import { addMinutes } from "./utils/time";
  * phases is showing: "brief" -> "care" -> "documentation" -> "feedback".
  * The phase components themselves (PatientChart, ActionList, ShiftLog,
  * NoteEditor, NoteFeedback) are presentational; all the logic lives here.
+ *
+ * State is mirrored to localStorage while a run is in progress (see the
+ * effect below), so refreshing mid-"care" or mid-"documentation" resumes
+ * rather than starting over.
  */
 export default function ScenarioPlayer({ scenario, onExit }) {
-  const [phase, setPhase] = useState("brief");
-  const [taken, setTaken] = useState([]);
-  const [log, setLog] = useState([]);
-  const [vitals, setVitals] = useState(scenario.vitals);
-  const [elapsed, setElapsed] = useState(0);
-  const [hintsUsed, setHintsUsed] = useState(0);
-  const [note, setNote] = useState("");
+  // Read once, at mount, whatever run was last saved for this scenario.
+  const [resumed] = useState(() => loadRun(scenario.id));
+
+  const [phase, setPhase] = useState(resumed?.phase ?? "brief");
+  const [taken, setTaken] = useState(resumed?.taken ?? []);
+  const [log, setLog] = useState(resumed?.log ?? []);
+  const [vitals, setVitals] = useState(resumed?.vitals ?? scenario.vitals);
+  const [elapsed, setElapsed] = useState(resumed?.elapsed ?? 0);
+  const [hintsUsed, setHintsUsed] = useState(resumed?.hintsUsed ?? 0);
+  const [note, setNote] = useState(resumed?.note ?? "");
   const [graded, setGraded] = useState(null);
+
+  // Keep the saved run in sync with state. Only "care" and "documentation"
+  // are worth resuming — "brief" has nothing to lose, and "feedback" is
+  // already graded and recorded in history, so both clear the save instead.
+  useEffect(() => {
+    if (phase === "care" || phase === "documentation") {
+      saveRun(scenario.id, { phase, taken, log, vitals, elapsed, hintsUsed, note });
+    } else {
+      clearRun(scenario.id);
+    }
+  }, [scenario.id, phase, taken, log, vitals, elapsed, hintsUsed, note]);
 
   // The correct actions, in clinical order — this is the checklist the
   // learner must clear before the note screen unlocks.
@@ -67,10 +86,21 @@ export default function ScenarioPlayer({ scenario, onExit }) {
     if (action.reveals) setVitals((v) => ({ ...v, ...action.reveals }));
   }
 
-  /** Grades the note against the scenario's documentation requirements and advances to the feedback screen. */
+  /**
+   * Grades the note against the scenario's documentation requirements,
+   * records the result to history for the home screen, and advances to
+   * the feedback screen.
+   */
   function submitNote() {
-    setGraded(gradeNote(note, scenario.documentation.requirements));
+    const result = gradeNote(note, scenario.documentation.requirements);
+    setGraded(result);
     setPhase("feedback");
+    saveHistory(scenario.id, {
+      score: result.filter((g) => g.status === "met").length,
+      total: result.length,
+      missteps,
+      completedAt: new Date().toISOString(),
+    });
   }
 
   /** Resets every piece of run state so the same scenario can be replayed from the brief screen. */

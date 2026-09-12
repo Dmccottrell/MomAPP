@@ -82,6 +82,12 @@ summary:focus-visible {
   margin-top: 0.6rem;
   padding-top: 0.6rem;
 }
+.case__history {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--chart);
+  margin-top: 0.5rem;
+}
 
 /* ---------------- layout ---------------- */
 
@@ -378,6 +384,7 @@ summary:focus-visible {
 .rubric__item--violated { border-left-color: var(--stop); background: var(--stop-wash); }
 .rubric__label { font-weight: 600; margin: 0; }
 .rubric__why { margin: 0.2rem 0 0; font-size: 0.92rem; color: var(--ink-soft); }
+.rubric__match { margin: 0.4rem 0 0; font-size: 0.9rem; color: var(--chart); font-weight: 500; }
 .rubric__flag { margin: 0.4rem 0 0; font-size: 0.9rem; color: var(--stop); font-weight: 500; }
 
 .note-block {
@@ -392,6 +399,10 @@ summary:focus-visible {
   margin: 0 0 1rem;
 }
 .note-block--model { border-left: 3px solid var(--chart); margin-top: 1rem; }
+
+.mark { padding: 0.05em 0.15em; border-radius: 2px; }
+.mark--met { background: var(--chart-wash); color: var(--chart); font-weight: 600; }
+.mark--violated { background: var(--stop-wash); color: var(--stop); font-weight: 600; }
 
 .pitfalls { margin: 2rem 0; border-top: 1px solid var(--rule); padding-top: 1.25rem; }
 .pitfalls ul { margin: 0; padding-left: 1.2rem; color: var(--ink-soft); }
