@@ -3,9 +3,16 @@ import ScenarioPlayer from "./ScenarioPlayer";
 import fall01 from "./scenarios/fall-01.json";
 
 // Add new scenarios here. One import line per file — that's the only
-// code change needed when Mom writes a new case.
+// code change needed when Mom writes a new case. See SCENARIOS.md for the
+// full field reference for a scenario JSON file.
 const SCENARIOS = [fall01];
 
+/**
+ * Top-level screen switch: shows the list of scenarios, or hands off to
+ * ScenarioPlayer to run whichever one the learner picked. `active` holds
+ * the chosen scenario object itself (not just its id), and clearing it
+ * back to `null` is what returns the learner to this list.
+ */
 export default function App() {
   const [active, setActive] = useState(null);
 
