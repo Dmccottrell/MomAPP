@@ -82,3 +82,48 @@ export function clearProfileData() {
     .filter((k) => k.startsWith(prefix))
     .forEach((k) => localStorage.removeItem(k));
 }
+
+const APP_PREFIX = "momapp:";
+
+/**
+ * Bundles every profile, its history and in-progress runs, and the theme
+ * preference into one plain object suitable for JSON.stringify — a full
+ * backup of everything this app has saved in this browser. Nothing here
+ * ever leaves the browser on its own; this exists so a person can save a
+ * copy of their own data before clearing site data or switching devices.
+ */
+export function exportAllData() {
+  const data = {};
+  Object.keys(localStorage)
+    .filter((k) => k.startsWith(APP_PREFIX))
+    .forEach((k) => {
+      data[k] = localStorage.getItem(k);
+    });
+  return { app: "charting-practice", version: 1, exportedAt: new Date().toISOString(), data };
+}
+
+/**
+ * Restores a bundle produced by exportAllData, overwriting any keys it
+ * contains. Throws if the payload doesn't look like one of our backups, so
+ * the caller can show a clear error instead of silently corrupting storage.
+ *
+ * Values are written back with the plain localStorage API, not the
+ * JSON-encoding `write()` helper above — exportAllData captured them
+ * with `getItem`, and not every key here is itself JSON (the current
+ * profile id and the theme preference are stored as plain strings), so
+ * re-stringifying would corrupt those.
+ */
+export function importAllData(payload) {
+  if (!payload || typeof payload !== "object" || payload.app !== "charting-practice" || !payload.data) {
+    throw new Error("That file doesn't look like a Charting Practice backup.");
+  }
+  Object.entries(payload.data).forEach(([key, value]) => {
+    if (key.startsWith(APP_PREFIX) && typeof value === "string") {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // Storage full or unavailable — that one key won't be restored.
+      }
+    }
+  });
+}

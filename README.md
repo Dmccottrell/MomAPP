@@ -38,13 +38,23 @@ Four screens, in order:
 Above the scenario itself, the app has a small shell:
 
 - **Profiles** — the first thing anyone sees is a name picker (`ProfilePicker`),
-  not a scenario. There's no password; it exists only so two people sharing a
-  browser don't see each other's history. See "Accounts" below for what this
-  is and isn't.
+  not a scenario. Typing a name already used on this browser signs back into
+  that same profile and its history, rather than creating a duplicate — so
+  refreshing, or coming back tomorrow, doesn't lose anything. See "Accounts"
+  below for what this is and isn't.
+- **Optional PIN lock** — set in Settings, a 4-digit PIN stops someone else on
+  a shared computer from opening your profile by clicking it, or by retyping
+  your name (both paths check the PIN — see `ProfilePicker.jsx`). It's a
+  privacy lock, not encryption: the PIN is hashed before it's stored, but
+  anyone with access to this browser's dev tools could still bypass it.
 - **History** — every completed run is recorded, newest first, with a
   "Practice again" shortcut back into that scenario.
-- **Settings** — a light/dark/system theme choice, who's currently practicing,
-  and a way to wipe your own saved progress.
+- **Settings** — theme, the PIN above, a full backup export/import (see
+  below), and a way to wipe your own saved progress.
+- **Backup** — Settings can export everything saved in this browser (every
+  profile, their history, the theme preference) as one JSON file, and import
+  one back. This is the practical answer to "profiles are local, not synced":
+  it's a manual backup/restore, not automatic sync.
 
 A persistent nav bar switches between Home, History, and Settings, and stays
 visible during a scenario so you can back out early — the in-progress run
@@ -84,6 +94,8 @@ src/
 │   └── Settings.jsx          Theme, profile, clear-my-data
 ├── components/
 │   ├── NavBar.jsx            Persistent top nav
+│   ├── Avatar.jsx            Initials-in-a-circle, colored per name
+│   ├── icons.jsx             The handful of line icons used in the nav etc.
 │   ├── PatientChart.jsx      The pinned patient chart
 │   ├── ActionList.jsx        Action buttons and hints
 │   ├── ShiftLog.jsx          Running record of what happened
@@ -92,8 +104,9 @@ src/
 ├── utils/
 │   ├── grading.js            Note-checking rules
 │   ├── highlight.js          Marks up a note with its grading matches
-│   ├── storage.js            localStorage persistence and run history
-│   ├── profiles.js           Local, password-less profile picker
+│   ├── storage.js            localStorage persistence, history, backup export/import
+│   ├── profiles.js           Local profile picker: create/find/PIN/delete
+│   ├── avatar.js             Deterministic color + initials for Avatar.jsx
 │   ├── theme.js              Light/dark/system theme preference
 │   └── time.js               Clock helpers
 └── scenarios/
@@ -118,16 +131,24 @@ That is the only code change required, by design.
 ## Accounts: what "profiles" are and aren't
 
 The name picker at startup (`ProfilePicker` / `utils/profiles.js`) is **not
-authentication**. There's no password, no server, and nothing leaves the
-browser. It exists only so history and scores stay separate when more than
-one person practices on the same computer — a convenience, not a login.
+authentication**. There's no server, and nothing leaves the browser. It
+exists only so history and scores stay separate when more than one person
+practices on the same computer — a convenience, not a login.
+
+The optional 4-digit PIN doesn't change that. It's hashed with the Web Crypto
+API (`crypto.subtle.digest`, salted with the profile id) before being saved,
+so it's not sitting in `localStorage` as plain text — but it's still just a
+client-side check with no server to enforce it, so it stops casual snooping
+on a shared computer, not a determined technical adversary.
 
 Everything (`utils/storage.js`, `utils/profiles.js`) is namespaced under
 whichever profile is active and lives in `localStorage`. Two consequences
 follow directly from that: a profile only exists on the device it was created
-on (no cross-device sync), and nothing here should be treated as sensitive —
-this was a deliberate choice to ship something useful now rather than take on
-a backend before it was needed.
+on, and nothing here should be treated as sensitive — this was a deliberate
+choice to ship something useful now rather than take on a backend before it
+was needed. The Settings backup export/import is the manual answer to the
+device question — it moves a profile's data between browsers, it just doesn't
+sync them automatically.
 
 The natural next step, when it's actually needed, is real accounts: a backend
 with a database, password or OAuth handling, and hosting for all of it —
@@ -144,8 +165,9 @@ Worth being honest about these:
   in the note. It cannot judge whether the note is clinically sound. A
   well-written note using unexpected phrasing may be marked as missing an
   element; a nonsense note containing the right words will pass.
-- **Profiles are local, not accounts.** See "Accounts" above — no password, no
-  cross-device sync, no instructor view of who completed what.
+- **Profiles are local, not accounts.** See "Accounts" above — the PIN is a
+  privacy lock, not encryption; sync between devices is a manual export/import,
+  not automatic; there's no instructor view of who completed what.
 - **No mobile layout testing beyond basic responsiveness.**
 - **One scenario so far.** The engine is general, but the format hasn't been
   proven against note types other than an incident note.

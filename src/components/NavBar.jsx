@@ -1,7 +1,10 @@
+import Avatar from "./Avatar";
+import { HomeIcon, HistoryIcon, SettingsIcon } from "./icons";
+
 const NAV_ITEMS = [
-  { id: "home", label: "Home" },
-  { id: "history", label: "History" },
-  { id: "settings", label: "Settings" },
+  { id: "home", label: "Home", Icon: HomeIcon },
+  { id: "history", label: "History", Icon: HistoryIcon },
+  { id: "settings", label: "Settings", Icon: SettingsIcon },
 ];
 
 /**
@@ -16,18 +19,20 @@ export default function NavBar({ profile, view, onNavigate, onSwitchProfile }) {
       <span className="nav__brand">Charting Practice</span>
 
       <nav className="nav__links" aria-label="Main">
-        {NAV_ITEMS.map((item) => (
+        {NAV_ITEMS.map(({ id, label, Icon }) => (
           <button
-            key={item.id}
-            className={`nav__link ${view === item.id ? "nav__link--active" : ""}`}
-            onClick={() => onNavigate(item.id)}
+            key={id}
+            className={`nav__link ${view === id ? "nav__link--active" : ""}`}
+            onClick={() => onNavigate(id)}
           >
-            {item.label}
+            <Icon className="nav__link-icon" />
+            {label}
           </button>
         ))}
       </nav>
 
       <button className="nav__profile" onClick={onSwitchProfile} title="Switch profile">
+        <Avatar name={profile.name} size={22} />
         <span className="nav__profile-name">{profile.name}</span>
         <span className="nav__profile-switch">Switch</span>
       </button>

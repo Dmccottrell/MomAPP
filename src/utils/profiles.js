@@ -29,16 +29,60 @@ export function listProfiles() {
   return read(PROFILES_KEY, []);
 }
 
+/** Finds an existing profile by name (trimmed, case-insensitive), or null. */
+export function findProfileByName(name) {
+  const target = name.trim().toLowerCase();
+  return listProfiles().find((p) => p.name.toLowerCase() === target) || null;
+}
+
 /** Creates a new profile, makes it the current one, and returns it. */
 export function createProfile(name) {
   const profile = {
     id: crypto.randomUUID(),
     name: name.trim(),
     createdAt: new Date().toISOString(),
+    pinHash: null,
   };
   write(PROFILES_KEY, [...listProfiles(), profile]);
   setCurrentProfileId(profile.id);
   return profile;
+}
+
+/** True if a profile has a PIN set. */
+export function profileHasPin(profile) {
+  return Boolean(profile?.pinHash);
+}
+
+async function sha256Hex(text) {
+  const bytes = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Sets, changes, or (with pin=null) removes a profile's PIN. This is a
+ * privacy lock against someone else on the same computer casually opening
+ * your profile — not real encryption. The PIN is hashed (salted with the
+ * profile id) rather than stored as plain text, but anyone with access to
+ * this browser's storage and dev tools could still bypass it.
+ */
+export async function setProfilePin(id, pin) {
+  const profiles = listProfiles();
+  const updated = await Promise.all(
+    profiles.map(async (p) =>
+      p.id === id ? { ...p, pinHash: pin ? await sha256Hex(`${id}:${pin}`) : null } : p
+    )
+  );
+  write(PROFILES_KEY, updated);
+}
+
+/** Checks a PIN against a profile. Returns true if the profile has no PIN set. */
+export async function verifyProfilePin(id, pin) {
+  const profile = listProfiles().find((p) => p.id === id);
+  if (!profile?.pinHash) return true;
+  return (await sha256Hex(`${id}:${pin}`)) === profile.pinHash;
 }
 
 /** Removes a profile and everything saved under it. */

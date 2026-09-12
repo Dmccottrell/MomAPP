@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { getThemePreference, setThemePreference } from "../utils/theme";
-import { clearProfileData } from "../utils/storage";
+import { clearProfileData, exportAllData, importAllData } from "../utils/storage";
+import { setProfilePin, profileHasPin } from "../utils/profiles";
 
 const THEME_OPTIONS = [
   { value: "system", label: "System" },
@@ -9,17 +10,71 @@ const THEME_OPTIONS = [
 ];
 
 /**
- * Appearance and local-data controls: the light/dark/system theme picker,
- * who the current profile is (with a way to switch), and a way to wipe
- * this profile's saved runs and history.
+ * Appearance and data controls: the light/dark/system theme picker, an
+ * optional PIN for the current profile, a full backup export/import, who's
+ * practicing (with a way to switch), and a way to wipe this profile's data.
  */
 export default function Settings({ profile, onSwitchProfile }) {
   const [theme, setTheme] = useState(getThemePreference);
+  const optionRefs = useRef({});
+
+  const [hasPin, setHasPin] = useState(() => profileHasPin(profile));
+  const [pinDraft, setPinDraft] = useState("");
+  const [pinConfirm, setPinConfirm] = useState("");
+  const [pinStatus, setPinStatus] = useState("");
+
   const [cleared, setCleared] = useState(false);
+  const [importStatus, setImportStatus] = useState("");
+  const fileInputRef = useRef(null);
 
   function handleThemeChange(value) {
     setThemePreference(value);
     setTheme(value);
+  }
+
+  // Arrow-key navigation for the theme segmented control, per the ARIA
+  // "radio group" pattern: selection follows focus, and only the selected
+  // option is normally tab-stoppable (roving tabindex, set in the JSX below).
+  function handleThemeKeyDown(e) {
+    const idx = THEME_OPTIONS.findIndex((o) => o.value === theme);
+    let nextIdx = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      nextIdx = (idx + 1) % THEME_OPTIONS.length;
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      nextIdx = (idx - 1 + THEME_OPTIONS.length) % THEME_OPTIONS.length;
+    } else if (e.key === "Home") {
+      nextIdx = 0;
+    } else if (e.key === "End") {
+      nextIdx = THEME_OPTIONS.length - 1;
+    }
+    if (nextIdx === null) return;
+    e.preventDefault();
+    const nextValue = THEME_OPTIONS[nextIdx].value;
+    handleThemeChange(nextValue);
+    optionRefs.current[nextValue]?.focus();
+  }
+
+  async function handleSetPin(e) {
+    e.preventDefault();
+    if (pinDraft.length !== 4) {
+      setPinStatus("PIN must be 4 digits.");
+      return;
+    }
+    if (pinDraft !== pinConfirm) {
+      setPinStatus("Those two PINs don't match.");
+      return;
+    }
+    await setProfilePin(profile.id, pinDraft);
+    setHasPin(true);
+    setPinDraft("");
+    setPinConfirm("");
+    setPinStatus("PIN set.");
+  }
+
+  async function handleRemovePin() {
+    await setProfilePin(profile.id, null);
+    setHasPin(false);
+    setPinStatus("PIN removed.");
   }
 
   function handleClearData() {
@@ -29,6 +84,40 @@ export default function Settings({ profile, onSwitchProfile }) {
     if (!ok) return;
     clearProfileData();
     setCleared(true);
+  }
+
+  function handleExport() {
+    const payload = exportAllData();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `charting-practice-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImportFile(e) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const payload = JSON.parse(reader.result);
+        const ok = window.confirm(
+          "Import this backup? It will overwrite any matching profiles, history, and settings already saved in this browser."
+        );
+        if (!ok) return;
+        importAllData(payload);
+        window.location.reload();
+      } catch {
+        setImportStatus("That file couldn't be read as a Charting Practice backup.");
+      }
+    };
+    reader.readAsText(file);
   }
 
   return (
@@ -44,18 +133,68 @@ export default function Settings({ profile, onSwitchProfile }) {
           {THEME_OPTIONS.map((opt) => (
             <button
               key={opt.value}
+              ref={(el) => {
+                optionRefs.current[opt.value] = el;
+              }}
               type="button"
               role="radio"
               aria-checked={theme === opt.value}
+              tabIndex={theme === opt.value ? 0 : -1}
               className={`segmented__option ${
                 theme === opt.value ? "segmented__option--active" : ""
               }`}
               onClick={() => handleThemeChange(opt.value)}
+              onKeyDown={handleThemeKeyDown}
             >
               {opt.label}
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="settings-section">
+        <h2 className="settings-section__title">Security</h2>
+        <p className="settings-row settings-row--muted">
+          An optional PIN so someone else on this computer can't open your
+          profile by mistake. This is a privacy lock, not encryption — it's
+          stored only in this browser and isn't a substitute for a real
+          account.
+        </p>
+        {hasPin ? (
+          <div className="settings-row">
+            <p className="settings-row">A PIN is set for this profile.</p>
+            <button className="btn btn--ghost" onClick={handleRemovePin}>
+              Remove PIN
+            </button>
+          </div>
+        ) : (
+          <form className="pin-form" onSubmit={handleSetPin}>
+            <input
+              className="profile-gate__input profile-gate__input--pin"
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={4}
+              value={pinDraft}
+              onChange={(e) => setPinDraft(e.target.value.replace(/\D/g, ""))}
+              placeholder="New 4-digit PIN"
+            />
+            <input
+              className="profile-gate__input profile-gate__input--pin"
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={4}
+              value={pinConfirm}
+              onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ""))}
+              placeholder="Confirm PIN"
+            />
+            <button type="submit" className="btn btn--go" disabled={pinDraft.length !== 4}>
+              Set PIN
+            </button>
+          </form>
+        )}
+        {pinStatus && <p className="settings-row settings-row--muted">{pinStatus}</p>}
       </section>
 
       <section className="settings-section">
@@ -69,16 +208,37 @@ export default function Settings({ profile, onSwitchProfile }) {
       </section>
 
       <section className="settings-section">
-        <h2 className="settings-section__title">Data</h2>
+        <h2 className="settings-section__title">Backup</h2>
         <p className="settings-row settings-row--muted">
-          Progress and scores are saved only in this browser, under your
-          profile.
+          Everything saved in this browser — every profile, their history,
+          and this device's theme — as one file you can keep or move to
+          another browser.
         </p>
-        <button
-          className="btn btn--danger"
-          onClick={handleClearData}
-          disabled={cleared}
-        >
+        <div className="settings-row settings-actions">
+          <button className="btn btn--ghost" onClick={handleExport}>
+            Export a backup
+          </button>
+          <button className="btn btn--ghost" onClick={() => fileInputRef.current?.click()}>
+            Import a backup
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json"
+            hidden
+            onChange={handleImportFile}
+          />
+        </div>
+        {importStatus && <p className="settings-row settings-row--muted">{importStatus}</p>}
+      </section>
+
+      <section className="settings-section">
+        <h2 className="settings-section__title">Danger zone</h2>
+        <p className="settings-row settings-row--muted">
+          Deletes {profile.name}'s saved runs and history. Export a backup
+          first if you might want it later.
+        </p>
+        <button className="btn btn--danger" onClick={handleClearData} disabled={cleared}>
           {cleared ? "Cleared" : "Clear my saved progress"}
         </button>
       </section>
