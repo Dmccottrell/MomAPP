@@ -12,16 +12,14 @@ const ABOUT_NAV_ITEM = { id: "about", label: "About", Icon: InfoIcon };
 const SETTINGS_NAV_ITEM = { id: "settings", label: "Settings", Icon: SettingsIcon };
 
 /**
- * The persistent top bar: brand, the top-level views, and the current
- * profile with sign-out. `showBuilder` is decided by App.jsx (it needs an
- * async database read, so it can't be computed in here). `view` is null
- * while a scenario is active, which just dims the nav links without
- * hiding them — clicking one exits the scenario (the run itself stays
- * saved on this device).
- *
- * On narrow screens the links and profile move into a slide-in side
- * drawer behind a menu button, instead of wrapping into a second row —
- * see the `.nav__drawer` rules in index.css for the breakpoint.
+ * The persistent top bar: brand, a "Welcome, {name}" greeting, and a menu
+ * button. The top-level views and the profile/sign-out control live in a
+ * slide-in side drawer behind that button, on every screen size — see the
+ * `.nav__drawer` rules in index.css. `showBuilder` is decided by App.jsx
+ * (it needs an async database read, so it can't be computed in here).
+ * `view` is null while a scenario is active, which just dims the nav
+ * links without hiding them — clicking one exits the scenario (the run
+ * itself stays saved on this device).
  */
 export default function NavBar({ profile, view, showBuilder, onNavigate, onSignOut }) {
   const [open, setOpen] = useState(false);
@@ -58,6 +56,11 @@ export default function NavBar({ profile, view, showBuilder, onNavigate, onSignO
   return (
     <header className="nav">
       <span className="nav__brand">Charting Practice</span>
+
+      <span className="nav__greeting">
+        <span className="nav__greeting-lead">Welcome, </span>
+        <strong>{profile.name}</strong>
+      </span>
 
       <button
         className="nav__toggle"
