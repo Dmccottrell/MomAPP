@@ -1,5 +1,10 @@
 # Charting Practice
 
+**Status: Prod — trials and testing.** Live at the deployed URL with a real
+Supabase backend, currently being tried out by real users (starting with
+the nurse who writes the scenarios) to surface what needs to change before
+it's used more broadly.
+
 A browser-based training simulator for nursing documentation. A learner works a
 clinical scenario from start to finish, then writes the progress note for it and
 gets feedback on what the note covered and what it missed.
