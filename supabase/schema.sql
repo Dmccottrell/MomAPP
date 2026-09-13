@@ -28,6 +28,14 @@ create table if not exists public.profiles (
 -- ones — a one-time "here's what's new" rather than a gap in the rule.
 alter table public.profiles add column if not exists has_seen_onboarding boolean not null default false;
 
+-- Mirrors auth.users.email so the admin UI can show who's who and trigger
+-- a password reset without needing the service_role key — the client
+-- can't query auth.users directly. Kept in sync by the trigger below.
+-- Deliberately readable by everyone (see the select policy just below),
+-- same trust level as a profile's name, not treated as sensitive here.
+alter table public.profiles add column if not exists email text;
+update public.profiles p set email = u.email from auth.users u where p.id = u.id and p.email is null;
+
 alter table public.profiles enable row level security;
 
 drop policy if exists "Profiles are viewable by everyone" on public.profiles;
@@ -60,10 +68,11 @@ declare
   is_first boolean;
 begin
   select not exists (select 1 from public.profiles) into is_first;
-  insert into public.profiles (id, name, is_admin, can_build_scenarios)
+  insert into public.profiles (id, name, email, is_admin, can_build_scenarios)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
+    new.email,
     is_first,
     is_first
   );

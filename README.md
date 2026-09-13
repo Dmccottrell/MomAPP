@@ -68,6 +68,16 @@ up Supabase" below to run your own instance.
   tell a fictional name from a real one; no algorithm can. Treat every
   scenario as something a stranger with database access could read, because
   with a shared Supabase project, several people now can.
+- **An admin can reset another account's password or delete it**, from
+  Settings → Manage accounts. Password reset just emails a normal Supabase
+  reset link (`utils/auth.js`'s `sendPasswordReset`) — no special
+  privileges needed. Deletion is different: removing a row from
+  `auth.users` requires Supabase's Admin API, which needs the
+  `service_role` key — a credential that must never reach the browser. That
+  one action is the app's only server-side code, a Supabase Edge Function
+  (`supabase/functions/delete-user/`) that re-checks the caller is really
+  an admin before touching anything. See "Setting up the delete-account
+  function" below.
 
 ## First-time tour
 
@@ -90,13 +100,43 @@ correctly going forward.
 3. In **SQL Editor**, run [`supabase/schema.sql`](supabase/schema.sql) once.
 4. Copy `.env.example` to `.env.local` and fill in your project's URL and
    anon public key, both found in **Project Settings → Data API**. Never use
-   the `service_role` key here — it must stay server-side only, and this app
-   has no server side.
-5. `npm run dev` (or restart it, if it was already running — Vite only reads
+   the `service_role` key here — it must stay server-side only. (The one
+   place this app does have a server side — the delete-account Edge
+   Function — gets that key automatically from Supabase itself; see below.
+   It's never typed into anything by hand.)
+5. In **Authentication → URL Configuration**, add your app's URL (both
+   `http://localhost:5173` for local dev and your deployed URL, e.g. a
+   Vercel domain) under **Redirect URLs**. Without this, password-reset
+   emails will fail to redirect back into the app.
+6. `npm run dev` (or restart it, if it was already running — Vite only reads
    `.env.local` at startup).
 
 Without `.env.local` configured, the app shows a setup notice instead of a
 blank page or a confusing network error.
+
+### Setting up the delete-account function
+
+The other screens work with just the setup above. Deleting an account is
+the exception — it needs a small server-side function deployed separately:
+
+1. Install the [Supabase CLI](https://supabase.com/docs/guides/cli) if you
+   don't have it (`brew install supabase/tap/supabase` on macOS, or see
+   their docs for other platforms).
+2. `supabase login`, then from this project's folder: `supabase link --project-ref your-project-ref`
+   (the project ref is the subdomain in your project URL, e.g. `xcuvxyexcfveyxaqkxad`).
+3. `supabase functions deploy delete-user`
+
+That's it — no secrets to copy anywhere. Supabase automatically gives every
+Edge Function its own `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and
+`SUPABASE_SERVICE_ROLE_KEY`, so the function has what it needs the moment
+it's deployed. If you'd rather not use the CLI, the Supabase dashboard's
+**Edge Functions** page also supports creating and pasting in a function
+directly — use the contents of
+[`supabase/functions/delete-user/index.ts`](supabase/functions/delete-user/index.ts).
+
+Until this is deployed, the "Delete" button in Settings → Manage accounts
+will just show an error when clicked — everything else in the app works
+fine without it.
 
 ## Running it locally
 
@@ -130,12 +170,13 @@ src/
 │   ├── Auth.jsx               Sign in / sign up
 │   ├── SupabaseSetupNotice.jsx Shown when .env.local isn't configured
 │   ├── Onboarding.jsx          One-time welcome tour for a new profile
+│   ├── ResetPassword.jsx       "Choose a new password" — lands here from a reset email
 │   ├── Home.jsx                Preset scenario list
 │   ├── History.jsx             Completed runs — own, or everyone's if admin
 │   ├── MyScenarios.jsx         List of in-app-built scenarios
 │   ├── ScenarioBuilder.jsx     The scenario-authoring form
 │   ├── About.jsx               What the app is and who built it
-│   └── Settings.jsx            Theme, account, admin access controls
+│   └── Settings.jsx            Theme, account, admin access + account management
 ├── components/
 │   ├── NavBar.jsx             Persistent top nav
 │   ├── Avatar.jsx             Initials-in-a-circle, colored per name
@@ -155,6 +196,7 @@ src/
 │   ├── profiles.js            Profile rows: admin + builder-access checks
 │   ├── customScenarios.js     Shared scenarios table + builder on/off switch
 │   ├── storage.js             Local in-progress runs + synced history
+│   ├── admin.js                Calls the delete-user Edge Function
 │   ├── avatar.js              Deterministic color + initials for Avatar.jsx
 │   ├── theme.js                Light/dark/system theme preference
 │   ├── viewTransition.js       Cross-fade wrapper around a state update
@@ -162,6 +204,10 @@ src/
 └── scenarios/
     ├── fall-01.json                  Preset: unwitnessed fall
     └── change-of-condition-01.json   Preset: post-op change of condition
+
+supabase/
+├── schema.sql                 Tables + row-level security policies
+└── functions/delete-user/     The one server-side piece — see below
 ```
 
 The organizing rule is that each file has one reason to change. Styling lives in
@@ -195,9 +241,10 @@ Worth being honest about these:
   SSN/phone/email/date-shaped patterns; it can't verify a patient name is
   fictional, because a fictional name and a real one look identical. Whoever
   runs this Supabase project is trusting whoever it's shared with.
-- **Admin is "whoever signed up first," not something you choose.** If you
-  need a different person to be admin, that's a manual row edit in the
-  Supabase dashboard for now, not a UI control.
+- **Admin is "whoever signed up first," not something you choose.** There's
+  no UI to promote someone else or transfer it — that's still a manual SQL
+  update (`update public.profiles set is_admin = true where id = ...`) in
+  the Supabase SQL Editor, matched by email via `auth.users`.
 - **No mobile layout testing beyond basic responsiveness.**
 - **Two scenarios so far**, covering two different note types (an incident
   note and a change-of-condition note) — a reasonable but still small sample
@@ -205,8 +252,7 @@ Worth being honest about these:
 
 ## Possible next steps
 
-- Admin transfer / multiple admins, from a UI instead of a manual DB edit
-- Password reset flow (Supabase supports it; not wired into the UI yet)
+- Admin transfer / multiple admins, from a UI instead of a manual SQL update
 - AI-assisted grading that reads the note for clinical accuracy rather than
   keywords — contained to `utils/grading.js` by design
 - Print or export a completed session for classroom review
@@ -216,5 +262,7 @@ Worth being honest about these:
 ## Built with
 
 React, Vite, plain CSS, and Supabase (Postgres + Auth). No UI framework, no
-state management library, no custom server — Supabase's row-level security
-does the enforcement a hand-rolled backend would otherwise need to.
+state management library, and almost no custom server — one Edge Function
+for the single action (deleting an account) that genuinely needs
+Supabase's Admin API. Everything else runs off row-level security instead
+of hand-rolled backend logic.

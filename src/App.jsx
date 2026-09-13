@@ -9,6 +9,7 @@ import About from "./screens/About";
 import Auth from "./screens/Auth";
 import SupabaseSetupNotice from "./screens/SupabaseSetupNotice";
 import Onboarding from "./screens/Onboarding";
+import ResetPassword from "./screens/ResetPassword";
 import { isSupabaseConfigured } from "./utils/supabaseClient";
 import { getSession, onAuthChange, signOut } from "./utils/auth";
 import { getProfile, canBuildScenarios, needsOnboarding, markOnboardingSeen } from "./utils/profiles";
@@ -42,6 +43,7 @@ export default function App() {
   const [activeScenario, setActiveScenario] = useState(null);
   const [customScenarios, setCustomScenarios] = useState([]);
   const [builderEnabled, setBuilderEnabledState] = useState(false);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -49,7 +51,11 @@ export default function App() {
       setSession(s);
       setCheckingSession(false);
     });
-    return onAuthChange((s) => {
+    return onAuthChange((event, s) => {
+      // A reset-password email link lands here as a normal sign-in, but
+      // tagged with this event — show the "choose a new password" screen
+      // instead of dropping them straight into the app.
+      if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
       // Wrapped so signing in/out cross-fades between the Auth screen and
       // the app shell instead of snapping — see utils/viewTransition.js.
       withViewTransition(() => {
@@ -89,6 +95,9 @@ export default function App() {
   if (!isSupabaseConfigured) return <SupabaseSetupNotice />;
   if (checkingSession) return null;
   if (!session) return <Auth />;
+  if (passwordRecovery) {
+    return <ResetPassword onDone={() => setPasswordRecovery(false)} />;
+  }
   if (profileError) {
     return (
       <div className="profile-gate">

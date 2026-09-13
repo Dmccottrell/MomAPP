@@ -8,6 +8,8 @@ import {
   updateName,
 } from "../utils/profiles";
 import { isBuilderEnabled, setBuilderEnabled } from "../utils/customScenarios";
+import { sendPasswordReset } from "../utils/auth";
+import { deleteAccount } from "../utils/admin";
 
 const THEME_OPTIONS = [
   { value: "system", label: "System" },
@@ -34,6 +36,8 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
 
   const [cleared, setCleared] = useState(false);
   const [clearError, setClearError] = useState("");
+
+  const [accountStatus, setAccountStatus] = useState({});
 
   useEffect(() => {
     if (!admin) return;
@@ -100,6 +104,30 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
       );
     } catch (err) {
       setAccessError(err.message || "Couldn't change that.");
+    }
+  }
+
+  async function handleResetPassword(p) {
+    setAccountStatus((s) => ({ ...s, [p.id]: "Sending…" }));
+    try {
+      await sendPasswordReset(p.email);
+      setAccountStatus((s) => ({ ...s, [p.id]: "Reset email sent." }));
+    } catch (err) {
+      setAccountStatus((s) => ({ ...s, [p.id]: err.message || "Couldn't send that." }));
+    }
+  }
+
+  async function handleDeleteAccount(p) {
+    const ok = window.confirm(
+      `Permanently delete ${p.name}'s account, including their history? This can't be undone.`
+    );
+    if (!ok) return;
+    setAccountStatus((s) => ({ ...s, [p.id]: "Deleting…" }));
+    try {
+      await deleteAccount(p.id);
+      setOtherProfiles((list) => list.filter((x) => x.id !== p.id));
+    } catch (err) {
+      setAccountStatus((s) => ({ ...s, [p.id]: err.message || "Couldn't delete that account." }));
     }
   }
 
@@ -180,6 +208,42 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
             </div>
           )}
           {accessError && <p className="settings-row settings-row--muted">{accessError}</p>}
+        </section>
+      )}
+
+      {admin && (
+        <section className="settings-section">
+          <h2 className="settings-section__title">Manage accounts</h2>
+          <p className="settings-row settings-row--muted">
+            Send a password reset, or permanently delete an account.
+            Deleting is real server-side deletion — a Supabase Edge
+            Function checks you're an admin, then removes the account
+            using a key this app's browser code never has access to. Not
+            a client-side trick.
+          </p>
+          {otherProfiles.length === 0 ? (
+            <p className="settings-row--muted">No other accounts yet.</p>
+          ) : (
+            otherProfiles.map((p) => (
+              <div className="account-row" key={p.id}>
+                <div className="account-row__info">
+                  <p className="account-row__name">{p.name}</p>
+                  {p.email && <p className="account-row__email">{p.email}</p>}
+                </div>
+                <div className="account-row__actions">
+                  <button className="btn btn--ghost btn--sm" onClick={() => handleResetPassword(p)}>
+                    Reset password
+                  </button>
+                  <button className="btn btn--danger btn--sm" onClick={() => handleDeleteAccount(p)}>
+                    Delete
+                  </button>
+                </div>
+                {accountStatus[p.id] && (
+                  <p className="account-row__status">{accountStatus[p.id]}</p>
+                )}
+              </div>
+            ))
+          )}
         </section>
       )}
 
