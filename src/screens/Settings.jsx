@@ -1,7 +1,14 @@
 import { useRef, useState } from "react";
 import { getThemePreference, setThemePreference } from "../utils/theme";
 import { clearProfileData, exportAllData, importAllData } from "../utils/storage";
-import { setProfilePin, profileHasPin } from "../utils/profiles";
+import {
+  setProfilePin,
+  profileHasPin,
+  isAdminProfile,
+  listProfiles,
+  setCanBuildScenarios,
+} from "../utils/profiles";
+import { isBuilderEnabled, setBuilderEnabled } from "../utils/customScenarios";
 
 const THEME_OPTIONS = [
   { value: "system", label: "System" },
@@ -26,6 +33,12 @@ export default function Settings({ profile, onSwitchProfile }) {
   const [cleared, setCleared] = useState(false);
   const [importStatus, setImportStatus] = useState("");
   const fileInputRef = useRef(null);
+
+  const admin = isAdminProfile(profile);
+  const [builderEnabled, setBuilderEnabledState] = useState(isBuilderEnabled);
+  const [otherProfiles, setOtherProfiles] = useState(() =>
+    listProfiles().filter((p) => p.id !== profile.id)
+  );
 
   function handleThemeChange(value) {
     setThemePreference(value);
@@ -75,6 +88,17 @@ export default function Settings({ profile, onSwitchProfile }) {
     await setProfilePin(profile.id, null);
     setHasPin(false);
     setPinStatus("PIN removed.");
+  }
+
+  function toggleBuilderEnabled() {
+    const next = !builderEnabled;
+    setBuilderEnabled(next);
+    setBuilderEnabledState(next);
+  }
+
+  function toggleProfileAccess(id, allowed) {
+    setCanBuildScenarios(id, allowed);
+    setOtherProfiles(listProfiles().filter((p) => p.id !== profile.id));
   }
 
   function handleClearData() {
@@ -196,6 +220,41 @@ export default function Settings({ profile, onSwitchProfile }) {
         )}
         {pinStatus && <p className="settings-row settings-row--muted">{pinStatus}</p>}
       </section>
+
+      {admin && (
+        <section className="settings-section">
+          <h2 className="settings-section__title">Scenario builder access</h2>
+          <p className="settings-row settings-row--muted">
+            You created the first profile on this browser, which makes you
+            the admin here. This isn't real access control — it's a local,
+            soft gate — but it keeps the builder out of the way for people
+            who shouldn't be using it day to day.
+          </p>
+          <label className="field field--checkbox settings-row">
+            <input type="checkbox" checked={builderEnabled} onChange={toggleBuilderEnabled} />
+            <span>Scenario builder turned on for everyone</span>
+          </label>
+          {builderEnabled && (
+            <div className="settings-row">
+              <p className="field__label">Who else can build scenarios</p>
+              {otherProfiles.length === 0 ? (
+                <p className="settings-row--muted">No other profiles on this browser yet.</p>
+              ) : (
+                otherProfiles.map((p) => (
+                  <label className="field field--checkbox" key={p.id}>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(p.canBuildScenarios)}
+                      onChange={(e) => toggleProfileAccess(p.id, e.target.checked)}
+                    />
+                    <span>{p.name}</span>
+                  </label>
+                ))
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="settings-section">
         <h2 className="settings-section__title">Profile</h2>

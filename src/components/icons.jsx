@@ -48,6 +48,15 @@ export function LockIcon(props) {
   );
 }
 
+export function PencilIcon(props) {
+  return (
+    <svg {...common} {...props}>
+      <path d="M12.5 3.5 16.5 7.5 6.5 17.5 2.5 18.5 3.5 14.5Z" />
+      <path d="M11 5l4 4" />
+    </svg>
+  );
+}
+
 export function TrashIcon(props) {
   return (
     <svg {...common} {...props}>

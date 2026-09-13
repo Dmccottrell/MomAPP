@@ -1,0 +1,210 @@
+{
+  "id": "change-of-condition-01",
+  "title": "New shortness of breath, post-op",
+  "category": "Clinical judgment",
+  "unit": "Med-Surg",
+  "difficulty": "Intermediate",
+  "estimatedMinutes": 12,
+  "objectives": [
+    "Recognize and respond to a change in condition with a full assessment",
+    "Escalate to the provider using SBAR with the right findings",
+    "Write a change-of-condition note that documents findings, not a diagnosis"
+  ],
+  "patient": {
+    "name": "Maria Alvarez",
+    "age": 64,
+    "sex": "F",
+    "room": "308-A",
+    "mrn": "SIM-0077",
+    "admitted": "Day 2",
+    "diagnosis": "S/P open cholecystectomy",
+    "history": ["Type 2 diabetes", "Hypothyroidism", "Former smoker"],
+    "medications": ["Metformin 500 mg BID (held)", "Levothyroxine 75 mcg daily", "Oxycodone 5 mg PO q4h PRN pain"],
+    "allergies": ["NKDA"],
+    "code": "Full code",
+    "fallRisk": "Low — Morse 25"
+  },
+  "vitals": {
+    "bp": "128/78",
+    "hr": "88",
+    "rr": "18",
+    "temp": "99.1",
+    "spo2": "97%",
+    "pain": "4/10"
+  },
+  "opening": "It's 1400 and you're passing through for hourly rounding. Mrs. Alvarez says she 'just doesn't feel right' and is more short of breath than she was at breakfast. She's sitting up in bed, looks pale, and is breathing faster than normal. Her surgical dressing is intact. Nothing about this was in report.",
+  "clock": {
+    "start": "14:00",
+    "label": "Time since noticed"
+  },
+  "actions": [
+    {
+      "id": "vitals-full",
+      "label": "Take a full set of vitals",
+      "detail": "Including pulse ox and respiratory rate — don't rely on what's already on the board.",
+      "correct": true,
+      "order": 1,
+      "response": "BP 110/64, HR 118, RR 26, Temp 101.6, SpO2 90% on room air. Pain unchanged at 4/10.",
+      "reveals": { "bp": "110/64", "hr": "118", "rr": "26", "temp": "101.6", "spo2": "90%" },
+      "timeCost": 3
+    },
+    {
+      "id": "lung-sounds",
+      "label": "Auscultate lung sounds",
+      "detail": "She says she's short of breath — listen before assuming why.",
+      "correct": true,
+      "order": 2,
+      "response": "Diminished breath sounds at the right base, no wheeze or stridor. Mild accessory muscle use. No jugular venous distension.",
+      "timeCost": 2,
+      "critical": true,
+      "criticalWhy": "Post-op patients are at risk for atelectasis, pneumonia, and PE — a focused lung exam narrows what you're escalating about."
+    },
+    {
+      "id": "wound-check",
+      "label": "Inspect the surgical site",
+      "detail": "Rule out a surgical source before assuming this is pulmonary.",
+      "correct": true,
+      "order": 3,
+      "response": "Dressing clean, dry, and intact. No erythema, drainage, or increased tenderness at the incision.",
+      "timeCost": 2
+    },
+    {
+      "id": "glucose-check",
+      "label": "Check capillary blood glucose",
+      "detail": "She's diabetic and her metformin is held — rule out a metabolic cause too.",
+      "correct": true,
+      "order": 4,
+      "response": "Fingerstick glucose 142 mg/dL. Not the driver here, but now you can rule it out when you call.",
+      "reveals": { "glucose": "142 mg/dL" },
+      "timeCost": 2
+    },
+    {
+      "id": "notify-provider-sbar",
+      "label": "Notify the provider using SBAR",
+      "detail": "Situation, background, assessment, recommendation — with the numbers in front of you.",
+      "correct": true,
+      "order": 5,
+      "response": "You reach Dr. Nguyen at 1414 and report the vitals, lung findings, and clear surgical site. New orders: STAT portable chest X-ray, blood cultures x2, start supplemental O2 at 2L NC, repeat vitals q30min.",
+      "timeCost": 4
+    },
+    {
+      "id": "start-o2",
+      "label": "Apply supplemental oxygen and recheck SpO2",
+      "detail": "Per the new order — 2L nasal cannula.",
+      "correct": true,
+      "order": 6,
+      "response": "SpO2 improves to 95% on 2L NC. She reports feeling a little easier to breathe.",
+      "reveals": { "spo2": "95% on 2L NC" },
+      "timeCost": 3
+    },
+    {
+      "id": "give-prn-pain",
+      "label": "Give her PRN oxycodone for the pain first",
+      "detail": "She's uncomfortable and it's an easy fix.",
+      "correct": false,
+      "response": "Pain isn't what she's reporting — she's short of breath. Treating the wrong problem delays finding the real one, and opioids can blunt respiratory drive in a patient who may already be hypoxic.",
+      "penalty": "Treated the wrong problem",
+      "timeCost": 2
+    },
+    {
+      "id": "assume-anxiety",
+      "label": "Reassure her it's probably just anxiety",
+      "detail": "Post-op patients get anxious.",
+      "correct": false,
+      "response": "New tachycardia, tachypnea, and hypoxia in a post-op patient are not anxiety until everything else has been ruled out. Assuming a benign cause without assessing first can miss a PE, pneumonia, or sepsis.",
+      "penalty": "Assumed a cause without assessing",
+      "timeCost": 1
+    },
+    {
+      "id": "call-family-early",
+      "label": "Call her family to let them know she seems unwell",
+      "detail": "They'd want to know.",
+      "correct": false,
+      "response": "Family notification matters, but not before the patient is assessed and the provider is notified. Stabilize and escalate first.",
+      "penalty": "Out of order",
+      "timeCost": 3
+    },
+    {
+      "id": "chart-diagnosis",
+      "label": "Chart that she is developing pneumonia",
+      "detail": "The lung findings point that way.",
+      "correct": false,
+      "response": "Diagnosing is the provider's job, not yours. Charting a diagnosis you're not authorized to make — even one that turns out to be right — is a documentation error. Chart what you found: the vitals, the lung sounds, what you did.",
+      "penalty": "Documented an unauthorized diagnosis",
+      "timeCost": 1
+    }
+  ],
+  "hints": [
+    "She's diabetic, post-op, and suddenly short of breath — what's the fastest way to know how worried to be?",
+    "Rule out the obvious sources — the wound, the lungs, the blood sugar — before you call.",
+    "SBAR: situation, background, assessment, recommendation. Have your numbers ready before you dial."
+  ],
+  "documentation": {
+    "prompt": "Write your change-of-condition note.",
+    "placeholder": "Begin with the time and what you noticed...",
+    "requirements": [
+      {
+        "id": "found-as",
+        "label": "What you noticed and when",
+        "keywords": ["1400", "2 pm", "found", "noticed", "reported"],
+        "why": "Anchors the note in time and shows you responded promptly to a subjective complaint, not just a monitor alarm."
+      },
+      {
+        "id": "no-diagnosis",
+        "label": "No diagnosis you're not authorized to make",
+        "keywords": [],
+        "forbidden": ["pneumonia", "pulmonary embolism", "has pe", "sepsis"],
+        "why": "Diagnosing is outside your scope. A guess in the note becomes a claim in the record."
+      },
+      {
+        "id": "vitals",
+        "label": "Full vital signs, including SpO2 and respiratory rate",
+        "keywords": ["spo2", "o2 sat", "rr", "respiratory rate", "hr", "heart rate", "bp", "blood pressure", "temp"],
+        "why": "These numbers are the objective evidence that something changed."
+      },
+      {
+        "id": "lungs",
+        "label": "Lung assessment findings",
+        "keywords": ["breath sounds", "diminished", "auscult", "lung", "accessory muscle"],
+        "why": "Shows you did a focused assessment, not just took vitals."
+      },
+      {
+        "id": "wound",
+        "label": "Surgical site assessed and ruled out",
+        "keywords": ["incision", "surgical site", "dressing", "wound"],
+        "why": "Closes off one obvious differential and shows thoroughness."
+      },
+      {
+        "id": "glucose",
+        "label": "Blood glucose checked",
+        "keywords": ["glucose", "blood sugar", "fingerstick", "bg "],
+        "why": "She's diabetic — ruling out a metabolic cause is expected."
+      },
+      {
+        "id": "notify",
+        "label": "Provider notified, with time and new orders",
+        "keywords": ["notified", "dr.", "provider", "np", "orders", "sbar"],
+        "why": "Times and names, and what changed as a result."
+      },
+      {
+        "id": "oxygen",
+        "label": "Oxygen therapy started and response documented",
+        "keywords": ["oxygen", "nasal cannula", "o2 at", "2l"],
+        "why": "An intervention without a documented response is only half the story."
+      },
+      {
+        "id": "monitoring",
+        "label": "Plan for continued monitoring",
+        "keywords": ["monitor", "recheck", "q30", "continue to"],
+        "why": "Closes the loop: what happens next."
+      }
+    ],
+    "modelNote": "1400 — Resident reports subjective shortness of breath and 'not feeling right' during hourly rounding; appears pale, mild tachypnea noted on entry. VS: BP 110/64, HR 118, RR 26, SpO2 90% on room air, Temp 101.6, pain 4/10. Lung sounds diminished at right base, no wheeze or stridor, mild accessory muscle use, no JVD. Surgical site clean/dry/intact, no erythema or drainage. Fingerstick glucose 142.\n\n1414 — Dr. Nguyen notified via SBAR of above findings. New orders received: STAT portable chest X-ray, blood cultures x2, oxygen 2L via nasal cannula, vitals q30min.\n\nOxygen applied at 2L via NC; SpO2 improved to 95%, resident reports easier breathing. Will continue frequent monitoring per new order and notify provider of any further change.",
+    "pitfalls": [
+      "Writing 'patient seems anxious' as the explanation instead of documenting the objective findings.",
+      "Charting a diagnosis ('developing pneumonia') instead of the assessment that prompted the workup.",
+      "Leaving out the time the provider was reached, or the orders received.",
+      "Documenting that oxygen was started but not whether it helped."
+    ]
+  }
+}

@@ -35,17 +35,56 @@ export function findProfileByName(name) {
   return listProfiles().find((p) => p.name.toLowerCase() === target) || null;
 }
 
-/** Creates a new profile, makes it the current one, and returns it. */
+/**
+ * Creates a new profile, makes it the current one, and returns it. The
+ * very first profile ever created on this browser becomes the admin and
+ * starts with scenario-builder access; everyone after that starts without
+ * it, and needs the admin to grant it in Settings.
+ */
 export function createProfile(name) {
+  const existing = listProfiles();
+  const isFirst = existing.length === 0;
   const profile = {
     id: crypto.randomUUID(),
     name: name.trim(),
     createdAt: new Date().toISOString(),
     pinHash: null,
+    isAdmin: isFirst,
+    canBuildScenarios: isFirst,
   };
-  write(PROFILES_KEY, [...listProfiles(), profile]);
+  write(PROFILES_KEY, [...existing, profile]);
   setCurrentProfileId(profile.id);
   return profile;
+}
+
+/**
+ * True if this profile is the admin for this browser. There's no real
+ * access control behind this — it's a soft, local-only distinction (see
+ * setCanBuildScenarios below) — but it lets one profile gate a feature for
+ * the others sharing this computer. Profiles created before this existed
+ * have no `isAdmin` field, so as a fallback the earliest-created profile is
+ * treated as admin until one is explicitly flagged.
+ */
+export function isAdminProfile(profile) {
+  if (!profile) return false;
+  if (profile.isAdmin) return true;
+  const all = listProfiles();
+  if (all.some((p) => p.isAdmin)) return false;
+  const earliest = [...all].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))[0];
+  return earliest?.id === profile.id;
+}
+
+/** True if this profile can use the scenario builder — admins always can. */
+export function canBuildScenarios(profile) {
+  return isAdminProfile(profile) || Boolean(profile?.canBuildScenarios);
+}
+
+/** Admin-only: grants or revokes another profile's scenario-builder access. */
+export function setCanBuildScenarios(id, allowed) {
+  write(
+    PROFILES_KEY,
+    listProfiles().map((p) => (p.id === id ? { ...p, canBuildScenarios: allowed } : p))
+  );
 }
 
 /** True if a profile has a PIN set. */
