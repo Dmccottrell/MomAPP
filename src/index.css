@@ -172,6 +172,37 @@ summary:focus-visible {
   border-radius: 999px;
 }
 
+/* The links + profile live in this wrapper so they can be repositioned
+   as a unit into a side drawer on narrow screens (see the media query
+   below) without changing the markup between breakpoints. */
+.nav__drawer {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Hidden on desktop — the drawer is always open (inline in the bar), so
+   there's nothing to toggle. */
+.nav__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  position: relative;
+  z-index: 22;
+}
+.nav__toggle:hover { background: var(--chart-wash); color: var(--chart); }
+.nav__toggle svg { width: 20px; height: 20px; }
+
+.nav__backdrop { display: none; }
+
 /* ---------------- avatar ---------------- */
 
 .avatar {
@@ -838,10 +869,52 @@ summary:focus-visible {
   .work__head { flex-direction: column; align-items: flex-start; }
   .clock { text-align: left; }
   .entry { grid-template-columns: 1fr; gap: 0.3rem; }
-  .nav { flex-wrap: wrap; row-gap: 0.5rem; }
-  .nav__profile { margin-left: 0; order: 3; }
   .history__row { grid-template-columns: auto 1fr; }
   .history__redo { grid-column: 1 / -1; justify-self: start; }
+
+  /* Below the breakpoint, the links + profile move off the bar entirely
+     and into a fixed panel on the right, opened by .nav__toggle — a
+     cleaner fit for a narrow screen than the old wrapping row. */
+  .nav__toggle { display: inline-flex; }
+
+  .nav__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease);
+    z-index: 20;
+  }
+  .nav__backdrop--visible { opacity: 1; pointer-events: auto; }
+
+  .nav__drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 21;
+    width: min(78vw, 300px);
+    height: 100vh;
+    flex: none;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 1.75rem;
+    padding: 4.5rem 1.25rem 1.5rem;
+    background: var(--card);
+    border-left: 1px solid var(--rule);
+    box-shadow: -12px 0 28px rgba(0, 0, 0, 0.14);
+    transform: translateX(100%);
+    transition: transform var(--dur) var(--ease);
+    overflow-y: auto;
+  }
+  .nav__drawer--open { transform: translateX(0); }
+
+  .nav__links { flex-direction: column; align-items: stretch; gap: 0.2rem; }
+  .nav__link { justify-content: flex-start; padding: 0.7rem 0.9rem; font-size: 1rem; }
+
+  .nav__profile { margin-left: 0; justify-content: flex-start; }
 }
 
 /* ---------------- view transitions ---------------- */
