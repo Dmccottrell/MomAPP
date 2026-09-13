@@ -17,13 +17,14 @@ import { loadRun, saveRun, clearRun, addHistoryEntry } from "./utils/storage";
  * The phase components themselves (PatientChart, ActionList, ShiftLog,
  * NoteEditor, NoteFeedback) are presentational; all the logic lives here.
  *
- * State is mirrored to localStorage while a run is in progress (see the
- * effect below), so refreshing mid-"care" or mid-"documentation" resumes
- * rather than starting over.
+ * In-progress state is mirrored to this device's localStorage (see the
+ * effect below), scoped to the signed-in profile, so refreshing mid-"care"
+ * or mid-"documentation" resumes rather than starting over. A completed
+ * run is recorded to the shared database instead (see submitNote).
  */
-export default function ScenarioPlayer({ scenario, onExit }) {
+export default function ScenarioPlayer({ scenario, profile, onExit }) {
   // Read once, at mount, whatever run was last saved for this scenario.
-  const [resumed] = useState(() => loadRun(scenario.id));
+  const [resumed] = useState(() => loadRun(profile.id, scenario.id));
 
   const [phase, setPhase] = useState(resumed?.phase ?? "brief");
   const [taken, setTaken] = useState(resumed?.taken ?? []);
@@ -39,11 +40,11 @@ export default function ScenarioPlayer({ scenario, onExit }) {
   // already graded and recorded in history, so both clear the save instead.
   useEffect(() => {
     if (phase === "care" || phase === "documentation") {
-      saveRun(scenario.id, { phase, taken, log, vitals, elapsed, hintsUsed, note });
+      saveRun(profile.id, scenario.id, { phase, taken, log, vitals, elapsed, hintsUsed, note });
     } else {
-      clearRun(scenario.id);
+      clearRun(profile.id, scenario.id);
     }
-  }, [scenario.id, phase, taken, log, vitals, elapsed, hintsUsed, note]);
+  }, [profile.id, scenario.id, phase, taken, log, vitals, elapsed, hintsUsed, note]);
 
   // The correct actions, in clinical order — this is the checklist the
   // learner must clear before the note screen unlocks.
@@ -89,18 +90,26 @@ export default function ScenarioPlayer({ scenario, onExit }) {
   /**
    * Grades the note against the scenario's documentation requirements,
    * records the attempt to history, and advances to the feedback screen.
+   * The feedback screen shows immediately on the local grade — the history
+   * write happens in the background, since the learner shouldn't wait on
+   * a network round-trip to see their own score.
    */
   function submitNote() {
     const result = gradeNote(note, scenario.documentation.requirements);
     setGraded(result);
     setPhase("feedback");
-    addHistoryEntry({
-      scenarioId: scenario.id,
-      scenarioTitle: scenario.title,
-      score: result.filter((g) => g.status === "met").length,
-      total: result.length,
-      missteps,
-      completedAt: new Date().toISOString(),
+    addHistoryEntry(
+      {
+        scenarioId: scenario.id,
+        scenarioTitle: scenario.title,
+        score: result.filter((g) => g.status === "met").length,
+        total: result.length,
+        missteps,
+      },
+      profile.id
+    ).catch(() => {
+      // The grade is already on screen; a failed history write just means
+      // this attempt won't show up on Home/History later.
     });
   }
 

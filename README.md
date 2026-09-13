@@ -4,8 +4,9 @@ A browser-based training simulator for nursing documentation. A learner works a
 clinical scenario from start to finish, then writes the progress note for it and
 gets feedback on what the note covered and what it missed.
 
-Every patient in this app is fictional. No real patient information is stored,
-transmitted, or entered anywhere in it.
+Every patient in the built-in scenarios is fictional. **Only ever enter
+fictional patients** — see "Accounts and data" below for what that means in
+practice now that this has a real database behind it.
 
 ## Why it exists
 
@@ -33,36 +34,56 @@ Four screens, in order:
    highlighted in place in the note itself, and an optional strong version of
    the note to compare against.
 
-## Profiles, history, and appearance
+## Accounts and data
 
-Above the scenario itself, the app has a small shell:
+This app has a real backend now: [Supabase](https://supabase.com) (Postgres +
+Auth). Signing up creates a real account with a real password — see "Setting
+up Supabase" below to run your own instance.
 
-- **Profiles** — the first thing anyone sees is a name picker (`ProfilePicker`),
-  not a scenario. Typing a name already used on this browser signs back into
-  that same profile and its history, rather than creating a duplicate — so
-  refreshing, or coming back tomorrow, doesn't lose anything. See "Accounts"
-  below for what this is and isn't.
-- **Optional PIN lock** — set in Settings, a 4-digit PIN stops someone else on
-  a shared computer from opening your profile by clicking it, or by retyping
-  your name (both paths check the PIN — see `ProfilePicker.jsx`). It's a
-  privacy lock, not encryption: the PIN is hashed before it's stored, but
-  anyone with access to this browser's dev tools could still bypass it.
-- **History** — every completed run is recorded, newest first, with a
-  "Practice again" shortcut back into that scenario.
-- **Settings** — theme, the PIN above, a full backup export/import (see
-  below), and a way to wipe your own saved progress.
-- **Backup** — Settings can export everything saved in this browser (every
-  profile, their history, the theme preference) as one JSON file, and import
-  one back. This is the practical answer to "profiles are local, not synced":
-  it's a manual backup/restore, not automatic sync.
+- **The first person to ever sign up becomes the admin.** Admin status and
+  scenario-builder permissions are enforced by database row-level security
+  policies (`supabase/schema.sql`), not just the UI — a client-side bug can't
+  grant access the database itself would refuse.
+- **My Scenarios** (the in-app builder) is off by default for everyone except
+  the admin, who can turn it on globally and grant it to specific other
+  accounts in Settings. Scenarios built there are shared across everyone
+  signed in, same as the presets on Home.
+- **History syncs.** Completed runs are tied to your account, not a browser,
+  so they follow you to another device. An admin sees everyone's history on
+  the History page; everyone else sees only their own.
+- **In-progress runs stay local.** Mid-scenario state (which actions you've
+  taken, your note draft) lives in that device's `localStorage` and doesn't
+  sync — it's ephemeral and change-heavy enough that syncing it isn't worth
+  the complexity. Finishing a scenario is what gets recorded permanently.
+- **Fictional patients only, everywhere.** The scenario builder shows a
+  standing warning about this, and flags obvious real-data formats (SSNs,
+  phone numbers, emails, birthdate-shaped dates) before saving — see
+  `utils/phiCheck.js` for exactly what that can and can't catch. It cannot
+  tell a fictional name from a real one; no algorithm can. Treat every
+  scenario as something a stranger with database access could read, because
+  with a shared Supabase project, several people now can.
 
-A persistent nav bar switches between Home, History, and Settings, and stays
-visible during a scenario so you can back out early — the in-progress run
-stays saved either way (see `utils/storage.js`).
+### Setting up Supabase
+
+1. Create a free project at [supabase.com](https://supabase.com).
+2. In **Authentication → Providers → Email**, turn off "Confirm email" if you
+   want people to be able to sign in immediately after signing up (fine for a
+   small testing group; turn it back on for anything more public).
+3. In **SQL Editor**, run [`supabase/schema.sql`](supabase/schema.sql) once.
+4. Copy `.env.example` to `.env.local` and fill in your project's URL and
+   anon public key, both found in **Project Settings → Data API**. Never use
+   the `service_role` key here — it must stay server-side only, and this app
+   has no server side.
+5. `npm run dev` (or restart it, if it was already running — Vite only reads
+   `.env.local` at startup).
+
+Without `.env.local` configured, the app shows a setup notice instead of a
+blank page or a confusing network error.
 
 ## Running it locally
 
-Requires [Node.js](https://nodejs.org) 18 or newer.
+Requires [Node.js](https://nodejs.org) 18 or newer, and a configured Supabase
+project (see above).
 
 ```bash
 npm install
@@ -83,34 +104,43 @@ npx eslint .      # lint
 
 ```
 src/
-├── App.jsx                   App shell: profile gate, nav, view switch
+├── App.jsx                   App shell: auth gate, nav, view switch
 ├── ScenarioPlayer.jsx        Owns scenario state; decides which screen shows
 ├── index.css                 All styling, incl. light/dark theme tokens
 ├── main.jsx                  Entry point; applies the saved theme before render
 ├── screens/
-│   ├── ProfilePicker.jsx     Pick or create a local profile ("sign in")
-│   ├── Home.jsx              Scenario list
-│   ├── History.jsx           Every completed run, newest first
-│   └── Settings.jsx          Theme, profile, clear-my-data
+│   ├── Auth.jsx               Sign in / sign up
+│   ├── SupabaseSetupNotice.jsx Shown when .env.local isn't configured
+│   ├── Home.jsx                Preset scenario list
+│   ├── History.jsx             Completed runs — own, or everyone's if admin
+│   ├── MyScenarios.jsx         List of in-app-built scenarios
+│   ├── ScenarioBuilder.jsx     The scenario-authoring form
+│   └── Settings.jsx            Theme, account, admin access controls
 ├── components/
-│   ├── NavBar.jsx            Persistent top nav
-│   ├── Avatar.jsx            Initials-in-a-circle, colored per name
-│   ├── icons.jsx             The handful of line icons used in the nav etc.
-│   ├── PatientChart.jsx      The pinned patient chart
-│   ├── ActionList.jsx        Action buttons and hints
-│   ├── ShiftLog.jsx          Running record of what happened
-│   ├── NoteEditor.jsx        The writing screen
-│   └── NoteFeedback.jsx      Score, rubric, model note
+│   ├── NavBar.jsx             Persistent top nav
+│   ├── Avatar.jsx             Initials-in-a-circle, colored per name
+│   ├── icons.jsx              The handful of line icons used in the nav etc.
+│   ├── Notice.jsx              The warning banner used on builder screens
+│   ├── PatientChart.jsx       The pinned patient chart
+│   ├── ActionList.jsx         Action buttons and hints
+│   ├── ShiftLog.jsx           Running record of what happened
+│   ├── NoteEditor.jsx         The writing screen
+│   └── NoteFeedback.jsx       Score, rubric, model note
 ├── utils/
-│   ├── grading.js            Note-checking rules
-│   ├── highlight.js          Marks up a note with its grading matches
-│   ├── storage.js            localStorage persistence, history, backup export/import
-│   ├── profiles.js           Local profile picker: create/find/PIN/delete
-│   ├── avatar.js             Deterministic color + initials for Avatar.jsx
-│   ├── theme.js              Light/dark/system theme preference
-│   └── time.js               Clock helpers
+│   ├── grading.js             Note-checking rules
+│   ├── highlight.js           Marks up a note with its grading matches
+│   ├── phiCheck.js            Flags obvious real-data formats before saving
+│   ├── supabaseClient.js      The one Supabase client instance
+│   ├── auth.js                Sign up / sign in / sign out
+│   ├── profiles.js            Profile rows: admin + builder-access checks
+│   ├── customScenarios.js     Shared scenarios table + builder on/off switch
+│   ├── storage.js             Local in-progress runs + synced history
+│   ├── avatar.js              Deterministic color + initials for Avatar.jsx
+│   ├── theme.js                Light/dark/system theme preference
+│   └── time.js                Clock helpers
 └── scenarios/
-    └── fall-01.json          One scenario, entirely as data
+    ├── fall-01.json                  Preset: unwitnessed fall
+    └── change-of-condition-01.json   Preset: post-op change of condition
 ```
 
 The organizing rule is that each file has one reason to change. Styling lives in
@@ -119,43 +149,18 @@ JSON, and the components only draw.
 
 ## Adding a scenario
 
-Scenarios are plain JSON — no code. See [SCENARIOS.md](SCENARIOS.md) for the
-full field reference. The short version:
+Two ways: hand-write JSON, or use the in-app builder (My Scenarios, once an
+admin has enabled it for your account).
+
+For hand-written scenarios — see [SCENARIOS.md](SCENARIOS.md) for the full
+field reference. The short version:
 
 1. Write the file into `src/scenarios/`.
 2. Add two lines to `src/App.jsx` — one `import`, one entry in the `SCENARIOS`
    array.
 
-That is the only code change required, by design.
-
-## Accounts: what "profiles" are and aren't
-
-The name picker at startup (`ProfilePicker` / `utils/profiles.js`) is **not
-authentication**. There's no server, and nothing leaves the browser. It
-exists only so history and scores stay separate when more than one person
-practices on the same computer — a convenience, not a login.
-
-The optional 4-digit PIN doesn't change that. It's hashed with the Web Crypto
-API (`crypto.subtle.digest`, salted with the profile id) before being saved,
-so it's not sitting in `localStorage` as plain text — but it's still just a
-client-side check with no server to enforce it, so it stops casual snooping
-on a shared computer, not a determined technical adversary.
-
-Everything (`utils/storage.js`, `utils/profiles.js`) is namespaced under
-whichever profile is active and lives in `localStorage`. Two consequences
-follow directly from that: a profile only exists on the device it was created
-on, and nothing here should be treated as sensitive — this was a deliberate
-choice to ship something useful now rather than take on a backend before it
-was needed. The Settings backup export/import is the manual answer to the
-device question — it moves a profile's data between browsers, it just doesn't
-sync them automatically.
-
-The natural next step, when it's actually needed, is real accounts: a backend
-with a database, password or OAuth handling, and hosting for all of it —
-which also unlocks the cross-device sync and instructor-view features listed
-below. That's a materially bigger project than the rest of this app combined,
-so it's deliberately not started until the local-profile version has proven
-the rest of the app is worth that investment.
+Scenarios built in the app need no code change — they're saved straight to
+the database and show up for everyone immediately.
 
 ## Current limitations
 
@@ -165,26 +170,30 @@ Worth being honest about these:
   in the note. It cannot judge whether the note is clinically sound. A
   well-written note using unexpected phrasing may be marked as missing an
   element; a nonsense note containing the right words will pass.
-- **Profiles are local, not accounts.** See "Accounts" above — the PIN is a
-  privacy lock, not encryption; sync between devices is a manual export/import,
-  not automatic; there's no instructor view of who completed what.
+- **The real-data check is a format filter, not a guarantee.** It catches
+  SSN/phone/email/date-shaped patterns; it can't verify a patient name is
+  fictional, because a fictional name and a real one look identical. Whoever
+  runs this Supabase project is trusting whoever it's shared with.
+- **Admin is "whoever signed up first," not something you choose.** If you
+  need a different person to be admin, that's a manual row edit in the
+  Supabase dashboard for now, not a UI control.
 - **No mobile layout testing beyond basic responsiveness.**
-- **One scenario so far.** The engine is general, but the format hasn't been
-  proven against note types other than an incident note.
+- **Two scenarios so far**, covering two different note types (an incident
+  note and a change-of-condition note) — a reasonable but still small sample
+  for "the format generalizes."
 
 ## Possible next steps
 
-- Real accounts with a backend (see "Accounts" above) — unlocks cross-device
-  sync and an instructor view of completion and common misses across learners
-- More scenarios, especially other note types (discharge, change of condition,
-  new wound) to stress-test whether the JSON format generalizes
-- A guided, in-browser scenario builder so a non-developer can create a
-  scenario without hand-editing JSON
+- Admin transfer / multiple admins, from a UI instead of a manual DB edit
+- Password reset flow (Supabase supports it; not wired into the UI yet)
 - AI-assisted grading that reads the note for clinical accuracy rather than
   keywords — contained to `utils/grading.js` by design
 - Print or export a completed session for classroom review
+- More scenarios, especially other note types (discharge, new wound), and
+  more real use of the in-app builder to find its rough edges
 
 ## Built with
 
-React, Vite, and plain CSS. No UI framework, no state management library, no
-backend.
+React, Vite, plain CSS, and Supabase (Postgres + Auth). No UI framework, no
+state management library, no custom server — Supabase's row-level security
+does the enforcement a hand-rolled backend would otherwise need to.

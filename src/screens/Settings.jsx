@@ -1,12 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getThemePreference, setThemePreference } from "../utils/theme";
-import { clearProfileData, exportAllData, importAllData } from "../utils/storage";
+import { clearMyHistory } from "../utils/storage";
 import {
-  setProfilePin,
-  profileHasPin,
   isAdminProfile,
   listProfiles,
   setCanBuildScenarios,
+  updateName,
 } from "../utils/profiles";
 import { isBuilderEnabled, setBuilderEnabled } from "../utils/customScenarios";
 
@@ -17,28 +16,32 @@ const THEME_OPTIONS = [
 ];
 
 /**
- * Appearance and data controls: the light/dark/system theme picker, an
- * optional PIN for the current profile, a full backup export/import, who's
- * practicing (with a way to switch), and a way to wipe this profile's data.
+ * Appearance and account controls: the light/dark/system theme picker,
+ * your display name, admin-only scenario-builder access management, and a
+ * way to clear your own history.
  */
-export default function Settings({ profile, onSwitchProfile }) {
+export default function Settings({ profile, onProfileChange, onSignOut }) {
   const [theme, setTheme] = useState(getThemePreference);
   const optionRefs = useRef({});
 
-  const [hasPin, setHasPin] = useState(() => profileHasPin(profile));
-  const [pinDraft, setPinDraft] = useState("");
-  const [pinConfirm, setPinConfirm] = useState("");
-  const [pinStatus, setPinStatus] = useState("");
+  const admin = isAdminProfile(profile);
+  const [builderEnabled, setBuilderEnabledState] = useState(true);
+  const [otherProfiles, setOtherProfiles] = useState([]);
+  const [accessError, setAccessError] = useState("");
+
+  const [name, setName] = useState(profile.name);
+  const [nameStatus, setNameStatus] = useState("");
 
   const [cleared, setCleared] = useState(false);
-  const [importStatus, setImportStatus] = useState("");
-  const fileInputRef = useRef(null);
+  const [clearError, setClearError] = useState("");
 
-  const admin = isAdminProfile(profile);
-  const [builderEnabled, setBuilderEnabledState] = useState(isBuilderEnabled);
-  const [otherProfiles, setOtherProfiles] = useState(() =>
-    listProfiles().filter((p) => p.id !== profile.id)
-  );
+  useEffect(() => {
+    if (!admin) return;
+    isBuilderEnabled().then(setBuilderEnabledState).catch(() => {});
+    listProfiles()
+      .then((all) => setOtherProfiles(all.filter((p) => p.id !== profile.id)))
+      .catch(() => {});
+  }, [admin, profile.id]);
 
   function handleThemeChange(value) {
     setThemePreference(value);
@@ -67,88 +70,57 @@ export default function Settings({ profile, onSwitchProfile }) {
     optionRefs.current[nextValue]?.focus();
   }
 
-  async function handleSetPin(e) {
+  async function handleSaveName(e) {
     e.preventDefault();
-    if (pinDraft.length !== 4) {
-      setPinStatus("PIN must be 4 digits.");
-      return;
+    if (!name.trim()) return;
+    try {
+      await updateName(profile.id, name);
+      onProfileChange({ ...profile, name: name.trim() });
+      setNameStatus("Saved.");
+    } catch (err) {
+      setNameStatus(err.message || "Couldn't save that.");
     }
-    if (pinDraft !== pinConfirm) {
-      setPinStatus("Those two PINs don't match.");
-      return;
-    }
-    await setProfilePin(profile.id, pinDraft);
-    setHasPin(true);
-    setPinDraft("");
-    setPinConfirm("");
-    setPinStatus("PIN set.");
   }
 
-  async function handleRemovePin() {
-    await setProfilePin(profile.id, null);
-    setHasPin(false);
-    setPinStatus("PIN removed.");
-  }
-
-  function toggleBuilderEnabled() {
+  async function toggleBuilderEnabled() {
     const next = !builderEnabled;
-    setBuilderEnabled(next);
-    setBuilderEnabledState(next);
+    try {
+      await setBuilderEnabled(next);
+      setBuilderEnabledState(next);
+    } catch (err) {
+      setAccessError(err.message || "Couldn't change that.");
+    }
   }
 
-  function toggleProfileAccess(id, allowed) {
-    setCanBuildScenarios(id, allowed);
-    setOtherProfiles(listProfiles().filter((p) => p.id !== profile.id));
+  async function toggleProfileAccess(id, allowed) {
+    try {
+      await setCanBuildScenarios(id, allowed);
+      setOtherProfiles((list) =>
+        list.map((p) => (p.id === id ? { ...p, can_build_scenarios: allowed } : p))
+      );
+    } catch (err) {
+      setAccessError(err.message || "Couldn't change that.");
+    }
   }
 
-  function handleClearData() {
+  async function handleClearHistory() {
     const ok = window.confirm(
-      `Clear all saved progress for ${profile.name}? This can't be undone.`
+      `Clear all of ${profile.name}'s saved history? This can't be undone.`
     );
     if (!ok) return;
-    clearProfileData();
-    setCleared(true);
-  }
-
-  function handleExport() {
-    const payload = exportAllData();
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `charting-practice-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  function handleImportFile(e) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const payload = JSON.parse(reader.result);
-        const ok = window.confirm(
-          "Import this backup? It will overwrite any matching profiles, history, and settings already saved in this browser."
-        );
-        if (!ok) return;
-        importAllData(payload);
-        window.location.reload();
-      } catch {
-        setImportStatus("That file couldn't be read as a Charting Practice backup.");
-      }
-    };
-    reader.readAsText(file);
+    try {
+      await clearMyHistory(profile.id);
+      setCleared(true);
+    } catch (err) {
+      setClearError(err.message || "Couldn't clear that.");
+    }
   }
 
   return (
     <div className="page">
       <header className="page__head">
         <h1>Settings</h1>
-        <p>Appearance and your local data.</p>
+        <p>Appearance and your account.</p>
       </header>
 
       <section className="settings-section">
@@ -176,59 +148,13 @@ export default function Settings({ profile, onSwitchProfile }) {
         </div>
       </section>
 
-      <section className="settings-section">
-        <h2 className="settings-section__title">Security</h2>
-        <p className="settings-row settings-row--muted">
-          An optional PIN so someone else on this computer can't open your
-          profile by mistake. This is a privacy lock, not encryption — it's
-          stored only in this browser and isn't a substitute for a real
-          account.
-        </p>
-        {hasPin ? (
-          <div className="settings-row">
-            <p className="settings-row">A PIN is set for this profile.</p>
-            <button className="btn btn--ghost" onClick={handleRemovePin}>
-              Remove PIN
-            </button>
-          </div>
-        ) : (
-          <form className="pin-form" onSubmit={handleSetPin}>
-            <input
-              className="profile-gate__input profile-gate__input--pin"
-              type="password"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={4}
-              value={pinDraft}
-              onChange={(e) => setPinDraft(e.target.value.replace(/\D/g, ""))}
-              placeholder="New 4-digit PIN"
-            />
-            <input
-              className="profile-gate__input profile-gate__input--pin"
-              type="password"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={4}
-              value={pinConfirm}
-              onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ""))}
-              placeholder="Confirm PIN"
-            />
-            <button type="submit" className="btn btn--go" disabled={pinDraft.length !== 4}>
-              Set PIN
-            </button>
-          </form>
-        )}
-        {pinStatus && <p className="settings-row settings-row--muted">{pinStatus}</p>}
-      </section>
-
       {admin && (
         <section className="settings-section">
           <h2 className="settings-section__title">Scenario builder access</h2>
           <p className="settings-row settings-row--muted">
-            You created the first profile on this browser, which makes you
-            the admin here. This isn't real access control — it's a local,
-            soft gate — but it keeps the builder out of the way for people
-            who shouldn't be using it day to day.
+            You're the admin for this app — the first person to create an
+            account. This is enforced by the database, not just the UI, so
+            it can't be bypassed from the browser.
           </p>
           <label className="field field--checkbox settings-row">
             <input type="checkbox" checked={builderEnabled} onChange={toggleBuilderEnabled} />
@@ -238,13 +164,13 @@ export default function Settings({ profile, onSwitchProfile }) {
             <div className="settings-row">
               <p className="field__label">Who else can build scenarios</p>
               {otherProfiles.length === 0 ? (
-                <p className="settings-row--muted">No other profiles on this browser yet.</p>
+                <p className="settings-row--muted">No other accounts yet.</p>
               ) : (
                 otherProfiles.map((p) => (
                   <label className="field field--checkbox" key={p.id}>
                     <input
                       type="checkbox"
-                      checked={Boolean(p.canBuildScenarios)}
+                      checked={Boolean(p.can_build_scenarios)}
                       onChange={(e) => toggleProfileAccess(p.id, e.target.checked)}
                     />
                     <span>{p.name}</span>
@@ -253,53 +179,42 @@ export default function Settings({ profile, onSwitchProfile }) {
               )}
             </div>
           )}
+          {accessError && <p className="settings-row settings-row--muted">{accessError}</p>}
         </section>
       )}
 
       <section className="settings-section">
         <h2 className="settings-section__title">Profile</h2>
-        <p className="settings-row">
-          Practicing as <strong>{profile.name}</strong>
-        </p>
-        <button className="btn btn--ghost" onClick={onSwitchProfile}>
-          Switch profile
-        </button>
-      </section>
-
-      <section className="settings-section">
-        <h2 className="settings-section__title">Backup</h2>
-        <p className="settings-row settings-row--muted">
-          Everything saved in this browser — every profile, their history,
-          and this device's theme — as one file you can keep or move to
-          another browser.
-        </p>
-        <div className="settings-row settings-actions">
-          <button className="btn btn--ghost" onClick={handleExport}>
-            Export a backup
-          </button>
-          <button className="btn btn--ghost" onClick={() => fileInputRef.current?.click()}>
-            Import a backup
-          </button>
+        <form className="inline-form" onSubmit={handleSaveName}>
           <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/json"
-            hidden
-            onChange={handleImportFile}
+            className="field-input"
+            style={{ flex: 1, minWidth: "12rem" }}
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setNameStatus("");
+            }}
           />
-        </div>
-        {importStatus && <p className="settings-row settings-row--muted">{importStatus}</p>}
+          <button type="submit" className="btn btn--ghost" disabled={!name.trim()}>
+            Save name
+          </button>
+        </form>
+        {nameStatus && <p className="settings-row settings-row--muted">{nameStatus}</p>}
+        <button className="btn btn--ghost settings-row" onClick={onSignOut}>
+          Sign out
+        </button>
       </section>
 
       <section className="settings-section">
         <h2 className="settings-section__title">Danger zone</h2>
         <p className="settings-row settings-row--muted">
-          Deletes {profile.name}'s saved runs and history. Export a backup
-          first if you might want it later.
+          Deletes {profile.name}'s saved history. Scenarios you've built
+          aren't affected.
         </p>
-        <button className="btn btn--danger" onClick={handleClearData} disabled={cleared}>
-          {cleared ? "Cleared" : "Clear my saved progress"}
+        <button className="btn btn--danger" onClick={handleClearHistory} disabled={cleared}>
+          {cleared ? "Cleared" : "Clear my history"}
         </button>
+        {clearError && <p className="settings-row settings-row--muted">{clearError}</p>}
       </section>
     </div>
   );

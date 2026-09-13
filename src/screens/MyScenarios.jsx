@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ScenarioBuilder from "./ScenarioBuilder";
 import Notice from "../components/Notice";
 import {
@@ -47,28 +47,43 @@ function blankScenario() {
 
 /**
  * Scenarios created in the builder, kept on their own screen and
- * deliberately separate from the Home list of preset scenarios — these are
- * this browser's own content, editable and deletable, not the shipped set.
+ * deliberately separate from the Home list of preset scenarios — these
+ * are shared, editable, deletable content, not the shipped set.
  */
-export default function MyScenarios({ onPlay }) {
-  const [scenarios, setScenarios] = useState(listCustomScenarios);
+export default function MyScenarios({ profile, onPlay }) {
+  const [scenarios, setScenarios] = useState(null);
   const [editing, setEditing] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    refresh();
+  }, []);
 
   function refresh() {
-    setScenarios(listCustomScenarios());
+    listCustomScenarios()
+      .then(setScenarios)
+      .catch(() => setScenarios([]));
   }
 
-  function handleSave(scenario) {
-    saveCustomScenario(scenario);
-    refresh();
-    setEditing(null);
+  async function handleSave(scenario) {
+    try {
+      await saveCustomScenario(scenario, profile.id);
+      refresh();
+      setEditing(null);
+    } catch (err) {
+      setError(err.message || "Couldn't save that scenario.");
+    }
   }
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     const ok = window.confirm("Delete this scenario? This can't be undone.");
     if (!ok) return;
-    deleteCustomScenario(id);
-    refresh();
+    try {
+      await deleteCustomScenario(id);
+      refresh();
+    } catch (err) {
+      setError(err.message || "Couldn't delete that scenario.");
+    }
   }
 
   if (editing) {
@@ -85,20 +100,22 @@ export default function MyScenarios({ onPlay }) {
     <div className="page">
       <header className="page__head">
         <h1>My scenarios</h1>
-        <p>Scenarios you've built, saved in this browser. Not the preset list on Home.</p>
+        <p>Scenarios built in-app, shared with everyone here. Not the preset list on Home.</p>
       </header>
 
       <Notice>
         Fictional patients only. Do not enter a real patient's name, MRN, or
         any other identifying or health information here — this is saved in
-        plain text in this browser, which is not HIPAA-compliant storage.
+        a shared database, not a HIPAA-compliant medical record system.
       </Notice>
+
+      {error && <p className="builder__error">{error}</p>}
 
       <button className="btn btn--go" onClick={() => setEditing(blankScenario())}>
         + New scenario
       </button>
 
-      {scenarios.length === 0 ? (
+      {scenarios === null ? null : scenarios.length === 0 ? (
         <p className="empty" style={{ marginTop: "1.5rem" }}>
           Nothing here yet — build one and it'll show up on this page, playable
           just like the presets.

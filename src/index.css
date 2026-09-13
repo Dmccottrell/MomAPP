@@ -211,44 +211,6 @@ summary:focus-visible {
   letter-spacing: -0.01em;
 }
 .profile-gate__lede { color: var(--ink-soft); margin: 0 0 1.5rem; }
-.profile-gate__list { list-style: none; padding: 0; margin: 0 0 1.25rem; display: grid; gap: 0.5rem; }
-.profile-gate__row { display: flex; gap: 0.4rem; align-items: stretch; }
-.profile-gate__profile {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  text-align: left;
-  padding: 0.6rem 1rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--rule);
-  background: var(--paper);
-  font-weight: 500;
-  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
-}
-.profile-gate__profile:hover {
-  border-color: var(--chart);
-  background: var(--chart-wash);
-  transform: translateY(-1px);
-}
-.profile-gate__profile-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.profile-gate__lock { width: 15px; height: 15px; color: var(--ink-soft); flex-shrink: 0; }
-.profile-gate__remove {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.6rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--rule);
-  background: transparent;
-  color: var(--ink-soft);
-  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
-}
-.profile-gate__remove:hover { border-color: var(--stop); color: var(--stop); }
-.profile-gate__remove svg { width: 16px; height: 16px; }
 .profile-gate__form { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .profile-gate__input {
   flex: 1;
@@ -259,16 +221,10 @@ summary:focus-visible {
   background: var(--paper);
   color: var(--ink);
 }
-.profile-gate__input--pin {
-  text-align: center;
-  letter-spacing: 0.5em;
-  font-variant-numeric: tabular-nums;
-}
-.profile-gate__input--pin::placeholder { letter-spacing: normal; }
-.profile-gate__pin-form { display: grid; gap: 0.6rem; }
-.profile-gate__pin-actions { display: flex; justify-content: center; gap: 0.5rem; }
 .profile-gate__error { color: var(--stop); font-size: 0.85rem; margin: 0; }
-.profile-gate__note { margin: 1.25rem 0 0; font-size: 0.8rem; color: var(--ink-soft); }
+
+.auth-form { display: grid; gap: 0.6rem; margin-bottom: 1rem; }
+.auth-switch { width: 100%; }
 
 /* ---------------- generic page (history, settings) ---------------- */
 
@@ -377,10 +333,8 @@ summary:focus-visible {
 .settings-row { margin: 0 0 0.9rem; }
 .settings-row--muted { color: var(--ink-soft); font-size: 0.92rem; }
 .settings-row:last-child { margin-bottom: 0; }
-.settings-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 
-.pin-form { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem; }
-.pin-form .profile-gate__input--pin { flex: 0 1 9rem; padding: 0.6rem 0.8rem; }
+.inline-form { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem; }
 
 .segmented {
   display: inline-flex;

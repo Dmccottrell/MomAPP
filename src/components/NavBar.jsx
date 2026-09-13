@@ -1,7 +1,5 @@
 import Avatar from "./Avatar";
 import { HomeIcon, HistoryIcon, SettingsIcon, PencilIcon } from "./icons";
-import { canBuildScenarios } from "../utils/profiles";
-import { isBuilderEnabled } from "../utils/customScenarios";
 
 const BASE_NAV_ITEMS = [
   { id: "home", label: "Home", Icon: HomeIcon },
@@ -9,20 +7,17 @@ const BASE_NAV_ITEMS = [
 ];
 
 const BUILDER_NAV_ITEM = { id: "scenarios", label: "My Scenarios", Icon: PencilIcon };
-
 const SETTINGS_NAV_ITEM = { id: "settings", label: "Settings", Icon: SettingsIcon };
 
 /**
  * The persistent top bar: brand, the top-level views, and the current
- * profile with a quick way to switch. "My Scenarios" only appears when the
- * builder is turned on and this profile has been granted access (see
- * utils/profiles.js and utils/customScenarios.js) — otherwise it's just
- * not there, rather than shown disabled. `view` is null while a scenario
- * is active, which just dims the nav links without hiding them — clicking
- * one exits the scenario (the run itself stays saved).
+ * profile with sign-out. `showBuilder` is decided by App.jsx (it needs an
+ * async database read, so it can't be computed in here). `view` is null
+ * while a scenario is active, which just dims the nav links without
+ * hiding them — clicking one exits the scenario (the run itself stays
+ * saved on this device).
  */
-export default function NavBar({ profile, view, onNavigate, onSwitchProfile }) {
-  const showBuilder = isBuilderEnabled() && canBuildScenarios(profile);
+export default function NavBar({ profile, view, showBuilder, onNavigate, onSignOut }) {
   const items = showBuilder
     ? [...BASE_NAV_ITEMS, BUILDER_NAV_ITEM, SETTINGS_NAV_ITEM]
     : [...BASE_NAV_ITEMS, SETTINGS_NAV_ITEM];
@@ -44,10 +39,10 @@ export default function NavBar({ profile, view, onNavigate, onSwitchProfile }) {
         ))}
       </nav>
 
-      <button className="nav__profile" onClick={onSwitchProfile} title="Switch profile">
+      <button className="nav__profile" onClick={onSignOut} title="Sign out">
         <Avatar name={profile.name} size={22} />
         <span className="nav__profile-name">{profile.name}</span>
-        <span className="nav__profile-switch">Switch</span>
+        <span className="nav__profile-switch">Sign out</span>
       </button>
     </header>
   );

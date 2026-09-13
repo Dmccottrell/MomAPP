@@ -1,20 +1,55 @@
-import { listHistory } from "../utils/storage";
+import { useEffect, useState } from "react";
+import { listHistory, listAllHistory } from "../utils/storage";
+import { listProfiles, isAdminProfile } from "../utils/profiles";
 
 /**
- * Every completed run for the current profile, newest first. Lets the
- * learner jump straight back into a scenario they've already attempted.
+ * Completed runs, newest first. An admin sees every learner's history
+ * (the database enforces this — a non-admin's listAllHistory call would
+ * just come back as their own rows, since RLS filters it); everyone else
+ * sees only their own.
  */
-export default function History({ scenarios, onSelectScenario }) {
-  const entries = listHistory();
+export default function History({ scenarios, profile, onSelectScenario }) {
+  const [entries, setEntries] = useState(null);
+  const [names, setNames] = useState({});
+  const admin = isAdminProfile(profile);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadEntries = admin ? listAllHistory() : listHistory(profile.id);
+    loadEntries.then((rows) => {
+      if (!cancelled) setEntries(rows);
+    }).catch(() => {
+      if (!cancelled) setEntries([]);
+    });
+    if (admin) {
+      listProfiles()
+        .then((all) => {
+          if (cancelled) return;
+          const map = {};
+          all.forEach((p) => {
+            map[p.id] = p.name;
+          });
+          setNames(map);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [profile.id, admin]);
 
   return (
     <div className="page">
       <header className="page__head">
         <h1>History</h1>
-        <p>Every note you've submitted, most recent first.</p>
+        <p>
+          {admin
+            ? "Every note submitted by anyone, most recent first."
+            : "Every note you've submitted, most recent first."}
+        </p>
       </header>
 
-      {entries.length === 0 ? (
+      {entries === null ? null : entries.length === 0 ? (
         <p className="empty">
           Nothing here yet — finish a scenario and it'll show up on this page.
         </p>
@@ -30,7 +65,10 @@ export default function History({ scenarios, onSelectScenario }) {
                   <span className="history__of">/{e.total}</span>
                 </div>
                 <div className="history__body">
-                  <p className="history__title">{e.scenarioTitle}</p>
+                  <p className="history__title">
+                    {e.scenarioTitle}
+                    {admin && names[e.userId] && ` — ${names[e.userId]}`}
+                  </p>
                   <p className="history__meta">
                     {when.toLocaleDateString()} · {when.toLocaleTimeString([], {
                       hour: "numeric",
@@ -40,7 +78,7 @@ export default function History({ scenarios, onSelectScenario }) {
                       ` · ${e.missteps} misstep${e.missteps === 1 ? "" : "s"}`}
                   </p>
                 </div>
-                {scenario && (
+                {scenario && !admin && (
                   <button
                     className="btn btn--ghost history__redo"
                     onClick={() => onSelectScenario(scenario)}
