@@ -41,10 +41,10 @@ export default function About() {
         <h2 className="settings-section__title">Built with Claude</h2>
         <p className="settings-row">
           This app was built collaboratively with Claude, Anthropic's AI
-          assistant — used throughout for the architecture, the interface,
-          the Supabase backend, and the ongoing testing that keeps it working
-          as it grows. Darryl directed every decision; Claude did the
-          building alongside him.
+          assistant. Darryl coded and assisted throughout — every decision,
+          every feature, every fix started with him. Claude formalized and
+          cleaned up that work, and designed the layout of the website: the
+          visual system, the screens, and how it all fits together.
         </p>
       </section>
     </div>
