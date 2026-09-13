@@ -157,6 +157,10 @@ drop policy if exists "Users can record their own history" on public.history;
 create policy "Users can record their own history"
   on public.history for insert with check (user_id = auth.uid());
 
+drop policy if exists "Users can delete their own history" on public.history;
+create policy "Users can delete their own history"
+  on public.history for delete using (user_id = auth.uid());
+
 -- ---------------------------------------------------------------------
 -- app_settings: tiny key/value table for the one global flag we need —
 -- the admin's builder on/off kill switch.
