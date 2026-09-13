@@ -10,6 +10,7 @@ import {
 import { isBuilderEnabled, setBuilderEnabled } from "../utils/customScenarios";
 import { sendPasswordReset } from "../utils/auth";
 import { deleteAccount } from "../utils/admin";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const THEME_OPTIONS = [
   { value: "system", label: "System" },
@@ -38,6 +39,11 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
   const [clearError, setClearError] = useState("");
 
   const [accountStatus, setAccountStatus] = useState({});
+
+  // Holds the pending action while a ConfirmDialog is up — null means no
+  // dialog is showing. Replaces window.confirm(), which iOS silently
+  // no-ops once this app is added to the home screen (see ConfirmDialog.jsx).
+  const [confirmState, setConfirmState] = useState(null);
 
   useEffect(() => {
     if (!admin) return;
@@ -117,11 +123,16 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
     }
   }
 
-  async function handleDeleteAccount(p) {
-    const ok = window.confirm(
-      `Permanently delete ${p.name}'s account, including their history? This can't be undone.`
-    );
-    if (!ok) return;
+  function handleDeleteAccount(p) {
+    setConfirmState({
+      message: `Permanently delete ${p.name}'s account, including their history? This can't be undone.`,
+      confirmLabel: "Delete account",
+      onConfirm: () => runDeleteAccount(p),
+    });
+  }
+
+  async function runDeleteAccount(p) {
+    setConfirmState(null);
     setAccountStatus((s) => ({ ...s, [p.id]: "Deleting…" }));
     try {
       await deleteAccount(p.id);
@@ -131,11 +142,16 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
     }
   }
 
-  async function handleClearHistory() {
-    const ok = window.confirm(
-      `Clear all of ${profile.name}'s saved history? This can't be undone.`
-    );
-    if (!ok) return;
+  function handleClearHistory() {
+    setConfirmState({
+      message: `Clear all of ${profile.name}'s saved history? This can't be undone.`,
+      confirmLabel: "Clear history",
+      onConfirm: runClearHistory,
+    });
+  }
+
+  async function runClearHistory() {
+    setConfirmState(null);
     try {
       await clearMyHistory(profile.id);
       setCleared(true);
@@ -280,6 +296,15 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
         </button>
         {clearError && <p className="settings-row settings-row--muted">{clearError}</p>}
       </section>
+
+      <ConfirmDialog
+        open={Boolean(confirmState)}
+        message={confirmState?.message}
+        confirmLabel={confirmState?.confirmLabel}
+        danger
+        onConfirm={confirmState?.onConfirm}
+        onCancel={() => setConfirmState(null)}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Notice from "../components/Notice";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { slugify } from "../utils/customScenarios";
 import { findPossiblePHI } from "../utils/phiCheck";
 
@@ -73,6 +74,7 @@ function emptyRequirement() {
 export default function ScenarioBuilder({ initial, onSave, onCancel }) {
   const [scenario, setScenario] = useState(initial);
   const [error, setError] = useState("");
+  const [pendingSave, setPendingSave] = useState(null);
 
   function set(path, value) {
     setScenario((s) => {
@@ -149,22 +151,24 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
       return;
     }
 
+    const { _idTouched, ...clean } = scenario;
+    void _idTouched;
+
     // A format-based nudge, not a guarantee — see phiCheck.js for why a
     // fictional name can't be distinguished from a real one. Confirming
     // lets the author say "yes, this is deliberately in the scenario."
     const hits = findPossiblePHI(scenario);
     if (hits.length > 0) {
-      const ok = window.confirm(
-        `This scenario looks like it might contain ${hits.join(" and ")}. ` +
-          "Double-check every patient here is fictional before saving — " +
-          "this can only flag formats like these, not verify a name is made up. Save anyway?"
-      );
-      if (!ok) return;
+      setPendingSave({ clean, hits });
+      return;
     }
 
-    const { _idTouched, ...clean } = scenario;
-    void _idTouched;
     onSave(clean);
+  }
+
+  function confirmSaveAnyway() {
+    if (pendingSave) onSave(pendingSave.clean);
+    setPendingSave(null);
   }
 
   const p = scenario.patient;
@@ -587,6 +591,20 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
           Save scenario
         </button>
       </div>
+
+      <ConfirmDialog
+        open={Boolean(pendingSave)}
+        message={
+          pendingSave &&
+          `This scenario looks like it might contain ${pendingSave.hits.join(" and ")}. ` +
+            "Double-check every patient here is fictional before saving — " +
+            "this can only flag formats like these, not verify a name is made up. Save anyway?"
+        }
+        confirmLabel="Save anyway"
+        danger
+        onConfirm={confirmSaveAnyway}
+        onCancel={() => setPendingSave(null)}
+      />
     </form>
   );
 }

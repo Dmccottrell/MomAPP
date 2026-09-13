@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ScenarioBuilder from "./ScenarioBuilder";
 import Notice from "../components/Notice";
+import ConfirmDialog from "../components/ConfirmDialog";
 import {
   listCustomScenarios,
   saveCustomScenario,
@@ -54,6 +55,7 @@ export default function MyScenarios({ profile, onPlay }) {
   const [scenarios, setScenarios] = useState(null);
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState("");
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     refresh();
@@ -75,9 +77,13 @@ export default function MyScenarios({ profile, onPlay }) {
     }
   }
 
-  async function handleDelete(id) {
-    const ok = window.confirm("Delete this scenario? This can't be undone.");
-    if (!ok) return;
+  function handleDelete(id) {
+    setDeleteId(id);
+  }
+
+  async function runDelete() {
+    const id = deleteId;
+    setDeleteId(null);
     try {
       await deleteCustomScenario(id);
       refresh();
@@ -146,6 +152,15 @@ export default function MyScenarios({ profile, onPlay }) {
           ))}
         </ul>
       )}
+
+      <ConfirmDialog
+        open={Boolean(deleteId)}
+        message="Delete this scenario? This can't be undone."
+        confirmLabel="Delete"
+        danger
+        onConfirm={runDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

@@ -245,6 +245,48 @@ summary:focus-visible {
   .nav__greeting-lead { display: none; }
 }
 
+/* ---------------- confirm dialog ---------------- */
+/* Stands in for window.confirm() everywhere — see ConfirmDialog.jsx for
+   why (iOS standalone/home-screen mode silently no-ops native dialogs). */
+
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.4);
+  animation: confirmFadeIn 180ms var(--ease);
+}
+.confirm-dialog {
+  width: min(100%, 22rem);
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  animation: confirmPopIn 220ms var(--ease);
+}
+.confirm-dialog__message {
+  margin: 0 0 1.25rem;
+  font-size: 0.96rem;
+  line-height: 1.5;
+}
+.confirm-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+@keyframes confirmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes confirmPopIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 /* ---------------- avatar ---------------- */
 
 .avatar {
