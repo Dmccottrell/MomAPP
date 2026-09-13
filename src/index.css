@@ -132,11 +132,12 @@ summary:focus-visible {
   white-space: nowrap;
   margin-right: 0.75rem;
 }
-.nav__links { display: flex; gap: 0.25rem; }
+.nav__links { display: flex; flex-wrap: wrap; gap: 0.25rem; }
 .nav__link {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  white-space: nowrap;
   background: transparent;
   border: none;
   padding: 0.45rem 0.9rem;
@@ -192,6 +193,7 @@ summary:focus-visible {
   align-items: center;
   justify-content: center;
   padding: 2rem 1.5rem;
+  animation: viewIn 280ms var(--ease);
 }
 .profile-gate__card {
   width: 100%;
@@ -222,6 +224,29 @@ summary:focus-visible {
   color: var(--ink);
 }
 .profile-gate__error { color: var(--stop); font-size: 0.85rem; margin: 0; }
+
+.onboarding__card { text-align: left; }
+.onboarding__card h1 { text-align: center; }
+.onboarding__card .profile-gate__lede { text-align: center; }
+.onboarding__step {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--chart);
+  margin: 0 0 0.5rem;
+  text-align: center;
+}
+.onboarding__dots { display: flex; justify-content: center; gap: 0.4rem; margin: 0.5rem 0 1.5rem; }
+.onboarding__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rule);
+  transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.onboarding__dot--active { background: var(--chart); transform: scale(1.4); }
+.onboarding__actions { display: flex; justify-content: space-between; gap: 0.75rem; }
 
 .auth-form { display: grid; gap: 0.6rem; margin-bottom: 1rem; }
 .auth-switch { width: 100%; }
@@ -804,6 +829,22 @@ summary:focus-visible {
   .history__redo { grid-column: 1 / -1; justify-self: start; }
 }
 
+/* ---------------- view transitions ---------------- */
+/* Cross-fades between screens (sign in/out, nav switches — see
+   utils/viewTransition.js). The browser's default is already a cross-fade;
+   this just matches its timing to the rest of the app's motion. These
+   pseudo-elements live outside the normal DOM tree, so the reduced-motion
+   rule below has to name them explicitly — a bare `*` doesn't reach them. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }

@@ -5,12 +5,15 @@ import Home from "./screens/Home";
 import History from "./screens/History";
 import Settings from "./screens/Settings";
 import MyScenarios from "./screens/MyScenarios";
+import About from "./screens/About";
 import Auth from "./screens/Auth";
 import SupabaseSetupNotice from "./screens/SupabaseSetupNotice";
+import Onboarding from "./screens/Onboarding";
 import { isSupabaseConfigured } from "./utils/supabaseClient";
 import { getSession, onAuthChange, signOut } from "./utils/auth";
-import { getProfile, canBuildScenarios } from "./utils/profiles";
+import { getProfile, canBuildScenarios, needsOnboarding, markOnboardingSeen } from "./utils/profiles";
 import { listCustomScenarios, isBuilderEnabled } from "./utils/customScenarios";
+import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
 import changeOfCondition01 from "./scenarios/change-of-condition-01.json";
 
@@ -47,8 +50,12 @@ export default function App() {
       setCheckingSession(false);
     });
     return onAuthChange((s) => {
-      setSession(s);
-      if (!s) setProfile(null);
+      // Wrapped so signing in/out cross-fades between the Auth screen and
+      // the app shell instead of snapping — see utils/viewTransition.js.
+      withViewTransition(() => {
+        setSession(s);
+        if (!s) setProfile(null);
+      });
     });
   }, []);
 
@@ -97,9 +104,35 @@ export default function App() {
   }
   if (!profile) return null;
 
+  if (needsOnboarding(profile)) {
+    return (
+      <Onboarding
+        profile={profile}
+        onDone={() => {
+          withViewTransition(() => {
+            setProfile((p) => ({ ...p, has_seen_onboarding: true }));
+          });
+          markOnboardingSeen(profile.id).catch(() => {
+            // If this fails, the tour just shows again next sign-in — not harmful.
+          });
+        }}
+      />
+    );
+  }
+
   function navigate(nextView) {
-    setActiveScenario(null);
-    setView(nextView);
+    withViewTransition(() => {
+      setActiveScenario(null);
+      setView(nextView);
+    });
+  }
+
+  function selectScenario(scenario) {
+    withViewTransition(() => setActiveScenario(scenario));
+  }
+
+  function exitScenario() {
+    withViewTransition(() => setActiveScenario(null));
   }
 
   async function handleSignOut() {
@@ -119,23 +152,21 @@ export default function App() {
   let content;
   if (activeScenario) {
     content = (
-      <ScenarioPlayer
-        scenario={activeScenario}
-        profile={profile}
-        onExit={() => setActiveScenario(null)}
-      />
+      <ScenarioPlayer scenario={activeScenario} profile={profile} onExit={exitScenario} />
     );
   } else if (view === "history") {
-    content = <History scenarios={allScenarios} profile={profile} onSelectScenario={setActiveScenario} />;
+    content = <History scenarios={allScenarios} profile={profile} onSelectScenario={selectScenario} />;
   } else if (view === "scenarios" && showBuilder) {
     // Guards the same access check the nav bar uses — if it changed since
     // this view was selected (e.g. the admin just revoked access), this
     // falls through to Home instead of rendering the builder anyway.
-    content = <MyScenarios profile={profile} onPlay={setActiveScenario} />;
+    content = <MyScenarios profile={profile} onPlay={selectScenario} />;
+  } else if (view === "about") {
+    content = <About />;
   } else if (view === "settings") {
     content = <Settings profile={profile} onProfileChange={setProfile} onSignOut={handleSignOut} />;
   } else {
-    content = <Home scenarios={SCENARIOS} profile={profile} onSelect={setActiveScenario} />;
+    content = <Home scenarios={SCENARIOS} profile={profile} onSelect={selectScenario} />;
   }
 
   return (

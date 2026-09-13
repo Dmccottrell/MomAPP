@@ -47,3 +47,13 @@ export function PencilIcon(props) {
     </svg>
   );
 }
+
+export function InfoIcon(props) {
+  return (
+    <svg {...common} {...props}>
+      <circle cx="10" cy="10" r="7" />
+      <path d="M10 9.2v4.3" />
+      <path d="M10 6.8v.1" />
+    </svg>
+  );
+}

@@ -1,5 +1,5 @@
 import Avatar from "./Avatar";
-import { HomeIcon, HistoryIcon, SettingsIcon, PencilIcon } from "./icons";
+import { HomeIcon, HistoryIcon, SettingsIcon, PencilIcon, InfoIcon } from "./icons";
 
 const BASE_NAV_ITEMS = [
   { id: "home", label: "Home", Icon: HomeIcon },
@@ -7,6 +7,7 @@ const BASE_NAV_ITEMS = [
 ];
 
 const BUILDER_NAV_ITEM = { id: "scenarios", label: "My Scenarios", Icon: PencilIcon };
+const ABOUT_NAV_ITEM = { id: "about", label: "About", Icon: InfoIcon };
 const SETTINGS_NAV_ITEM = { id: "settings", label: "Settings", Icon: SettingsIcon };
 
 /**
@@ -19,8 +20,8 @@ const SETTINGS_NAV_ITEM = { id: "settings", label: "Settings", Icon: SettingsIco
  */
 export default function NavBar({ profile, view, showBuilder, onNavigate, onSignOut }) {
   const items = showBuilder
-    ? [...BASE_NAV_ITEMS, BUILDER_NAV_ITEM, SETTINGS_NAV_ITEM]
-    : [...BASE_NAV_ITEMS, SETTINGS_NAV_ITEM];
+    ? [...BASE_NAV_ITEMS, BUILDER_NAV_ITEM, ABOUT_NAV_ITEM, SETTINGS_NAV_ITEM]
+    : [...BASE_NAV_ITEMS, ABOUT_NAV_ITEM, SETTINGS_NAV_ITEM];
 
   return (
     <header className="nav">

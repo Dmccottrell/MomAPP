@@ -41,3 +41,14 @@ export async function updateName(id, name) {
   const { error } = await supabase.from("profiles").update({ name: name.trim() }).eq("id", id);
   if (error) throw error;
 }
+
+/** True until a profile has completed (or skipped) the one-time welcome tour. */
+export function needsOnboarding(profile) {
+  return !profile?.has_seen_onboarding;
+}
+
+/** Marks the welcome tour done so it never shows again for this account. */
+export async function markOnboardingSeen(id) {
+  const { error } = await supabase.from("profiles").update({ has_seen_onboarding: true }).eq("id", id);
+  if (error) throw error;
+}

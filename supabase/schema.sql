@@ -21,6 +21,13 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 
+-- Added after the initial table — `if not exists` makes this safe to
+-- re-run against a project that already has the table. Defaults to false
+-- for every row, so re-running this after adding the column will also
+-- show the tour once to already-existing accounts, not just brand-new
+-- ones — a one-time "here's what's new" rather than a gap in the rule.
+alter table public.profiles add column if not exists has_seen_onboarding boolean not null default false;
+
 alter table public.profiles enable row level security;
 
 drop policy if exists "Profiles are viewable by everyone" on public.profiles;

@@ -34,6 +34,12 @@ Four screens, in order:
    highlighted in place in the note itself, and an optional strong version of
    the note to compare against.
 
+A first-time sign-up sees a short welcome tour before any of this (Home,
+History, My Scenarios if they have access, Settings) — see "First-time tour"
+below. Signing in, signing out, and switching between nav tabs all cross-fade
+via the browser's View Transitions API rather than snapping instantly; see
+`utils/viewTransition.js`.
+
 ## Accounts and data
 
 This app has a real backend now: [Supabase](https://supabase.com) (Postgres +
@@ -62,6 +68,18 @@ up Supabase" below to run your own instance.
   tell a fictional name from a real one; no algorithm can. Treat every
   scenario as something a stranger with database access could read, because
   with a shared Supabase project, several people now can.
+
+## First-time tour
+
+Every profile has a `has_seen_onboarding` flag (`supabase/schema.sql`,
+`utils/profiles.js`). App.jsx checks it right after loading the profile row
+and, if false, shows `screens/Onboarding.jsx` — a short multi-step
+walkthrough — instead of the normal app. Finishing or skipping it writes the
+flag back to true, so it's gone for that account on any device from then on.
+This column was added after the first version of the schema; if your project
+predates it and the tour won't stay dismissed, re-run `schema.sql` once (see
+below) to add the missing column — after that one-time fix, it behaves
+correctly going forward.
 
 ### Setting up Supabase
 
@@ -111,10 +129,12 @@ src/
 ├── screens/
 │   ├── Auth.jsx               Sign in / sign up
 │   ├── SupabaseSetupNotice.jsx Shown when .env.local isn't configured
+│   ├── Onboarding.jsx          One-time welcome tour for a new profile
 │   ├── Home.jsx                Preset scenario list
 │   ├── History.jsx             Completed runs — own, or everyone's if admin
 │   ├── MyScenarios.jsx         List of in-app-built scenarios
 │   ├── ScenarioBuilder.jsx     The scenario-authoring form
+│   ├── About.jsx               What the app is and who built it
 │   └── Settings.jsx            Theme, account, admin access controls
 ├── components/
 │   ├── NavBar.jsx             Persistent top nav
@@ -137,6 +157,7 @@ src/
 │   ├── storage.js             Local in-progress runs + synced history
 │   ├── avatar.js              Deterministic color + initials for Avatar.jsx
 │   ├── theme.js                Light/dark/system theme preference
+│   ├── viewTransition.js       Cross-fade wrapper around a state update
 │   └── time.js                Clock helpers
 └── scenarios/
     ├── fall-01.json                  Preset: unwitnessed fall
