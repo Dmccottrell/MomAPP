@@ -33,6 +33,8 @@ export default function App() {
   const [checkingSession, setCheckingSession] = useState(isSupabaseConfigured);
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [profileError, setProfileError] = useState(false);
+  const [profileAttempt, setProfileAttempt] = useState(0);
   const [view, setView] = useState("home");
   const [activeScenario, setActiveScenario] = useState(null);
   const [customScenarios, setCustomScenarios] = useState([]);
@@ -50,12 +52,24 @@ export default function App() {
     });
   }, []);
 
+  // profileAttempt exists only so the "Try again" button below can force
+  // this to re-run without needing a full page reload.
   useEffect(() => {
     if (!session) return;
+    let cancelled = false;
     getProfile(session.user.id)
-      .then(setProfile)
-      .catch(() => setProfile(null));
-  }, [session]);
+      .then((p) => {
+        if (cancelled) return;
+        setProfile(p);
+        setProfileError(false);
+      })
+      .catch(() => {
+        if (!cancelled) setProfileError(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [session, profileAttempt]);
 
   // Re-checked on every nav switch — cheap, and keeps "who else can build
   // scenarios" changes from Settings reflected without extra plumbing.
@@ -68,6 +82,19 @@ export default function App() {
   if (!isSupabaseConfigured) return <SupabaseSetupNotice />;
   if (checkingSession) return null;
   if (!session) return <Auth />;
+  if (profileError) {
+    return (
+      <div className="profile-gate">
+        <div className="profile-gate__card">
+          <h1>Charting Practice</h1>
+          <p className="profile-gate__lede">Couldn't load your account.</p>
+          <button className="btn btn--go" onClick={() => setProfileAttempt((n) => n + 1)}>
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
   if (!profile) return null;
 
   function navigate(nextView) {
