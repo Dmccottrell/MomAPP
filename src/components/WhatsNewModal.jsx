@@ -23,6 +23,11 @@ export default function WhatsNewModal({ release, onDismiss }) {
           <span className="badge">v{release.version}</span>
         </h3>
         <p className="confirm-dialog__message">{release.changelog}</p>
+        {release.published_flags?.length > 0 && (
+          <p className="release-item__flags">
+            {release.published_flags.map((f) => f.label).join(" · ")}
+          </p>
+        )}
         <div className="confirm-dialog__actions">
           <button type="button" className="btn btn--go" onClick={onDismiss}>
             Got it
