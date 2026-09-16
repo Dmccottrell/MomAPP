@@ -16,9 +16,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function json(body: unknown, status = 200) {
+// Always HTTP 200, success or failure, distinguished only by whether the
+// body has an `error` key. The Supabase JS client's functions.invoke()
+// treats any non-2xx as a generic "Edge Function returned a non-2xx
+// status code" and discards the actual response body — so a real status
+// code here would silently swallow every error message below (this was
+// a real, live bug until security-question-reset's version of this same
+// function surfaced it).
+function json(body: unknown) {
   return new Response(JSON.stringify(body), {
-    status,
+    status: 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
@@ -29,15 +36,15 @@ Deno.serve(async (req) => {
   }
 
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader) return json({ error: "Missing Authorization header" }, 401);
+  if (!authHeader) return json({ error: "Missing Authorization header" });
 
   let userId: string | undefined;
   try {
     ({ userId } = await req.json());
   } catch {
-    return json({ error: "Invalid request body" }, 400);
+    return json({ error: "Invalid request body" });
   }
-  if (!userId) return json({ error: "userId is required" }, 400);
+  if (!userId) return json({ error: "userId is required" });
 
   // Bound to the CALLER's own JWT — used only to find out who's asking,
   // never to perform the deletion itself. This is what makes it safe to
@@ -53,7 +60,7 @@ Deno.serve(async (req) => {
     data: { user: caller },
     error: callerError,
   } = await callerClient.auth.getUser();
-  if (callerError || !caller) return json({ error: "Not signed in" }, 401);
+  if (callerError || !caller) return json({ error: "Not signed in" });
 
   const { data: callerProfile, error: profileError } = await callerClient
     .from("profiles")
@@ -61,11 +68,11 @@ Deno.serve(async (req) => {
     .eq("id", caller.id)
     .single();
   if (profileError || !callerProfile?.is_admin) {
-    return json({ error: "Admin access required" }, 403);
+    return json({ error: "Admin access required" });
   }
 
   if (userId === caller.id) {
-    return json({ error: "You can't delete your own account this way." }, 400);
+    return json({ error: "You can't delete your own account this way." });
   }
 
   // Only past this point — caller confirmed to be a real admin, deleting
@@ -77,7 +84,7 @@ Deno.serve(async (req) => {
   );
 
   const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
-  if (deleteError) return json({ error: deleteError.message }, 500);
+  if (deleteError) return json({ error: deleteError.message });
 
   return json({ ok: true });
 });

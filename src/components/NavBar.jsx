@@ -92,7 +92,7 @@ export default function NavBar({ profile, view, showBuilder, onNavigate, onSignO
         </nav>
 
         <button className="nav__profile" onClick={handleSignOut} title="Sign out">
-          <Avatar name={profile.name} size={22} />
+          <Avatar name={profile.name} avatarUrl={profile.avatar_url} size={22} />
           <span className="nav__profile-name">{profile.name}</span>
           <span className="nav__profile-switch">Sign out</span>
         </button>

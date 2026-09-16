@@ -320,6 +320,11 @@ summary:focus-visible {
   flex-shrink: 0;
   line-height: 1;
 }
+.avatar--photo { display: block; object-fit: cover; background: var(--rule); }
+
+.avatar-picker { display: flex; align-items: center; gap: 1.1rem; }
+.avatar-picker__controls { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.avatar-picker__upload { cursor: pointer; }
 
 /* ---------------- profile gate ---------------- */
 
@@ -386,6 +391,9 @@ summary:focus-visible {
 
 .auth-form { display: grid; gap: 0.6rem; margin-bottom: 1rem; }
 .auth-switch { width: 100%; }
+.auth-hint { margin: 0.2rem 0; font-size: 0.78rem; color: var(--ink-soft); text-align: left; }
+.auth-security-question { display: grid; gap: 0.4rem; text-align: left; }
+.auth-security-question select { appearance: auto; }
 
 /* ---------------- generic page (history, settings) ---------------- */
 

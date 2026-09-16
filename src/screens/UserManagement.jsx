@@ -185,7 +185,7 @@ export default function UserManagement({ profile }) {
                 const activity = historyByUser[p.id];
                 return (
                   <div className="account-row" key={p.id}>
-                    <Avatar name={p.name} size={28} />
+                    <Avatar name={p.name} avatarUrl={p.avatar_url} size={28} />
                     <div className="account-row__info">
                       <p className="account-row__name">
                         {p.name}

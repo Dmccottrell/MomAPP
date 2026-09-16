@@ -3,8 +3,10 @@
 
 import { createClient } from "@supabase/supabase-js";
 
-const url = import.meta.env.VITE_SUPABASE_URL;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Exported (not just used locally) so auth.js's verifyPassword() can spin
+// up its own throwaway client with the same project config.
+export const url = import.meta.env.VITE_SUPABASE_URL;
+export const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 /**
  * True once VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set. The app

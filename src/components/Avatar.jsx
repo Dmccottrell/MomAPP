@@ -1,7 +1,17 @@
 import { avatarColor, initials } from "../utils/avatar";
 
-/** A small colored circle with a name's initials — purely decorative. */
-export default function Avatar({ name, size = 26 }) {
+/** A small circle for a profile: the uploaded photo if there is one, otherwise colored initials. */
+export default function Avatar({ name, size = 26, avatarUrl }) {
+  if (avatarUrl) {
+    return (
+      <img
+        className="avatar avatar--photo"
+        src={avatarUrl}
+        alt=""
+        style={{ width: size, height: size }}
+      />
+    );
+  }
   return (
     <span
       className="avatar"

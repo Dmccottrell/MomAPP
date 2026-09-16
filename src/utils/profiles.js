@@ -72,3 +72,9 @@ export async function markVersionSeen(id, version) {
   const { error } = await supabase.from("profiles").update({ last_seen_version: version }).eq("id", id);
   if (error) throw error;
 }
+
+/** Saves this account's social profile links — any of facebook/instagram/x/linkedin may be empty. */
+export async function updateSocialLinks(id, links) {
+  const { error } = await supabase.from("profiles").update({ social_links: links }).eq("id", id);
+  if (error) throw error;
+}

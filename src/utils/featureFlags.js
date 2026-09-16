@@ -7,6 +7,11 @@
 import { supabase } from "./supabaseClient";
 import { slugify } from "./customScenarios";
 
+// Flags seeded directly in supabase/schema.sql (rather than created
+// through the Previews tab) get a stable id here, so the feature they
+// gate can look itself up without matching on a label that might change.
+export const ACCOUNT_PROFILE_TOOLS_FLAG_ID = "account-profile-tools";
+
 /** Every feature flag, oldest first. */
 export async function listFeatureFlags() {
   const { data, error } = await supabase

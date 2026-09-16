@@ -80,11 +80,34 @@ up Supabase" below to run your own instance.
   Promoting/demoting is a plain profile update, allowed by the "admins can
   update any profile" RLS policy. Deletion is different: removing a row
   from `auth.users` requires Supabase's Admin API, which needs the
-  `service_role` key — a credential that must never reach the browser. That
-  one action is the app's only server-side code, a Supabase Edge Function
-  (`supabase/functions/delete-user/`) that re-checks the caller is really
-  an admin before touching anything, and refuses to delete yourself. See
-  "Setting up the delete-account function" below.
+  `service_role` key — a credential that must never reach the browser. That's
+  one of this app's two pieces of server-side code, a Supabase Edge
+  Function (`supabase/functions/delete-user/`) that re-checks the caller is
+  really an admin before touching anything, and refuses to delete yourself.
+  See "Setting up the Edge Functions" below.
+- **Signing up also sets up 3 security questions**, picked from a fixed
+  list so they can't be left blank or duplicated — the "Forgot password?"
+  link on the sign-in screen uses one, randomly chosen, as an alternative
+  to the email-link reset for whoever doesn't want to wait on email. Only
+  a SHA-256 hash of the (trimmed, lowercased) answer is ever stored or
+  sent anywhere — see `utils/securityQuestions.js`. Checking the answer
+  and actually setting the new password both need the `service_role` key
+  too (there's no session yet to do either the normal way), so this is
+  this app's other piece of server-side code:
+  `supabase/functions/security-question-reset/`. Worth being honest that
+  security questions are a weaker recovery mechanism than a real email
+  link — real answers are often guessable or discoverable — chosen here
+  for a small household of people who mostly know each other, not as a
+  general recommendation.
+- **Settings → Account has more once "Expanded account settings" is
+  published** (Settings → Previews, admin only until then): a profile
+  photo (stored in a public Supabase Storage bucket, `avatars`, one file
+  per user), changing your email (Supabase's own confirm-by-link flow) or
+  password (requires your current password first, as identity proof —
+  `utils/auth.js`'s `verifyPassword`, which checks it via a throwaway,
+  non-persisting Supabase client so it doesn't disturb your real signed-in
+  session), and links to your own social profiles (just stored and shown
+  back to you — nothing else in the app reads them yet).
 
 ## First-time tour
 
@@ -151,10 +174,11 @@ becomes a real, dated changelog entry:
 Without `.env.local` configured, the app shows a setup notice instead of a
 blank page or a confusing network error.
 
-### Setting up the delete-account function
+### Setting up the Edge Functions
 
-The other screens work with just the setup above. Deleting an account is
-the exception — it needs a small server-side function deployed separately:
+The other screens work with just the setup above. Two things need a small
+server-side function deployed separately: deleting an account, and the
+security-question password reset.
 
 1. Install the [Supabase CLI](https://supabase.com/docs/guides/cli) if you
    don't have it (`brew install supabase/tap/supabase` on macOS, or see
@@ -162,18 +186,28 @@ the exception — it needs a small server-side function deployed separately:
 2. `supabase login`, then from this project's folder: `supabase link --project-ref your-project-ref`
    (the project ref is the subdomain in your project URL, e.g. `xcuvxyexcfveyxaqkxad`).
 3. `supabase functions deploy delete-user`
+4. `supabase functions deploy security-question-reset`
 
 That's it — no secrets to copy anywhere. Supabase automatically gives every
 Edge Function its own `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and
-`SUPABASE_SERVICE_ROLE_KEY`, so the function has what it needs the moment
+`SUPABASE_SERVICE_ROLE_KEY`, so each function has what it needs the moment
 it's deployed. If you'd rather not use the CLI, the Supabase dashboard's
 **Edge Functions** page also supports creating and pasting in a function
 directly — use the contents of
-[`supabase/functions/delete-user/index.ts`](supabase/functions/delete-user/index.ts).
+[`supabase/functions/delete-user/index.ts`](supabase/functions/delete-user/index.ts)
+and
+[`supabase/functions/security-question-reset/index.ts`](supabase/functions/security-question-reset/index.ts).
 
-Until this is deployed, the "Delete" button in Settings → User management
-will just show an error when clicked — everything else in the app works
-fine without it.
+Both functions always respond with HTTP 200 and put the actual result in
+the JSON body (`{ error: "..." }` or `{ ok: true, ... }`) instead of using
+real status codes for errors — the Supabase JS client's
+`functions.invoke()` discards the response body on anything but a 2xx and
+replaces it with a generic "non-2xx status code" message, which would
+otherwise swallow every error message either function tries to show.
+
+Until deployed: the "Delete" button in Settings → User management, and the
+"Forgot password?" link on the sign-in screen, will just show an error
+when used — everything else in the app works fine without either.
 
 ## Running it locally
 
@@ -208,7 +242,8 @@ src/
 ├── index.css                 All styling, incl. light/dark theme tokens
 ├── main.jsx                  Entry point; applies the saved theme before render
 ├── screens/
-│   ├── Auth.jsx               Sign in / sign up
+│   ├── Auth.jsx               Sign in / sign up (incl. 3 security questions)
+│   ├── ForgotPassword.jsx      Security-question password reset, a mode of Auth.jsx
 │   ├── SupabaseSetupNotice.jsx Shown when .env.local isn't configured
 │   ├── Onboarding.jsx          One-time welcome tour for a new profile
 │   ├── ResetPassword.jsx       "Choose a new password" — lands here from a reset email
@@ -222,12 +257,15 @@ src/
 │   │                            What's new for everyone, User management/
 │   │                            Previews for admins; the version number is a
 │   │                            quiet footer at the bottom, not per-tab
+│   ├── AccountTools.jsx        Photo/email/password/social links, gated
+│   │                            behind the 'account-profile-tools' flag
 │   ├── UserManagement.jsx      Admin: builder access + accounts (reset,
 │   │                            promote/demote, delete)
 │   └── Previews.jsx            Admin: feature flags + publishing + changelog
 ├── components/
 │   ├── NavBar.jsx             Persistent top bar + slide-in nav drawer
-│   ├── Avatar.jsx             Initials-in-a-circle, colored per name
+│   ├── Avatar.jsx             The uploaded photo if there is one, else
+│   │                           initials-in-a-circle colored per name
 │   ├── icons.jsx              The handful of line icons used in the nav etc.
 │   ├── Notice.jsx              The warning banner used on builder screens
 │   ├── AboutContent.jsx        The About write-up, shared by the About
@@ -247,11 +285,16 @@ src/
 │   ├── highlight.js           Marks up a note with its grading matches
 │   ├── phiCheck.js            Flags obvious real-data formats before saving
 │   ├── supabaseClient.js      The one Supabase client instance
-│   ├── auth.js                Sign up / sign in / sign out
+│   ├── auth.js                Sign up/in/out, email + password changes,
+│   │                           verifyPassword (identity proof)
+│   ├── securityQuestions.js    The question list, answer hashing, saving
+│   │                            them at signup
+│   ├── passwordRecovery.js     Calls the security-question-reset function
 │   ├── profiles.js            Profile rows: admin + builder-access checks
 │   ├── customScenarios.js     Shared scenarios table + builder on/off switch
 │   ├── storage.js             Local in-progress runs + synced history
 │   ├── admin.js                Calls the delete-user Edge Function
+│   ├── avatarStorage.js        Uploads/removes a profile photo
 │   ├── featureFlags.js         Feature flags: create/publish/unpublish
 │   ├── releases.js             Read-only changelog queries
 │   ├── avatar.js              Deterministic color + initials for Avatar.jsx
@@ -264,7 +307,9 @@ src/
 
 supabase/
 ├── schema.sql                 Tables + row-level security policies
-└── functions/delete-user/     The one server-side piece — see below
+└── functions/                 The two server-side pieces — see below
+    ├── delete-user/
+    └── security-question-reset/
 
 .github/workflows/
 └── ci.yml                     Lint + build on every push/PR to main
@@ -310,6 +355,15 @@ Worth being honest about these:
   flag update succeeds but the `releases` insert fails, the flags go live
   with no matching changelog entry. Worth knowing, not worth an RPC at this
   app's scale — see the comment in `utils/featureFlags.js`.
+- **Security questions are a weaker recovery mechanism than email.** Real
+  answers are often guessable or something someone else could find out —
+  a known tradeoff, accepted here for a small household of people who
+  mostly know each other, not a general recommendation. The email-link
+  reset (`sendPasswordReset`) still exists as the stronger alternative.
+- **Avatar photos are public URLs**, same trust level as a name — anyone
+  with the link can view one (not enumerate them; the bucket only serves
+  a path it's given). No moderation, no size/content checks beyond "is an
+  image, under 2 MB."
 - **Two scenarios so far**, covering two different note types (an incident
   note and a change-of-condition note) — a reasonable but still small sample
   for "the format generalizes."
@@ -321,15 +375,16 @@ Worth being honest about these:
 - Print or export a completed session for classroom review
 - More scenarios, especially other note types (discharge, new wound), and
   more real use of the in-app builder to find its rough edges
-- Wire an actual feature behind a preview flag — `utils/featureFlags.js`'s
-  `isFeatureEnabled()` exists but nothing calls it yet
 - Collapsible sections for dense pages (`ScenarioBuilder.jsx`, `History.jsx`)
   if either gets cluttered as more scenarios pile up
+- Show someone's social links somewhere other users can actually see them
+  (right now they're saved and shown back to their own owner, nothing more)
 
 ## Built with
 
-React, Vite, plain CSS, and Supabase (Postgres + Auth). No UI framework, no
-state management library, and almost no custom server — one Edge Function
-for the single action (deleting an account) that genuinely needs
+React, Vite, plain CSS, and Supabase (Postgres + Auth, plus Storage for
+profile photos). No UI framework, no state management library, and almost
+no custom server — two small Edge Functions (deleting an account, and the
+security-question password reset) for the two things that genuinely need
 Supabase's Admin API. Everything else runs off row-level security instead
 of hand-rolled backend logic.

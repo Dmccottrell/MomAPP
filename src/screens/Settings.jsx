@@ -7,7 +7,13 @@ import ReleaseHistoryList from "../components/ReleaseHistoryList";
 import AboutContent from "../components/AboutContent";
 import UserManagement from "./UserManagement";
 import Previews from "./Previews";
+import AccountTools from "./AccountTools";
 import { listReleases } from "../utils/releases";
+import {
+  listFeatureFlags,
+  isFeatureEnabled,
+  ACCOUNT_PROFILE_TOOLS_FLAG_ID,
+} from "../utils/featureFlags";
 
 const THEME_OPTIONS = [
   { value: "system", label: "System" },
@@ -28,7 +34,9 @@ const ADMIN_TABS = [
 
 /**
  * Settings, split into tabs: Appearance (theme), Account (your name, sign
- * out, clear your history), About (the full mission/credits write-up,
+ * out, clear your history — plus a photo, email, password, and social
+ * links from AccountTools.jsx, live only once the 'account-profile-tools'
+ * feature flag is published), About (the full mission/credits write-up,
  * shared with the top-level About screen — see AboutContent.jsx), What's
  * new (the full release history), and — admin only — User management
  * (access + accounts) and Previews (feature flags + publishing).
@@ -53,9 +61,15 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
   const [confirmState, setConfirmState] = useState(null);
 
   const [releases, setReleases] = useState(null);
+  const [accountToolsFlag, setAccountToolsFlag] = useState(null);
 
   useEffect(() => {
-    listReleases().then(setReleases).catch(() => setReleases([]));
+    Promise.all([listReleases(), listFeatureFlags()])
+      .then(([r, flags]) => {
+        setReleases(r);
+        setAccountToolsFlag(flags.find((f) => f.id === ACCOUNT_PROFILE_TOOLS_FLAG_ID) || null);
+      })
+      .catch(() => setReleases([]));
   }, []);
 
   function handleThemeChange(value) {
@@ -187,6 +201,10 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
               Sign out
             </button>
           </section>
+
+          {isFeatureEnabled(accountToolsFlag, profile) && (
+            <AccountTools profile={profile} onProfileChange={onProfileChange} />
+          )}
 
           <section className="settings-section">
             <h2 className="settings-section__title">Danger zone</h2>

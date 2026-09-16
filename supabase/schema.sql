@@ -262,3 +262,99 @@ values (
   null
 )
 on conflict (version) do nothing;
+
+-- ---------------------------------------------------------------------
+-- Profile photo, and keeping profiles.email in sync after someone
+-- changes their email (not just on signup — see utils/auth.js's
+-- updateEmail()). Both back Settings → Account's expanded tools, gated
+-- behind the 'account-profile-tools' feature flag seeded below.
+-- ---------------------------------------------------------------------
+
+alter table public.profiles add column if not exists avatar_url text;
+alter table public.profiles add column if not exists social_links jsonb not null default '{}'::jsonb;
+
+create or replace function public.handle_user_email_change()
+returns trigger as $$
+begin
+  update public.profiles set email = new.email where id = new.id;
+  return new;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+drop trigger if exists on_auth_user_email_updated on auth.users;
+create trigger on_auth_user_email_updated
+  after update of email on auth.users
+  for each row execute procedure public.handle_user_email_change();
+
+-- Avatar images: a public bucket (same trust level as a name — everyone
+-- can already see everyone's name) where storage RLS restricts writes to
+-- each user's own folder, keyed by their user id.
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Avatar images are publicly viewable" on storage.objects;
+create policy "Avatar images are publicly viewable"
+  on storage.objects for select using (bucket_id = 'avatars');
+
+drop policy if exists "Users can upload their own avatar" on storage.objects;
+create policy "Users can upload their own avatar"
+  on storage.objects for insert with check (
+    bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+drop policy if exists "Users can update their own avatar" on storage.objects;
+create policy "Users can update their own avatar"
+  on storage.objects for update using (
+    bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+drop policy if exists "Users can delete their own avatar" on storage.objects;
+create policy "Users can delete their own avatar"
+  on storage.objects for delete using (
+    bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Ships turned off — try it yourself from Settings → Previews, then
+-- publish it when it's ready for everyone.
+insert into public.feature_flags (id, label, description)
+values (
+  'account-profile-tools',
+  'Expanded account settings',
+  'Profile photo, change email, change password, and social links in Settings → Account.'
+)
+on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------
+-- security_answers: 3 security questions set up at signup, used by the
+-- "forgot password" flow on the sign-in screen as an alternative to the
+-- email-link reset — see supabase/functions/security-question-reset/ and
+-- utils/securityQuestions.js. Answers are hashed client-side (trimmed and
+-- lowercased first, so they aren't case-sensitive the way a password is)
+-- before they're ever sent anywhere; this table only ever holds hashes.
+-- Not gated behind a feature flag — the flag system checks a signed-in
+-- profile, but signup and forgot-password both happen before anyone's
+-- signed in, so there's no profile yet to check it against.
+-- ---------------------------------------------------------------------
+
+create table if not exists public.security_answers (
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  question_index smallint not null check (question_index between 0 and 2),
+  question text not null,
+  answer_hash text not null,
+  primary key (user_id, question_index)
+);
+
+alter table public.security_answers enable row level security;
+
+-- No select policy at all, on purpose: nobody, not even the account's
+-- own owner, can read a stored hash back through the client. Only the
+-- security-question-reset Edge Function (service_role, bypasses RLS
+-- entirely) ever reads this table.
+drop policy if exists "Users can set their own security answers" on public.security_answers;
+create policy "Users can set their own security answers"
+  on public.security_answers for insert with check (user_id = auth.uid());
+
+drop policy if exists "Users can update their own security answers" on public.security_answers;
+create policy "Users can update their own security answers"
+  on public.security_answers for update using (user_id = auth.uid());
