@@ -68,7 +68,12 @@ export async function publishFeatureFlags(flags, { version, changelog, published
   const { error: releaseError } = await supabase.from("releases").insert({
     version,
     changelog,
-    published_flags: flags.map((f) => ({ id: f.id, label: f.label })),
+    // Each flag's own description rides along too, not just its name —
+    // so the release history and the "what's new" popup can explain what
+    // every published feature actually does, independent of whatever the
+    // admin wrote as the overall changelog blurb (which might not
+    // mention each one individually).
+    published_flags: flags.map((f) => ({ id: f.id, label: f.label, description: f.description })),
     published_by: publishedBy,
   });
   if (releaseError) {
@@ -106,14 +111,14 @@ export function suggestFlagDescription(label) {
 /**
  * A starting-point changelog blurb for whichever flags are about to be
  * published, from their names and descriptions — template text, not
- * anything AI-written. Prefills PublishDialog's "What changed" field;
- * freely editable before actually publishing.
+ * anything AI-written. One line per flag so every feature being
+ * published explains its own change, not just a list of names; freely
+ * editable before actually publishing. Prefills PublishDialog's "What
+ * changed" field.
  */
 export function suggestChangelog(flags) {
   if (!flags || flags.length === 0) return "";
-  if (flags.length === 1) {
-    const f = flags[0];
-    return f.description ? `${f.label} — ${f.description}` : `Added ${f.label}.`;
-  }
-  return `Added: ${flags.map((f) => f.label).join(", ")}.`;
+  return flags
+    .map((f) => (f.description ? `${f.label} — ${f.description}` : `Added ${f.label}.`))
+    .join("\n");
 }

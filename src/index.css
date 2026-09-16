@@ -305,6 +305,7 @@ summary:focus-visible {
   margin: 0 0 1.25rem;
   font-size: 0.96rem;
   line-height: 1.5;
+  white-space: pre-line;
 }
 .confirm-dialog__actions {
   display: flex;
@@ -620,8 +621,10 @@ summary:focus-visible {
 .release-item:first-child { border-top: none; padding-top: 0.25rem; }
 .release-item__head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; }
 .release-item__date { font-size: 0.8rem; color: var(--ink-soft); }
-.release-item__changelog { margin: 0; font-size: 0.92rem; line-height: 1.5; }
-.release-item__flags { margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--ink-soft); }
+.release-item__changelog { margin: 0; font-size: 0.92rem; line-height: 1.5; white-space: pre-line; }
+.release-item__flags { list-style: none; margin: 0.5rem 0 0; padding: 0; display: grid; gap: 0.2rem; }
+.release-item__flags li { font-size: 0.82rem; color: var(--ink-soft); }
+.release-item__flags strong { color: var(--ink); font-weight: 600; }
 
 .segmented {
   display: inline-flex;

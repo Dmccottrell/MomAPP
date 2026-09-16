@@ -27,9 +27,14 @@ export default function ReleaseHistoryList({ releases }) {
           </div>
           <p className="release-item__changelog">{r.changelog}</p>
           {r.published_flags?.length > 0 && (
-            <p className="release-item__flags">
-              {r.published_flags.map((f) => f.label).join(" · ")}
-            </p>
+            <ul className="release-item__flags">
+              {r.published_flags.map((f) => (
+                <li key={f.id}>
+                  <strong>{f.label}</strong>
+                  {f.description ? ` — ${f.description}` : ""}
+                </li>
+              ))}
+            </ul>
           )}
         </li>
       ))}
