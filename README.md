@@ -116,8 +116,9 @@ becomes a real, dated changelog entry:
   `publishFeatureFlags()` for what that means if the second write fails.
 - **Release history** (readable by everyone, not just the admin — see the
   RLS policy in `supabase/schema.sql`) is that `releases` table, newest
-  first. It's shown in full on the admin's Previews tab and, more simply,
-  on Settings → About for everyone.
+  first. It's shown on Settings → What's new for everyone, and again on
+  the admin's Previews tab alongside the flags. The current version itself
+  shows separately, as a quiet footer at the bottom of every Settings tab.
 - **The "what's new" popup** (`components/WhatsNewModal.jsx`) shows once
   per account per version: App.jsx compares the latest release's version
   against that profile's `last_seen_version` after sign-in and pops the
@@ -215,9 +216,12 @@ src/
 │   ├── History.jsx             Completed runs — own, or everyone's if admin
 │   ├── MyScenarios.jsx         List of in-app-built scenarios
 │   ├── ScenarioBuilder.jsx     The scenario-authoring form
-│   ├── About.jsx               What the app is and who built it
-│   ├── Settings.jsx            The tab shell: Appearance/Account/About for
-│   │                            everyone, User management/Previews for admins
+│   ├── About.jsx               Full mission/credits write-up (see
+│   │                            components/AboutContent.jsx) in its own page
+│   ├── Settings.jsx            The tab shell: Appearance/Account/About/
+│   │                            What's new for everyone, User management/
+│   │                            Previews for admins; the version number is a
+│   │                            quiet footer at the bottom, not per-tab
 │   ├── UserManagement.jsx      Admin: builder access + accounts (reset,
 │   │                            promote/demote, delete)
 │   └── Previews.jsx            Admin: feature flags + publishing + changelog
@@ -226,9 +230,12 @@ src/
 │   ├── Avatar.jsx             Initials-in-a-circle, colored per name
 │   ├── icons.jsx              The handful of line icons used in the nav etc.
 │   ├── Notice.jsx              The warning banner used on builder screens
+│   ├── AboutContent.jsx        The About write-up, shared by the About
+│   │                            screen and Settings' About tab
 │   ├── ConfirmDialog.jsx       In-app replacement for window.confirm()
 │   ├── PublishDialog.jsx       Version + changelog form for publishing flags
-│   ├── ReleaseHistoryList.jsx  Read-only changelog list (About tab + Previews)
+│   ├── ReleaseHistoryList.jsx  Read-only changelog list (Settings' What's
+│   │                            new tab + the admin Previews tab)
 │   ├── WhatsNewModal.jsx       One-time "here's what changed" popup
 │   ├── PatientChart.jsx       The pinned patient chart
 │   ├── ActionList.jsx         Action buttons and hints

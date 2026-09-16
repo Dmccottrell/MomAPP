@@ -542,6 +542,15 @@ summary:focus-visible {
 .settings-tab--active,
 .settings-tab--active:hover { background: var(--chart); border-color: var(--chart); color: #fff; }
 
+.settings-footer {
+  margin: 2rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
 /* A small inline label — "Admin" next to a name, a version number on a
    release. Neutral by default; modifiers tint it. */
 .badge {

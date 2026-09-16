@@ -214,14 +214,7 @@ export default function App() {
   } else if (view === "about") {
     content = <About />;
   } else if (view === "settings") {
-    content = (
-      <Settings
-        profile={profile}
-        onProfileChange={setProfile}
-        onSignOut={handleSignOut}
-        onNavigate={navigate}
-      />
-    );
+    content = <Settings profile={profile} onProfileChange={setProfile} onSignOut={handleSignOut} />;
   } else {
     content = <Home scenarios={SCENARIOS} profile={profile} onSelect={selectScenario} />;
   }

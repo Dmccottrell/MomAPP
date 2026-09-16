@@ -4,6 +4,7 @@ import { clearMyHistory } from "../utils/storage";
 import { isAdminProfile, updateName } from "../utils/profiles";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ReleaseHistoryList from "../components/ReleaseHistoryList";
+import AboutContent from "../components/AboutContent";
 import UserManagement from "./UserManagement";
 import Previews from "./Previews";
 import { listReleases } from "../utils/releases";
@@ -18,6 +19,7 @@ const BASE_TABS = [
   { id: "appearance", label: "Appearance" },
   { id: "account", label: "Account" },
   { id: "about", label: "About" },
+  { id: "whatsnew", label: "What's new" },
 ];
 const ADMIN_TABS = [
   { id: "users", label: "User management" },
@@ -26,14 +28,16 @@ const ADMIN_TABS = [
 
 /**
  * Settings, split into tabs: Appearance (theme), Account (your name, sign
- * out, clear your history), About (what this is + the current version and
- * changelog), and — admin only — User management (access + accounts) and
- * Previews (feature flags + publishing). Everything admin-only is gated
- * both here (so the tab doesn't even render) and again by RLS in
- * Supabase, so a client-side bug here can't grant access the database
- * would refuse.
+ * out, clear your history), About (the full mission/credits write-up,
+ * shared with the top-level About screen — see AboutContent.jsx), What's
+ * new (the full release history), and — admin only — User management
+ * (access + accounts) and Previews (feature flags + publishing).
+ * Everything admin-only is gated both here (so the tab doesn't even
+ * render) and again by RLS in Supabase, so a client-side bug here can't
+ * grant access the database would refuse. The current version shows only
+ * once, as a quiet footer at the bottom of the page — not repeated per tab.
  */
-export default function Settings({ profile, onProfileChange, onSignOut, onNavigate }) {
+export default function Settings({ profile, onProfileChange, onSignOut }) {
   const admin = isAdminProfile(profile);
   const tabs = admin ? [...BASE_TABS, ...ADMIN_TABS] : BASE_TABS;
   const [tab, setTab] = useState("appearance");
@@ -198,37 +202,22 @@ export default function Settings({ profile, onProfileChange, onSignOut, onNaviga
         </>
       )}
 
-      {tab === "about" && (
-        <>
-          <section className="settings-section">
-            <h2 className="settings-section__title">About Charting Practice</h2>
-            {releases?.[0] && (
-              <p className="settings-row">
-                <span className="badge">v{releases[0].version}</span>
-              </p>
-            )}
-            <p className="settings-row settings-row--muted">
-              A browser-based training simulator for nursing documentation —
-              work a scenario from start to finish, then write the note and
-              get feedback on what it covered and what it missed.
-            </p>
-            {onNavigate && (
-              <button className="btn btn--ghost settings-row" onClick={() => onNavigate("about")}>
-                View the full About page
-              </button>
-            )}
-          </section>
+      {tab === "about" && <AboutContent />}
 
-          <section className="settings-section">
-            <h2 className="settings-section__title">What's new</h2>
-            <ReleaseHistoryList releases={releases} />
-          </section>
-        </>
+      {tab === "whatsnew" && (
+        <section className="settings-section">
+          <h2 className="settings-section__title">What's new</h2>
+          <ReleaseHistoryList releases={releases} />
+        </section>
       )}
 
       {admin && tab === "users" && <UserManagement profile={profile} />}
 
       {admin && tab === "previews" && <Previews profile={profile} />}
+
+      {releases?.[0] && (
+        <p className="settings-footer">Charting Practice v{releases[0].version}</p>
+      )}
 
       <ConfirmDialog
         open={Boolean(confirmState)}
