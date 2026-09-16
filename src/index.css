@@ -287,6 +287,27 @@ summary:focus-visible {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* Wider variant of .confirm-dialog for PublishDialog's version + changelog
+   form — same backdrop, same animation, just more room. */
+.publish-dialog {
+  width: min(100%, 28rem);
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  animation: confirmPopIn 220ms var(--ease);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.publish-dialog__title { margin: 0 0 0.75rem; font-size: 1.05rem; }
+.publish-dialog__flags {
+  margin: 0 0 1.1rem;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.publish-dialog__hint { display: block; margin-top: 0.3rem; font-size: 0.78rem; color: var(--stop); }
+
 /* ---------------- avatar ---------------- */
 
 .avatar {
@@ -490,6 +511,67 @@ summary:focus-visible {
 .account-row__email { margin: 0.1rem 0 0; font-size: 0.85rem; color: var(--ink-soft); }
 .account-row__actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
 .account-row__status { flex-basis: 100%; margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--ink-soft); }
+.account-row__meta { margin: 0.15rem 0 0; font-size: 0.8rem; color: var(--ink-soft); }
+.account-row__access { margin-top: 0.5rem; }
+.account-row__copy {
+  border: none;
+  background: transparent;
+  color: var(--chart);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Settings' own page-level tab bar — distinct from the theme picker's
+   .segmented radiogroup below, so it can wrap on a narrow screen instead
+   of squeezing every tab onto one line. */
+.settings-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
+.settings-tab {
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.settings-tab:hover { border-color: var(--chart); color: var(--chart); }
+.settings-tab--active,
+.settings-tab--active:hover { background: var(--chart); border-color: var(--chart); color: #fff; }
+
+/* A small inline label — "Admin" next to a name, a version number on a
+   release. Neutral by default; modifiers tint it. */
+.badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--rule);
+  color: var(--ink-soft);
+  vertical-align: middle;
+}
+.badge--admin { background: var(--chart-wash); color: var(--chart); margin-left: 0.5rem; }
+
+.preview-group { margin-top: 1.5rem; }
+.preview-group__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.release-list { list-style: none; margin: 0; padding: 0; }
+.release-item { padding: 0.85rem 0; border-top: 1px solid var(--rule); }
+.release-item:first-child { border-top: none; padding-top: 0.25rem; }
+.release-item__head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; }
+.release-item__date { font-size: 0.8rem; color: var(--ink-soft); }
+.release-item__changelog { margin: 0; font-size: 0.92rem; line-height: 1.5; }
+.release-item__flags { margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--ink-soft); }
 
 .segmented {
   display: inline-flex;

@@ -116,3 +116,17 @@ export async function clearMyHistory(userId) {
   const { error } = await supabase.from("history").delete().eq("user_id", userId);
   if (error) throw error;
 }
+
+/** Groups history rows (as returned by listAllHistory) into a per-user {count, lastCompletedAt} map — used by the admin's User management list. */
+export function summarizeHistoryByUser(rows) {
+  const map = {};
+  for (const row of rows) {
+    const summary = map[row.userId] || { count: 0, lastCompletedAt: null };
+    summary.count += 1;
+    if (!summary.lastCompletedAt || row.completedAt > summary.lastCompletedAt) {
+      summary.lastCompletedAt = row.completedAt;
+    }
+    map[row.userId] = summary;
+  }
+  return map;
+}

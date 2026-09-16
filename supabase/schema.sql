@@ -28,6 +28,15 @@ create table if not exists public.profiles (
 -- ones — a one-time "here's what's new" rather than a gap in the rule.
 alter table public.profiles add column if not exists has_seen_onboarding boolean not null default false;
 
+-- Which version's "what's new" this account has already dismissed — see
+-- WhatsNewModal.jsx. Left null on purpose: null means "never checked,"
+-- which App.jsx treats as "nothing new to show them" and silently sets
+-- to the current version instead of popping the modal — both for a
+-- brand-new sign-up (nothing's "new" to someone seeing the app for the
+-- first time) and for existing accounts the first time they load after
+-- this column is added.
+alter table public.profiles add column if not exists last_seen_version text;
+
 -- Mirrors auth.users.email so the admin UI can show who's who and trigger
 -- a password reset without needing the service_role key — the client
 -- can't query auth.users directly. Kept in sync by the trigger below.
@@ -186,3 +195,70 @@ create policy "Admins can change settings"
 insert into public.app_settings (key, value)
 values ('builder_enabled', 'true')
 on conflict (key) do nothing;
+
+-- ---------------------------------------------------------------------
+-- feature_flags: work-in-progress features the admin can turn on for
+-- just themselves before the rest of the household sees them. A flag
+-- "in preview" only enables for the admin; "published" is live for
+-- everyone — see utils/featureFlags.js's isFeatureEnabled(). Publishing
+-- one or more flags also writes a row to `releases` (below) so there's
+-- a permanent changelog entry even if a flag is later unpublished.
+-- ---------------------------------------------------------------------
+
+create table if not exists public.feature_flags (
+  id text primary key,
+  label text not null,
+  description text not null default '',
+  status text not null default 'preview' check (status in ('preview', 'published')),
+  created_at timestamptz not null default now(),
+  published_at timestamptz,
+  published_in_version text
+);
+
+alter table public.feature_flags enable row level security;
+
+drop policy if exists "Feature flags are viewable by everyone" on public.feature_flags;
+create policy "Feature flags are viewable by everyone"
+  on public.feature_flags for select using (true);
+
+drop policy if exists "Admins can manage feature flags" on public.feature_flags;
+create policy "Admins can manage feature flags"
+  on public.feature_flags for all using (
+    exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin)
+  );
+
+-- ---------------------------------------------------------------------
+-- releases: the changelog. One row per version published from Settings
+-- → Previews (admin only) — see utils/featureFlags.js's
+-- publishFeatureFlags(). Readable by everyone so the About tab can show
+-- "what's new" to the whole household, not just the admin.
+-- ---------------------------------------------------------------------
+
+create table if not exists public.releases (
+  version text primary key,
+  changelog text not null,
+  published_flags jsonb not null default '[]'::jsonb,
+  published_by uuid references public.profiles(id),
+  published_at timestamptz not null default now()
+);
+
+alter table public.releases enable row level security;
+
+drop policy if exists "Releases are viewable by everyone" on public.releases;
+create policy "Releases are viewable by everyone"
+  on public.releases for select using (true);
+
+drop policy if exists "Admins can create releases" on public.releases;
+create policy "Admins can create releases"
+  on public.releases for insert with check (
+    exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin)
+  );
+
+insert into public.releases (version, changelog, published_flags, published_by)
+values (
+  '1.0.0',
+  'Initial release: nursing documentation scenarios, real accounts with admin-managed access, and the in-app scenario builder.',
+  '[]'::jsonb,
+  null
+)
+on conflict (version) do nothing;

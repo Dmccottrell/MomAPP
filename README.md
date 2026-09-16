@@ -57,8 +57,8 @@ up Supabase" below to run your own instance.
   grant access the database itself would refuse.
 - **My Scenarios** (the in-app builder) is off by default for everyone except
   the admin, who can turn it on globally and grant it to specific other
-  accounts in Settings. Scenarios built there are shared across everyone
-  signed in, same as the presets on Home.
+  accounts in Settings → User management. Scenarios built there are shared
+  across everyone signed in, same as the presets on Home.
 - **History syncs.** Completed runs are tied to your account, not a browser,
   so they follow you to another device. An admin sees everyone's history on
   the History page; everyone else sees only their own.
@@ -73,16 +73,18 @@ up Supabase" below to run your own instance.
   tell a fictional name from a real one; no algorithm can. Treat every
   scenario as something a stranger with database access could read, because
   with a shared Supabase project, several people now can.
-- **An admin can reset another account's password or delete it**, from
-  Settings → Manage accounts. Password reset just emails a normal Supabase
-  reset link (`utils/auth.js`'s `sendPasswordReset`) — no special
-  privileges needed. Deletion is different: removing a row from
-  `auth.users` requires Supabase's Admin API, which needs the
+- **An admin can reset another account's password, promote or demote
+  another admin, or delete an account outright**, all from Settings → User
+  management. Password reset just emails a normal Supabase reset link
+  (`utils/auth.js`'s `sendPasswordReset`) — no special privileges needed.
+  Promoting/demoting is a plain profile update, allowed by the "admins can
+  update any profile" RLS policy. Deletion is different: removing a row
+  from `auth.users` requires Supabase's Admin API, which needs the
   `service_role` key — a credential that must never reach the browser. That
   one action is the app's only server-side code, a Supabase Edge Function
   (`supabase/functions/delete-user/`) that re-checks the caller is really
-  an admin before touching anything. See "Setting up the delete-account
-  function" below.
+  an admin before touching anything, and refuses to delete yourself. See
+  "Setting up the delete-account function" below.
 
 ## First-time tour
 
@@ -96,7 +98,36 @@ predates it and the tour won't stay dismissed, re-run `schema.sql` once (see
 below) to add the missing column — after that one-time fix, it behaves
 correctly going forward.
 
-### Setting up Supabase
+### Feature previews and releases
+
+Settings → Previews (admin only) is where a work-in-progress feature gets
+tried out before the rest of the household sees it, and where publishing it
+becomes a real, dated changelog entry:
+
+- **A feature flag** (`feature_flags` table) starts "in preview" — enabled
+  only for the admin, via `utils/featureFlags.js`'s `isFeatureEnabled()`.
+  Nothing in the app actually checks a flag yet; this is the control
+  surface for whenever a feature starts gating itself on one.
+- **Publishing** one flag, or several at once via "Publish all," asks for a
+  version number (a patch bump off the last one is suggested, but it's a
+  plain text field) and a changelog blurb, then does two things: flips
+  those flags to "published" and writes a new row to the `releases` table.
+  Not a real database transaction — see the comment in
+  `publishFeatureFlags()` for what that means if the second write fails.
+- **Release history** (readable by everyone, not just the admin — see the
+  RLS policy in `supabase/schema.sql`) is that `releases` table, newest
+  first. It's shown in full on the admin's Previews tab and, more simply,
+  on Settings → About for everyone.
+- **The "what's new" popup** (`components/WhatsNewModal.jsx`) shows once
+  per account per version: App.jsx compares the latest release's version
+  against that profile's `last_seen_version` after sign-in and pops the
+  modal if they differ, then records it seen. A profile that's never been
+  checked (a brand-new sign-up, or an existing account the first time it
+  loads after this feature shipped) gets silently caught up instead of
+  seeing the popup — there's nothing "new" to someone seeing the app for
+  the first time.
+
+## Setting up Supabase
 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. In **Authentication → Providers → Email**, turn off "Confirm email" if you
@@ -139,7 +170,7 @@ it's deployed. If you'd rather not use the CLI, the Supabase dashboard's
 directly — use the contents of
 [`supabase/functions/delete-user/index.ts`](supabase/functions/delete-user/index.ts).
 
-Until this is deployed, the "Delete" button in Settings → Manage accounts
+Until this is deployed, the "Delete" button in Settings → User management
 will just show an error when clicked — everything else in the app works
 fine without it.
 
@@ -163,6 +194,10 @@ npm run preview   # serve the production build locally
 npx eslint .      # lint
 ```
 
+Every push and PR to `main` runs lint + build in GitHub Actions
+(`.github/workflows/ci.yml`) — no secrets needed, since the build succeeds
+without `.env.local` set (it just means `isSupabaseConfigured` is false).
+
 ## Project structure
 
 ```
@@ -181,12 +216,20 @@ src/
 │   ├── MyScenarios.jsx         List of in-app-built scenarios
 │   ├── ScenarioBuilder.jsx     The scenario-authoring form
 │   ├── About.jsx               What the app is and who built it
-│   └── Settings.jsx            Theme, account, admin access + account management
+│   ├── Settings.jsx            The tab shell: Appearance/Account/About for
+│   │                            everyone, User management/Previews for admins
+│   ├── UserManagement.jsx      Admin: builder access + accounts (reset,
+│   │                            promote/demote, delete)
+│   └── Previews.jsx            Admin: feature flags + publishing + changelog
 ├── components/
-│   ├── NavBar.jsx             Persistent top nav
+│   ├── NavBar.jsx             Persistent top bar + slide-in nav drawer
 │   ├── Avatar.jsx             Initials-in-a-circle, colored per name
 │   ├── icons.jsx              The handful of line icons used in the nav etc.
 │   ├── Notice.jsx              The warning banner used on builder screens
+│   ├── ConfirmDialog.jsx       In-app replacement for window.confirm()
+│   ├── PublishDialog.jsx       Version + changelog form for publishing flags
+│   ├── ReleaseHistoryList.jsx  Read-only changelog list (About tab + Previews)
+│   ├── WhatsNewModal.jsx       One-time "here's what changed" popup
 │   ├── PatientChart.jsx       The pinned patient chart
 │   ├── ActionList.jsx         Action buttons and hints
 │   ├── ShiftLog.jsx           Running record of what happened
@@ -202,6 +245,8 @@ src/
 │   ├── customScenarios.js     Shared scenarios table + builder on/off switch
 │   ├── storage.js             Local in-progress runs + synced history
 │   ├── admin.js                Calls the delete-user Edge Function
+│   ├── featureFlags.js         Feature flags: create/publish/unpublish
+│   ├── releases.js             Read-only changelog queries
 │   ├── avatar.js              Deterministic color + initials for Avatar.jsx
 │   ├── theme.js                Light/dark/system theme preference
 │   ├── viewTransition.js       Cross-fade wrapper around a state update
@@ -213,6 +258,9 @@ src/
 supabase/
 ├── schema.sql                 Tables + row-level security policies
 └── functions/delete-user/     The one server-side piece — see below
+
+.github/workflows/
+└── ci.yml                     Lint + build on every push/PR to main
 ```
 
 The organizing rule is that each file has one reason to change. Styling lives in
@@ -246,23 +294,30 @@ Worth being honest about these:
   SSN/phone/email/date-shaped patterns; it can't verify a patient name is
   fictional, because a fictional name and a real one look identical. Whoever
   runs this Supabase project is trusting whoever it's shared with.
-- **Admin is "whoever signed up first," not something you choose.** There's
-  no UI to promote someone else or transfer it — that's still a manual SQL
-  update (`update public.profiles set is_admin = true where id = ...`) in
-  the Supabase SQL Editor, matched by email via `auth.users`.
-- **No mobile layout testing beyond basic responsiveness.**
+- **The first admin is still "whoever signed up first."** Promoting or
+  demoting *other* admins now has a UI (Settings → User management), but
+  there's no way to demote yourself or transfer away being the original
+  admin from within the app — that's still a manual SQL update in the
+  Supabase SQL Editor.
+- **Publishing a feature flag isn't a real database transaction.** If the
+  flag update succeeds but the `releases` insert fails, the flags go live
+  with no matching changelog entry. Worth knowing, not worth an RPC at this
+  app's scale — see the comment in `utils/featureFlags.js`.
 - **Two scenarios so far**, covering two different note types (an incident
   note and a change-of-condition note) — a reasonable but still small sample
   for "the format generalizes."
 
 ## Possible next steps
 
-- Admin transfer / multiple admins, from a UI instead of a manual SQL update
 - AI-assisted grading that reads the note for clinical accuracy rather than
   keywords — contained to `utils/grading.js` by design
 - Print or export a completed session for classroom review
 - More scenarios, especially other note types (discharge, new wound), and
   more real use of the in-app builder to find its rough edges
+- Wire an actual feature behind a preview flag — `utils/featureFlags.js`'s
+  `isFeatureEnabled()` exists but nothing calls it yet
+- Collapsible sections for dense pages (`ScenarioBuilder.jsx`, `History.jsx`)
+  if either gets cluttered as more scenarios pile up
 
 ## Built with
 

@@ -36,6 +36,20 @@ export async function setCanBuildScenarios(id, allowed) {
   if (error) throw error;
 }
 
+/**
+ * Promotes or demotes another account's admin status. Admin-only in
+ * practice: the "Admins can update any profile" RLS policy is what
+ * actually allows this — see supabase/schema.sql. Unlike account
+ * deletion, this has no server-side self-check, so the UI is what stops
+ * an admin from demoting themselves (see UserManagement.jsx) — doing it
+ * anyway via a raw request would just leave the app with no admin at
+ * all, recoverable only via a manual SQL update.
+ */
+export async function setAdminStatus(id, isAdmin) {
+  const { error } = await supabase.from("profiles").update({ is_admin: isAdmin }).eq("id", id);
+  if (error) throw error;
+}
+
 /** Lets a user rename themselves; RLS blocks changing anyone else's name or your own permission flags this way. */
 export async function updateName(id, name) {
   const { error } = await supabase.from("profiles").update({ name: name.trim() }).eq("id", id);
@@ -50,5 +64,11 @@ export function needsOnboarding(profile) {
 /** Marks the welcome tour done so it never shows again for this account. */
 export async function markOnboardingSeen(id) {
   const { error } = await supabase.from("profiles").update({ has_seen_onboarding: true }).eq("id", id);
+  if (error) throw error;
+}
+
+/** Records that this account has seen a version's "what's new" — see WhatsNewModal.jsx and App.jsx. */
+export async function markVersionSeen(id, version) {
+  const { error } = await supabase.from("profiles").update({ last_seen_version: version }).eq("id", id);
   if (error) throw error;
 }

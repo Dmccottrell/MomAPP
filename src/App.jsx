@@ -10,10 +10,18 @@ import Auth from "./screens/Auth";
 import SupabaseSetupNotice from "./screens/SupabaseSetupNotice";
 import Onboarding from "./screens/Onboarding";
 import ResetPassword from "./screens/ResetPassword";
+import WhatsNewModal from "./components/WhatsNewModal";
 import { isSupabaseConfigured } from "./utils/supabaseClient";
 import { getSession, onAuthChange, signOut } from "./utils/auth";
-import { getProfile, canBuildScenarios, needsOnboarding, markOnboardingSeen } from "./utils/profiles";
+import {
+  getProfile,
+  canBuildScenarios,
+  needsOnboarding,
+  markOnboardingSeen,
+  markVersionSeen,
+} from "./utils/profiles";
 import { listCustomScenarios, isBuilderEnabled } from "./utils/customScenarios";
+import { latestRelease } from "./utils/releases";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
 import changeOfCondition01 from "./scenarios/change-of-condition-01.json";
@@ -44,6 +52,7 @@ export default function App() {
   const [customScenarios, setCustomScenarios] = useState([]);
   const [builderEnabled, setBuilderEnabledState] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
+  const [whatsNew, setWhatsNew] = useState(null);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -91,6 +100,29 @@ export default function App() {
     listCustomScenarios().then(setCustomScenarios).catch(() => setCustomScenarios([]));
     isBuilderEnabled().then(setBuilderEnabledState).catch(() => setBuilderEnabledState(false));
   }, [session, view]);
+
+  // Shows the "what's new" popup once per account per version — see
+  // WhatsNewModal.jsx. A profile that's never been checked
+  // (last_seen_version is null, e.g. right after signup, or the first
+  // load after this feature shipped) gets silently caught up to the
+  // current version instead of seeing the popup — there's nothing "new"
+  // to someone seeing the app for the first time.
+  useEffect(() => {
+    if (!profile || needsOnboarding(profile)) return;
+    let cancelled = false;
+    latestRelease().then((release) => {
+      if (cancelled || !release) return;
+      if (!profile.last_seen_version) {
+        markVersionSeen(profile.id, release.version).catch(() => {});
+        setProfile((p) => (p ? { ...p, last_seen_version: release.version } : p));
+      } else if (profile.last_seen_version !== release.version) {
+        setWhatsNew(release);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [profile]);
 
   if (!isSupabaseConfigured) return <SupabaseSetupNotice />;
   if (checkingSession) return null;
@@ -144,10 +176,19 @@ export default function App() {
     withViewTransition(() => setActiveScenario(null));
   }
 
+  function dismissWhatsNew() {
+    const version = whatsNew?.version;
+    setWhatsNew(null);
+    if (!version) return;
+    markVersionSeen(profile.id, version).catch(() => {});
+    setProfile((p) => (p ? { ...p, last_seen_version: version } : p));
+  }
+
   async function handleSignOut() {
     await signOut();
     setActiveScenario(null);
     setView("home");
+    setWhatsNew(null);
   }
 
   const showBuilder = builderEnabled && canBuildScenarios(profile);
@@ -173,7 +214,14 @@ export default function App() {
   } else if (view === "about") {
     content = <About />;
   } else if (view === "settings") {
-    content = <Settings profile={profile} onProfileChange={setProfile} onSignOut={handleSignOut} />;
+    content = (
+      <Settings
+        profile={profile}
+        onProfileChange={setProfile}
+        onSignOut={handleSignOut}
+        onNavigate={navigate}
+      />
+    );
   } else {
     content = <Home scenarios={SCENARIOS} profile={profile} onSelect={selectScenario} />;
   }
@@ -191,6 +239,7 @@ export default function App() {
       <div className="app-content" key={activeScenario ? `scenario-${activeScenario.id}` : view}>
         {content}
       </div>
+      <WhatsNewModal release={whatsNew} onDismiss={dismissWhatsNew} />
     </div>
   );
 }
