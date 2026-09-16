@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getThemePreference, setThemePreference } from "../utils/theme";
+import { getAccentPreference, setAccentPreference, ACCENT_OPTIONS } from "../utils/accent";
+import { getTextSizePreference, setTextSizePreference, TEXT_SIZE_OPTIONS } from "../utils/textSize";
 import { clearMyHistory } from "../utils/storage";
 import { isAdminProfile, updateName } from "../utils/profiles";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -21,6 +23,27 @@ const THEME_OPTIONS = [
   { value: "dark", label: "Dark" },
 ];
 
+// Arrow-key navigation for a segmented/swatch radiogroup, per the ARIA
+// "radio group" pattern: selection follows focus, and only the selected
+// option is normally tab-stoppable (roving tabindex, set alongside each
+// use of this below). Takes the event handler does the ref lookup itself,
+// rather than a factory called during render with the ref as an argument
+// — the react-hooks/refs rule (rightly) won't allow a ref value anywhere
+// near a render-time function call, even just passed through unread.
+function rovingKeyDown(options, current, onChange, refs, e) {
+  const idx = options.findIndex((o) => o.value === current);
+  let nextIdx = null;
+  if (e.key === "ArrowRight" || e.key === "ArrowDown") nextIdx = (idx + 1) % options.length;
+  else if (e.key === "ArrowLeft" || e.key === "ArrowUp") nextIdx = (idx - 1 + options.length) % options.length;
+  else if (e.key === "Home") nextIdx = 0;
+  else if (e.key === "End") nextIdx = options.length - 1;
+  if (nextIdx === null) return;
+  e.preventDefault();
+  const nextValue = options[nextIdx].value;
+  onChange(nextValue);
+  refs.current[nextValue]?.focus();
+}
+
 const BASE_TABS = [
   { id: "appearance", label: "Appearance" },
   { id: "account", label: "Account" },
@@ -33,8 +56,9 @@ const ADMIN_TABS = [
 ];
 
 /**
- * Settings, split into tabs: Appearance (theme), Account (your name, sign
- * out, clear your history — plus a photo, email, password, and social
+ * Settings, split into tabs: Appearance (theme, accent color, text size),
+ * Account (your name, sign out, clear your history — plus a photo,
+ * email, password, and social
  * links from AccountTools.jsx, live only once the 'account-profile-tools'
  * feature flag is published), About (the full mission/credits write-up,
  * shared with the top-level About screen — see AboutContent.jsx), What's
@@ -51,7 +75,11 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
   const [tab, setTab] = useState("appearance");
 
   const [theme, setTheme] = useState(getThemePreference);
-  const optionRefs = useRef({});
+  const themeRefs = useRef({});
+  const [accent, setAccent] = useState(getAccentPreference);
+  const accentRefs = useRef({});
+  const [textSize, setTextSize] = useState(getTextSizePreference);
+  const sizeRefs = useRef({});
 
   const [name, setName] = useState(profile.name);
   const [nameStatus, setNameStatus] = useState("");
@@ -77,26 +105,26 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
     setTheme(value);
   }
 
-  // Arrow-key navigation for the theme segmented control, per the ARIA
-  // "radio group" pattern: selection follows focus, and only the selected
-  // option is normally tab-stoppable (roving tabindex, set in the JSX below).
+  function handleAccentChange(value) {
+    setAccentPreference(value);
+    setAccent(value);
+  }
+
+  function handleTextSizeChange(value) {
+    setTextSizePreference(value);
+    setTextSize(value);
+  }
+
   function handleThemeKeyDown(e) {
-    const idx = THEME_OPTIONS.findIndex((o) => o.value === theme);
-    let nextIdx = null;
-    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-      nextIdx = (idx + 1) % THEME_OPTIONS.length;
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-      nextIdx = (idx - 1 + THEME_OPTIONS.length) % THEME_OPTIONS.length;
-    } else if (e.key === "Home") {
-      nextIdx = 0;
-    } else if (e.key === "End") {
-      nextIdx = THEME_OPTIONS.length - 1;
-    }
-    if (nextIdx === null) return;
-    e.preventDefault();
-    const nextValue = THEME_OPTIONS[nextIdx].value;
-    handleThemeChange(nextValue);
-    optionRefs.current[nextValue]?.focus();
+    rovingKeyDown(THEME_OPTIONS, theme, handleThemeChange, themeRefs, e);
+  }
+
+  function handleAccentKeyDown(e) {
+    rovingKeyDown(ACCENT_OPTIONS, accent, handleAccentChange, accentRefs, e);
+  }
+
+  function handleTextSizeKeyDown(e) {
+    rovingKeyDown(TEXT_SIZE_OPTIONS, textSize, handleTextSizeChange, sizeRefs, e);
   }
 
   async function handleSaveName(e) {
@@ -154,12 +182,14 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
       {tab === "appearance" && (
         <section className="settings-section">
           <h2 className="settings-section__title">Appearance</h2>
-          <div className="segmented" role="radiogroup" aria-label="Theme">
+
+          <p className="field__label">Theme</p>
+          <div className="segmented settings-row" role="radiogroup" aria-label="Theme">
             {THEME_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 ref={(el) => {
-                  optionRefs.current[opt.value] = el;
+                  themeRefs.current[opt.value] = el;
                 }}
                 type="button"
                 role="radio"
@@ -170,6 +200,51 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
                 }`}
                 onClick={() => handleThemeChange(opt.value)}
                 onKeyDown={handleThemeKeyDown}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          <p className="field__label field__label--spaced">Accent color</p>
+          <div className="swatch-picker settings-row" role="radiogroup" aria-label="Accent color">
+            {ACCENT_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                ref={(el) => {
+                  accentRefs.current[opt.value] = el;
+                }}
+                type="button"
+                role="radio"
+                aria-checked={accent === opt.value}
+                tabIndex={accent === opt.value ? 0 : -1}
+                className={`swatch ${accent === opt.value ? "swatch--active" : ""}`}
+                style={{ background: opt.swatch }}
+                onClick={() => handleAccentChange(opt.value)}
+                onKeyDown={handleAccentKeyDown}
+              >
+                <span className="sr-only">{opt.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <p className="field__label field__label--spaced">Text size</p>
+          <div className="segmented" role="radiogroup" aria-label="Text size">
+            {TEXT_SIZE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                ref={(el) => {
+                  sizeRefs.current[opt.value] = el;
+                }}
+                type="button"
+                role="radio"
+                aria-checked={textSize === opt.value}
+                tabIndex={textSize === opt.value ? 0 : -1}
+                className={`segmented__option ${
+                  textSize === opt.value ? "segmented__option--active" : ""
+                }`}
+                onClick={() => handleTextSizeChange(opt.value)}
+                onKeyDown={handleTextSizeKeyDown}
               >
                 {opt.label}
               </button>

@@ -89,3 +89,31 @@ export function isFeatureEnabled(flag, profile) {
   if (!flag) return false;
   return flag.status === "published" || Boolean(profile?.is_admin);
 }
+
+/**
+ * A starting-point description for a new flag, from its name alone —
+ * template text, not anything AI-written (this app has no LLM
+ * integration). Shown as a live suggestion while adding a flag in
+ * Previews.jsx; freely editable, same as the version number suggested
+ * when publishing.
+ */
+export function suggestFlagDescription(label) {
+  const trimmed = label.trim();
+  if (!trimmed) return "";
+  return `Try out ${trimmed} before it ships to everyone.`;
+}
+
+/**
+ * A starting-point changelog blurb for whichever flags are about to be
+ * published, from their names and descriptions — template text, not
+ * anything AI-written. Prefills PublishDialog's "What changed" field;
+ * freely editable before actually publishing.
+ */
+export function suggestChangelog(flags) {
+  if (!flags || flags.length === 0) return "";
+  if (flags.length === 1) {
+    const f = flags[0];
+    return f.description ? `${f.label} — ${f.description}` : `Added ${f.label}.`;
+  }
+  return `Added: ${flags.map((f) => f.label).join(", ")}.`;
+}

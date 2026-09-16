@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
+import { suggestChangelog } from "../utils/featureFlags";
 
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
 
 /**
  * The form shown when publishing one or more feature flags: pick a
  * version number (prefilled with a suggested next patch bump) and write
- * a changelog blurb, which together become a new row in `releases` — see
+ * a changelog blurb (prefilled with a suggestion built from the flags'
+ * names/descriptions — template text, not AI-written; this app has no
+ * LLM integration), which together become a new row in `releases` — see
  * utils/featureFlags.js's publishFeatureFlags(). Shares the same
  * backdrop/overlay behavior as ConfirmDialog, just with real form fields
  * instead of a yes/no message.
@@ -17,7 +20,7 @@ const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
  */
 export default function PublishDialog({ flags, initialVersion, error, busy, onCancel, onConfirm }) {
   const [version, setVersion] = useState(initialVersion || "");
-  const [changelog, setChangelog] = useState("");
+  const [changelog, setChangelog] = useState(() => suggestChangelog(flags));
 
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onCancel();

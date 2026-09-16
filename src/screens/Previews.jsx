@@ -6,6 +6,7 @@ import {
   createFeatureFlag,
   unpublishFeatureFlag,
   publishFeatureFlags,
+  suggestFlagDescription,
 } from "../utils/featureFlags";
 import { listReleases, suggestNextVersion } from "../utils/releases";
 
@@ -30,6 +31,10 @@ export default function Previews({ profile }) {
 
   const [newLabel, setNewLabel] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  // Tracks whether the admin has typed their own description — until
+  // then, it auto-fills from the name (same "auto until overridden"
+  // pattern as the scenario builder's id-from-title).
+  const [descriptionTouched, setDescriptionTouched] = useState(false);
   const [addError, setAddError] = useState("");
 
   const [publishRequest, setPublishRequest] = useState(null);
@@ -49,6 +54,16 @@ export default function Previews({ profile }) {
       .catch((err) => setLoadError(err.message || "Couldn't load previews."));
   }
 
+  function handleLabelChange(value) {
+    setNewLabel(value);
+    if (!descriptionTouched) setNewDescription(suggestFlagDescription(value));
+  }
+
+  function handleDescriptionChange(value) {
+    setNewDescription(value);
+    setDescriptionTouched(true);
+  }
+
   async function handleAddFlag(e) {
     e.preventDefault();
     setAddError("");
@@ -56,6 +71,7 @@ export default function Previews({ profile }) {
       await createFeatureFlag(newLabel, newDescription);
       setNewLabel("");
       setNewDescription("");
+      setDescriptionTouched(false);
       refresh();
     } catch (err) {
       setAddError(err.message || "Couldn't add that.");
@@ -114,15 +130,15 @@ export default function Previews({ profile }) {
             className="field-input"
             style={{ flex: "1 1 12rem" }}
             value={newLabel}
-            onChange={(e) => setNewLabel(e.target.value)}
+            onChange={(e) => handleLabelChange(e.target.value)}
             placeholder="Feature name"
           />
           <input
             className="field-input"
             style={{ flex: "2 1 16rem" }}
             value={newDescription}
-            onChange={(e) => setNewDescription(e.target.value)}
-            placeholder="Short description (optional)"
+            onChange={(e) => handleDescriptionChange(e.target.value)}
+            placeholder="Short description (auto-suggested from the name)"
           />
           <button type="submit" className="btn btn--ghost" disabled={!newLabel.trim()}>
             + Add

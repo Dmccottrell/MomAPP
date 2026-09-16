@@ -121,6 +121,21 @@ predates it and the tour won't stay dismissed, re-run `schema.sql` once (see
 below) to add the missing column — after that one-time fix, it behaves
 correctly going forward.
 
+### Appearance customization
+
+Settings → Appearance has three independent preferences, each stored in
+`localStorage` and applied as an attribute on `<html>` (`data-theme`,
+`data-accent`, `data-text-size`) that index.css keys its CSS custom
+properties off of — same pattern for all three, see `utils/theme.js`,
+`utils/accent.js`, and `utils/textSize.js`:
+
+- **Theme** — System / Light / Dark, as before.
+- **Accent color** — 5 presets (Forest is the original color and the
+  default); each has its own light- and dark-mode shade, so switching
+  theme doesn't wash out or clash with whichever accent is picked.
+- **Text size** — Small / Medium / Large, scaling the root font size and,
+  through it, everything else in the app measured in `rem`.
+
 ### Feature previews and releases
 
 Settings → Previews (admin only) is where a work-in-progress feature gets
@@ -129,13 +144,18 @@ becomes a real, dated changelog entry:
 
 - **A feature flag** (`feature_flags` table) starts "in preview" — enabled
   only for the admin, via `utils/featureFlags.js`'s `isFeatureEnabled()`.
-  Nothing in the app actually checks a flag yet; this is the control
-  surface for whenever a feature starts gating itself on one.
+  The 'account-profile-tools' flag (Settings → Account's expanded tools)
+  is the one real feature actually gated on one today.
+- Adding a flag **auto-suggests its description from the name you type**
+  (editable, same "auto until overridden" pattern as the scenario
+  builder's id-from-title) — template text, not AI-written; this app has
+  no LLM integration anywhere.
 - **Publishing** one flag, or several at once via "Publish all," asks for a
   version number (a patch bump off the last one is suggested, but it's a
-  plain text field) and a changelog blurb, then does two things: flips
-  those flags to "published" and writes a new row to the `releases` table.
-  Not a real database transaction — see the comment in
+  plain text field) and a changelog blurb (also auto-suggested, from the
+  flags' names and descriptions — same caveat, template text), then does
+  two things: flips those flags to "published" and writes a new row to the
+  `releases` table. Not a real database transaction — see the comment in
   `publishFeatureFlags()` for what that means if the second write fails.
 - **Release history** (readable by everyone, not just the admin — see the
   RLS policy in `supabase/schema.sql`) is that `releases` table, newest
@@ -240,7 +260,8 @@ src/
 ├── App.jsx                   App shell: auth gate, nav, view switch
 ├── ScenarioPlayer.jsx        Owns scenario state; decides which screen shows
 ├── index.css                 All styling, incl. light/dark theme tokens
-├── main.jsx                  Entry point; applies the saved theme before render
+├── main.jsx                  Entry point; applies the saved theme, accent
+│                              color, and text size before the first render
 ├── screens/
 │   ├── Auth.jsx               Sign in / sign up (incl. 3 security questions)
 │   ├── ForgotPassword.jsx      Security-question password reset, a mode of Auth.jsx
@@ -299,6 +320,8 @@ src/
 │   ├── releases.js             Read-only changelog queries
 │   ├── avatar.js              Deterministic color + initials for Avatar.jsx
 │   ├── theme.js                Light/dark/system theme preference
+│   ├── accent.js                Accent color preference (5 presets)
+│   ├── textSize.js              Text size preference (small/medium/large)
 │   ├── viewTransition.js       Cross-fade wrapper around a state update
 │   └── time.js                Clock helpers
 └── scenarios/

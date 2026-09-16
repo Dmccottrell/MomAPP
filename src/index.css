@@ -27,7 +27,16 @@
 
   --sans: "IBM Plex Sans", system-ui, sans-serif;
   --serif: "Source Serif 4", Georgia, serif;
+
+  --text-scale: 16px;
 }
+
+/* Text size preference (Settings → Appearance) — scales the root font
+   size and, through it, everything measured in rem across the app. */
+:root[data-text-size="small"] { --text-scale: 14.5px; }
+:root[data-text-size="large"] { --text-scale: 18px; }
+
+html { font-size: var(--text-scale); }
 
 /* System preference drives the palette when the user hasn't overridden it. */
 @media (prefers-color-scheme: dark) {
@@ -69,6 +78,30 @@
   --shadow-md: 0 10px 26px rgba(0, 0, 0, 0.38);
 }
 
+/* Accent color preference (Settings → Appearance) — overrides just the
+   three chart-color variables, layered on top of whichever light/dark
+   palette above is already active. "forest" is the original color and
+   needs no override (no [data-accent] attribute gets set for it — see
+   utils/accent.js), so only the other four are listed here. Each has a
+   light-mode value and two dark-mode ones (system-driven and explicit),
+   mirroring the theme blocks above exactly so it wins the cascade the
+   same way regardless of which one applies. */
+:root[data-accent="indigo"] { --chart: #3a5a99; --chart-strong: #2c4577; --chart-wash: #e8edf6; }
+:root[data-accent="plum"] { --chart: #7d3f72; --chart-strong: #5f2f57; --chart-wash: #f3e8f0; }
+:root[data-accent="rust"] { --chart: #9c4a24; --chart-strong: #7a3a1c; --chart-wash: #f5e9e1; }
+:root[data-accent="rose"] { --chart: #a13860; --chart-strong: #7e2a4a; --chart-wash: #f7e7ed; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-accent="indigo"] { --chart: #7fa0e0; --chart-strong: #9db8ea; --chart-wash: rgba(127, 160, 224, 0.16); }
+  :root:not([data-theme="light"])[data-accent="plum"] { --chart: #d992c9; --chart-strong: #e6aed9; --chart-wash: rgba(217, 146, 201, 0.16); }
+  :root:not([data-theme="light"])[data-accent="rust"] { --chart: #e08f5c; --chart-strong: #eaa77e; --chart-wash: rgba(224, 143, 92, 0.16); }
+  :root:not([data-theme="light"])[data-accent="rose"] { --chart: #e587a8; --chart-strong: #edaac2; --chart-wash: rgba(229, 135, 168, 0.16); }
+}
+:root[data-theme="dark"][data-accent="indigo"] { --chart: #7fa0e0; --chart-strong: #9db8ea; --chart-wash: rgba(127, 160, 224, 0.16); }
+:root[data-theme="dark"][data-accent="plum"] { --chart: #d992c9; --chart-strong: #e6aed9; --chart-wash: rgba(217, 146, 201, 0.16); }
+:root[data-theme="dark"][data-accent="rust"] { --chart: #e08f5c; --chart-strong: #eaa77e; --chart-wash: rgba(224, 143, 92, 0.16); }
+:root[data-theme="dark"][data-accent="rose"] { --chart: #e587a8; --chart-strong: #edaac2; --chart-wash: rgba(229, 135, 168, 0.16); }
+
 * { box-sizing: border-box; }
 
 body {
@@ -76,7 +109,7 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
@@ -608,6 +641,31 @@ summary:focus-visible {
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .segmented__option--active { background: var(--card); color: var(--ink); box-shadow: var(--shadow-sm); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The accent-color picker on Settings → Appearance. */
+.swatch-picker { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+.swatch {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.swatch:hover { transform: scale(1.08); }
+.swatch--active { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--ink); }
 
 /* ---------------- layout ---------------- */
 
