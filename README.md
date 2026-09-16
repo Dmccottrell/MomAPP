@@ -162,6 +162,13 @@ becomes a real, dated changelog entry:
   first. It's shown on Settings → What's new for everyone, and again on
   the admin's Previews tab alongside the flags. The current version itself
   shows separately, as a quiet footer at the bottom of every Settings tab.
+  Each release also carries every published flag's own description, not
+  just its name, so What's new and the popup can explain each change, not
+  only list what shipped.
+- **Unpublishing** the last still-live flag from a release deletes that
+  release's changelog entry too — see `unpublishFeatureFlag()`. A release
+  that combined this flag with others still published stays, since those
+  others really did ship.
 - **The "what's new" popup** (`components/WhatsNewModal.jsx`) shows once
   per account per version: App.jsx compares the latest release's version
   against that profile's `last_seen_version` after sign-in and pops the

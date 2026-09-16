@@ -254,6 +254,16 @@ create policy "Admins can create releases"
     exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin)
   );
 
+-- Lets utils/featureFlags.js's unpublishFeatureFlag() remove a release's
+-- changelog entry once every flag it published has been unpublished
+-- again — "unpublish" should mean it disappears, not stay listed as
+-- something that shipped.
+drop policy if exists "Admins can delete releases" on public.releases;
+create policy "Admins can delete releases"
+  on public.releases for delete using (
+    exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin)
+  );
+
 insert into public.releases (version, changelog, published_flags, published_by)
 values (
   '1.0.0',

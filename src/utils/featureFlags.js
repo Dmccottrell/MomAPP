@@ -36,13 +36,41 @@ export async function createFeatureFlag(label, description) {
   }
 }
 
-/** Moves a published flag back to preview — instantly hides it from everyone but the admin again. */
+/**
+ * Moves a published flag back to preview — instantly hides it from
+ * everyone but the admin again. If this was the last still-published
+ * flag from whichever version it shipped in, that release's changelog
+ * entry is deleted too — "unpublish" should mean it's gone, not stay
+ * listed as something that shipped. A release that combined this flag
+ * with others still live stays, since those others really did ship.
+ */
 export async function unpublishFeatureFlag(id) {
+  const { data: current, error: fetchError } = await supabase
+    .from("feature_flags")
+    .select("published_in_version")
+    .eq("id", id)
+    .single();
+  if (fetchError) throw fetchError;
+  const version = current?.published_in_version;
+
   const { error } = await supabase
     .from("feature_flags")
     .update({ status: "preview", published_at: null, published_in_version: null })
     .eq("id", id);
   if (error) throw error;
+
+  if (!version) return;
+
+  const { data: stillLive, error: checkError } = await supabase
+    .from("feature_flags")
+    .select("id")
+    .eq("published_in_version", version)
+    .eq("status", "published");
+  if (checkError) throw checkError;
+
+  if (!stillLive || stillLive.length === 0) {
+    await supabase.from("releases").delete().eq("version", version);
+  }
 }
 
 /**
