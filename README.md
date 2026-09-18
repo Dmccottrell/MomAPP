@@ -418,5 +418,3 @@ no custom server — two small Edge Functions (deleting an account, and the
 security-question password reset) for the two things that genuinely need
 Supabase's Admin API. Everything else runs off row-level security instead
 of hand-rolled backend logic.
-
-<!-- deploy check: 2026-09-18 -->
