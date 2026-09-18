@@ -73,3 +73,11 @@ export function CloseIcon(props) {
     </svg>
   );
 }
+
+export function ChevronIcon(props) {
+  return (
+    <svg {...common} {...props}>
+      <path d="M7 4.5 13 10l-6 5.5" />
+    </svg>
+  );
+}

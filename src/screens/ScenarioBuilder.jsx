@@ -1,8 +1,20 @@
 import { useState } from "react";
 import Notice from "../components/Notice";
 import ConfirmDialog from "../components/ConfirmDialog";
+import CollapsibleSection from "../components/CollapsibleSection";
+import { ChevronIcon } from "../components/icons";
 import { slugify } from "../utils/customScenarios";
 import { findPossiblePHI } from "../utils/phiCheck";
+
+/** Drops `removed` from an open-item index set and shifts the rest down. */
+function withoutIndex(set, removed) {
+  const next = new Set();
+  set.forEach((i) => {
+    if (i === removed) return;
+    next.add(i > removed ? i - 1 : i);
+  });
+  return next;
+}
 
 /** A labeled, add/remove-able list of plain-text rows (objectives, hints, medications, ...). */
 function StringListEditor({ label, values, onChange, placeholder }) {
@@ -75,6 +87,28 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
   const [scenario, setScenario] = useState(initial);
   const [error, setError] = useState("");
   const [pendingSave, setPendingSave] = useState(null);
+  // Which action/requirement editors are expanded, by current index — both
+  // start fully collapsed so an existing scenario with several of each
+  // doesn't open as one long scroll of fields.
+  const [openActions, setOpenActions] = useState(() => new Set());
+  const [openRequirements, setOpenRequirements] = useState(() => new Set());
+
+  function toggleActionOpen(i) {
+    setOpenActions((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }
+  function toggleRequirementOpen(i) {
+    setOpenRequirements((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }
 
   function set(path, value) {
     setScenario((s) => {
@@ -92,10 +126,13 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
   }
   function addAction() {
     const correctCount = scenario.actions.filter((a) => a.correct).length;
-    set(["actions"], [...scenario.actions, emptyAction(correctCount + 1)]);
+    const next = [...scenario.actions, emptyAction(correctCount + 1)];
+    set(["actions"], next);
+    setOpenActions((prev) => new Set(prev).add(next.length - 1));
   }
   function removeAction(i) {
     set(["actions"], scenario.actions.filter((_, idx) => idx !== i));
+    setOpenActions((prev) => withoutIndex(prev, i));
   }
 
   function updateRequirement(i, patch) {
@@ -105,16 +142,16 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
     set(["documentation", "requirements"], next);
   }
   function addRequirement() {
-    set(
-      ["documentation", "requirements"],
-      [...scenario.documentation.requirements, emptyRequirement()]
-    );
+    const next = [...scenario.documentation.requirements, emptyRequirement()];
+    set(["documentation", "requirements"], next);
+    setOpenRequirements((prev) => new Set(prev).add(next.length - 1));
   }
   function removeRequirement(i) {
     set(
       ["documentation", "requirements"],
       scenario.documentation.requirements.filter((_, idx) => idx !== i)
     );
+    setOpenRequirements((prev) => withoutIndex(prev, i));
   }
 
   function handleTitleChange(title) {
@@ -187,8 +224,7 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
         text in this browser, which is not HIPAA-compliant storage.
       </Notice>
 
-      <section className="settings-section">
-        <h2 className="settings-section__title">Basics</h2>
+      <CollapsibleSection title="Basics">
         <div className="field-grid">
           <label className="field">
             <span className="field__label">Title</span>
@@ -240,10 +276,9 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
           onChange={(v) => set(["objectives"], v)}
           placeholder="What the learner should be able to do afterward"
         />
-      </section>
+      </CollapsibleSection>
 
-      <section className="settings-section">
-        <h2 className="settings-section__title">Patient</h2>
+      <CollapsibleSection title="Patient">
         <div className="field-grid">
           <label className="field">
             <span className="field__label">Name</span>
@@ -316,10 +351,9 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
           onChange={(v) => set(["patient", "allergies"], v)}
           placeholder="e.g. Penicillin, or NKDA"
         />
-      </section>
+      </CollapsibleSection>
 
-      <section className="settings-section">
-        <h2 className="settings-section__title">Vitals at the start</h2>
+      <CollapsibleSection title="Vitals at the start">
         <div className="field-grid field-grid--vitals">
           {Object.keys(scenario.vitals).map((k) => (
             <label className="field" key={k}>
@@ -332,10 +366,9 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
             </label>
           ))}
         </div>
-      </section>
+      </CollapsibleSection>
 
-      <section className="settings-section">
-        <h2 className="settings-section__title">Opening</h2>
+      <CollapsibleSection title="Opening">
         <div className="field-grid">
           <label className="field">
             <span className="field__label">Clock start (24h, e.g. 21:04)</span>
@@ -363,24 +396,38 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
             onChange={(e) => set(["opening"], e.target.value)}
           />
         </label>
-      </section>
+      </CollapsibleSection>
 
-      <section className="settings-section">
-        <h2 className="settings-section__title">
-          Actions
-          <span className="settings-section__hint">
-            {" "}
-            — five to seven correct, two or three plausible wrong ones
-          </span>
-        </h2>
-        {scenario.actions.map((a, i) => (
+      <CollapsibleSection
+        title="Actions"
+        hint="five to seven correct, two or three plausible wrong ones"
+      >
+        {scenario.actions.map((a, i) => {
+          const isOpen = openActions.has(i);
+          return (
           <div className="action-editor" key={i}>
             <div className="action-editor__head">
-              <strong>Action {i + 1}</strong>
+              <button
+                type="button"
+                className="action-editor__head--toggle"
+                onClick={() => toggleActionOpen(i)}
+                aria-expanded={isOpen}
+              >
+                <ChevronIcon
+                  className={`collapsible__chevron${isOpen ? " collapsible__chevron--open" : ""}`}
+                />
+                <strong className="action-editor__title">
+                  Action {i + 1}
+                  {a.label && ` — ${a.label}`}
+                </strong>
+                {!a.correct && <span className="action-editor__badge">wrong option</span>}
+              </button>
               <button type="button" className="field-row__remove" onClick={() => removeAction(i)} aria-label="Remove action">
                 ×
               </button>
             </div>
+            {isOpen && (
+            <>
             <div className="field-grid">
               <label className="field">
                 <span className="field__label">Id</span>
@@ -470,25 +517,26 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
                 />
               </label>
             )}
+            </>
+            )}
           </div>
-        ))}
+          );
+        })}
         <button type="button" className="btn btn--ghost" onClick={addAction}>
           + Add action
         </button>
-      </section>
+      </CollapsibleSection>
 
-      <section className="settings-section">
-        <h2 className="settings-section__title">Hints</h2>
+      <CollapsibleSection title="Hints">
         <StringListEditor
           label="Shown one at a time, gentlest first"
           values={scenario.hints}
           onChange={(v) => set(["hints"], v)}
           placeholder="A nudge toward the next right step"
         />
-      </section>
+      </CollapsibleSection>
 
-      <section className="settings-section">
-        <h2 className="settings-section__title">Documentation</h2>
+      <CollapsibleSection title="Documentation">
         <label className="field">
           <span className="field__label">Prompt</span>
           <input
@@ -507,10 +555,25 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
         </label>
 
         <h3 className="field__label field__label--spaced">Requirements</h3>
-        {doc.requirements.map((r, i) => (
+        {doc.requirements.map((r, i) => {
+          const isOpen = openRequirements.has(i);
+          return (
           <div className="action-editor" key={i}>
             <div className="action-editor__head">
-              <strong>Requirement {i + 1}</strong>
+              <button
+                type="button"
+                className="action-editor__head--toggle"
+                onClick={() => toggleRequirementOpen(i)}
+                aria-expanded={isOpen}
+              >
+                <ChevronIcon
+                  className={`collapsible__chevron${isOpen ? " collapsible__chevron--open" : ""}`}
+                />
+                <strong className="action-editor__title">
+                  Requirement {i + 1}
+                  {r.label && ` — ${r.label}`}
+                </strong>
+              </button>
               <button
                 type="button"
                 className="field-row__remove"
@@ -520,6 +583,8 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
                 ×
               </button>
             </div>
+            {isOpen && (
+            <>
             <div className="field-grid">
               <label className="field">
                 <span className="field__label">Id</span>
@@ -558,8 +623,11 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
                 onChange={(e) => updateRequirement(i, { why: e.target.value })}
               />
             </label>
+            </>
+            )}
           </div>
-        ))}
+          );
+        })}
         <button type="button" className="btn btn--ghost" onClick={addRequirement}>
           + Add requirement
         </button>
@@ -579,7 +647,7 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
           onChange={(v) => set(["documentation", "pitfalls"], v)}
           placeholder="A mistake worth naming"
         />
-      </section>
+      </CollapsibleSection>
 
       {error && <p className="builder__error">{error}</p>}
 
