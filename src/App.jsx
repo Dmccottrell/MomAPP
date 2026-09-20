@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import NavBar from "./components/NavBar";
 import ScenarioPlayer from "./ScenarioPlayer";
 import Home from "./screens/Home";
@@ -233,6 +234,7 @@ export default function App() {
         {content}
       </div>
       <WhatsNewModal release={whatsNew} onDismiss={dismissWhatsNew} />
+      <Analytics />
     </div>
   );
 }
