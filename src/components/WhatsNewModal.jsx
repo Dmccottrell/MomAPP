@@ -11,12 +11,15 @@ import { CloseIcon } from "./icons";
  * silently for them instead — there's nothing "new" to someone seeing
  * the app for the first time).
  *
- * Deliberately just a headline and the changelog paragraph — no
- * per-flag bullet list. The admin's changelog already says what
- * changed; repeating each flag's own label/description underneath it
- * (Previews' Release History does that, for the admin) was the same
- * information twice and made this feel cluttered for a popup that's
- * supposed to be a quick, skimmable "here's what's new."
+ * Deliberately just a headline and the changelog — no per-flag bullet
+ * list. The admin's changelog already says what changed; repeating each
+ * flag's own label/description underneath it (Previews' Release History
+ * does that, for the admin) was the same information twice. The
+ * changelog itself is typically one line per feature (see
+ * utils/releases.js's suggestChangelog), so each line renders as its
+ * own paragraph with real spacing between them — run together as one
+ * white-space:pre-line block, back-to-back feature blurbs read as a
+ * dense wall of text with no breathing room.
  */
 export default function WhatsNewModal({ release, onDismiss }) {
   useEffect(() => {
@@ -49,7 +52,16 @@ export default function WhatsNewModal({ release, onDismiss }) {
             <CloseIcon />
           </button>
         </div>
-        <p className="confirm-dialog__message">{release.changelog}</p>
+        <div className="whats-new__body">
+          {release.changelog
+            .split("\n")
+            .filter((line) => line.trim())
+            .map((line, i) => (
+              <p key={i} className="confirm-dialog__message whats-new__line">
+                {line}
+              </p>
+            ))}
+        </div>
         <div className="confirm-dialog__actions">
           <button type="button" className="btn btn--go" onClick={onDismiss}>
             Got it

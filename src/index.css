@@ -415,6 +415,14 @@ summary:focus-visible {
 .whats-new__close svg { width: 16px; height: 16px; }
 .whats-new__close:hover { background: var(--chart-wash); color: var(--chart); }
 
+/* One paragraph per changelog line (WhatsNewModal splits on "\n"), each
+   with its own bottom margin instead of running together as a single
+   white-space:pre-line block — that's what gives back-to-back feature
+   blurbs actual breathing room. */
+.whats-new__body { margin-bottom: 1.25rem; }
+.whats-new__line { margin: 0 0 0.9rem; }
+.whats-new__line:last-child { margin-bottom: 0; }
+
 /* ---------------- avatar ---------------- */
 
 .avatar {
