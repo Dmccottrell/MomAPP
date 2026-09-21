@@ -178,7 +178,10 @@ summary:focus-visible {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.85rem 1.5rem;
+  padding-top: max(0.85rem, env(safe-area-inset-top));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+  padding-bottom: 0.85rem;
+  padding-left: max(1.5rem, env(safe-area-inset-left));
   background: var(--card);
   background: color-mix(in srgb, var(--card) 88%, transparent);
   backdrop-filter: blur(10px);
@@ -248,7 +251,10 @@ summary:focus-visible {
   align-items: stretch;
   justify-content: flex-start;
   gap: 1.75rem;
-  padding: 4.5rem 1.25rem 1.5rem;
+  padding-top: calc(4.5rem + env(safe-area-inset-top));
+  padding-right: calc(1.25rem + env(safe-area-inset-right));
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  padding-left: 1.25rem;
   background: var(--card);
   border-left: 1px solid var(--rule);
   box-shadow: -12px 0 28px rgba(0, 0, 0, 0.14);
@@ -1299,6 +1305,32 @@ summary:focus-visible {
   margin: 0 0 1.5rem;
 }
 .notice--warning { background: var(--stop-wash); color: var(--stop); border: 1px solid var(--stop); }
+
+/* ---------------- update prompt ---------------- */
+/* A new app build has finished installing in the background (see
+   utils/registerSW via components/UpdatePrompt.jsx) and is waiting for
+   this nod before it takes over — never swapped in automatically, since
+   that could yank a scenario out from under someone mid-run. */
+
+.update-prompt {
+  position: fixed;
+  left: 50%;
+  bottom: max(1.25rem, calc(env(safe-area-inset-bottom) + 0.5rem));
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0.8rem 0.7rem 1.1rem;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  font-size: 0.9rem;
+  animation: viewIn 260ms var(--ease);
+}
+.update-prompt__btn { padding: 0.45rem 1rem; font-size: 0.85rem; }
 
 /* ---------------- my scenarios ---------------- */
 
