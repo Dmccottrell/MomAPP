@@ -61,7 +61,8 @@ const ADMIN_TABS = [
  * email, password, and social
  * links from AccountTools.jsx, live only once the 'account-profile-tools'
  * feature flag is published), About (the full mission/credits write-up,
- * shared with the top-level About screen — see AboutContent.jsx), What's
+ * shared with the top-level About screen — see AboutContent.jsx; dropped
+ * once the 'single-about' flag is on), What's
  * new (the full release history), and — admin only — User management
  * (access + accounts) and Previews (feature flags + publishing).
  * Everything admin-only is gated both here (so the tab doesn't even
@@ -69,9 +70,12 @@ const ADMIN_TABS = [
  * grant access the database would refuse. The current version shows only
  * once, as a quiet footer at the bottom of the page — not repeated per tab.
  */
-export default function Settings({ profile, onProfileChange, onSignOut }) {
+export default function Settings({ profile, onProfileChange, onSignOut, hideAboutTab = false }) {
   const admin = isAdminProfile(profile);
-  const tabs = admin ? [...BASE_TABS, ...ADMIN_TABS] : BASE_TABS;
+  // With the 'single-about' flag the nav bar's About page is the only About,
+  // so the tab here is dropped rather than duplicating it.
+  const baseTabs = hideAboutTab ? BASE_TABS.filter((t) => t.id !== "about") : BASE_TABS;
+  const tabs = admin ? [...baseTabs, ...ADMIN_TABS] : baseTabs;
   const [tab, setTab] = useState("appearance");
 
   const [theme, setTheme] = useState(getThemePreference);
@@ -295,7 +299,7 @@ export default function Settings({ profile, onProfileChange, onSignOut }) {
         </>
       )}
 
-      {tab === "about" && <AboutContent />}
+      {tab === "about" && !hideAboutTab && <AboutContent />}
 
       {tab === "whatsnew" && (
         <section className="settings-section">

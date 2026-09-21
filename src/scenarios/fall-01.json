@@ -94,7 +94,7 @@
       "detail": "Report the fall, findings, and anticoagulation status.",
       "correct": true,
       "order": 4,
-      "response": "You reach the on-call provider at 2118. New orders: STAT head CT, right hip X-ray, hold the next apixaban dose pending imaging, neuro checks q1h x 4 then q4h x 24h.",
+      "response": "You reach the on-call provider. New orders: STAT head CT, right hip X-ray, hold the next apixaban dose pending imaging, neuro checks q1h x 4 then q4h x 24h.",
       "timeCost": 4
     },
     {
@@ -112,7 +112,7 @@
       "detail": "Now that he is assessed and orders are in.",
       "correct": true,
       "order": 6,
-      "response": "You reach his daughter at 2135, explain what was found, the assessment, and the pending imaging. She asks to be called with results.",
+      "response": "You reach his daughter, explain what was found, the assessment, and the pending imaging. She asks to be called with results.",
       "timeCost": 3
     },
     {
@@ -194,7 +194,7 @@
         "why": "Closes the loop: what you did and what happens next."
       }
     ],
-    "modelNote": "2104 — Found resident sitting on floor at right bedside, next to overturned bedside commode. Fall unwitnessed. Resident alert and oriented x3, responsive to voice, denies head strike. Reports right hip pain 6/10. No obvious deformity or shortening of extremity. 3 cm skin tear noted to right forearm with scant oozing. Pupils equal and reactive at 3 mm, grip strength equal bilaterally, speech clear. VS post-fall: BP 128/76 supine, 108/64 sitting, HR 96, RR 20, SpO2 93% RA, temp 98.6. Reports mild dizziness on sitting. Resident receives apixaban 5 mg BID.\n\n2118 — Dr. Okafor notified of fall, assessment findings, and anticoagulation status. New orders received: STAT head CT, right hip X-ray, hold next apixaban dose pending imaging, neuro checks q1h x 4 then q4h x 24h.\n\nSkin tear cleansed with NS, edges approximated, non-adherent dressing applied and dated. Resident assisted to bed with two-person assist using gait belt, no distress during transfer. Bed in low position, call light placed within reach, non-skid socks applied. Daughter notified at 2135. Transport to radiology pending. Will continue neuro checks per order and monitor for change in condition.",
+    "modelNote": "2104 — Found resident sitting on floor at right bedside, next to overturned bedside commode. Fall unwitnessed. Resident alert and oriented x3, responsive to voice, denies head strike. Reports right hip pain 6/10. No obvious deformity or shortening of extremity. 3 cm skin tear noted to right forearm with scant oozing. Pupils equal and reactive at 3 mm, grip strength equal bilaterally, speech clear. VS post-fall: BP 128/76 supine, 108/64 sitting, HR 96, RR 20, SpO2 93% RA, temp 98.6. Reports mild dizziness on sitting. Resident receives apixaban 5 mg BID.\n\n2115 — Dr. Okafor notified of fall, assessment findings, and anticoagulation status. New orders received: STAT head CT, right hip X-ray, hold next apixaban dose pending imaging, neuro checks q1h x 4 then q4h x 24h.\n\nSkin tear cleansed with NS, edges approximated, non-adherent dressing applied and dated. Resident assisted to bed with two-person assist using gait belt, no distress during transfer. Bed in low position, call light placed within reach, non-skid socks applied. Daughter notified at 2121. Transport to radiology pending. Will continue neuro checks per order and monitor for change in condition.",
     "pitfalls": [
       "Writing 'patient fell' when no one saw it — say 'found on floor'.",
       "'Patient appears fine' — appears is not an assessment.",

@@ -367,6 +367,14 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into public.feature_flags (id, label, description)
+values (
+  'single-about',
+  'Single About page',
+  'Removes the duplicate About tab from Settings, and shows the latest version at the bottom of the About page in the menu.'
+)
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------
 -- security_answers: 3 security questions set up at signup, used by the
 -- "forgot password" flow on the sign-in screen as an alternative to the

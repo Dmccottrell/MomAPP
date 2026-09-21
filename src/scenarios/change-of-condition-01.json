@@ -85,7 +85,7 @@
       "detail": "Situation, background, assessment, recommendation — with the numbers in front of you.",
       "correct": true,
       "order": 5,
-      "response": "You reach Dr. Nguyen at 1414 and report the vitals, lung findings, and clear surgical site. New orders: STAT portable chest X-ray, blood cultures x2, start supplemental O2 at 2L NC, repeat vitals q30min.",
+      "response": "You reach Dr. Nguyen and report the vitals, lung findings, and clear surgical site. New orders: STAT portable chest X-ray, blood cultures x2, start supplemental O2 at 2L NC, repeat vitals q30min.",
       "timeCost": 4
     },
     {
@@ -203,7 +203,7 @@
         "why": "Closes the loop: what happens next."
       }
     ],
-    "modelNote": "1400 — Resident reports subjective shortness of breath and 'not feeling right' during hourly rounding; appears pale, mild tachypnea noted on entry. VS: BP 110/64, HR 118, RR 26, SpO2 90% on room air, Temp 101.6, pain 4/10. Lung sounds diminished at right base, no wheeze or stridor, mild accessory muscle use, no JVD. Surgical site clean/dry/intact, no erythema or drainage. Fingerstick glucose 142.\n\n1414 — Dr. Nguyen notified via SBAR of above findings. New orders received: STAT portable chest X-ray, blood cultures x2, oxygen 2L via nasal cannula, vitals q30min.\n\nOxygen applied at 2L via NC; SpO2 improved to 95%, resident reports easier breathing. Will continue frequent monitoring per new order and notify provider of any further change.",
+    "modelNote": "1400 — Resident reports subjective shortness of breath and 'not feeling right' during hourly rounding; appears pale, mild tachypnea noted on entry. VS: BP 110/64, HR 118, RR 26, SpO2 90% on room air, Temp 101.6, pain 4/10. Lung sounds diminished at right base, no wheeze or stridor, mild accessory muscle use, no JVD. Surgical site clean/dry/intact, no erythema or drainage. Fingerstick glucose 142.\n\n1413 — Dr. Nguyen notified via SBAR of above findings. New orders received: STAT portable chest X-ray, blood cultures x2, oxygen 2L via nasal cannula, vitals q30min.\n\nOxygen applied at 2L via NC; SpO2 improved to 95%, resident reports easier breathing. Will continue frequent monitoring per new order and notify provider of any further change.",
     "pitfalls": [
       "Writing 'patient seems anxious' as the explanation instead of documenting the objective findings.",
       "Charting a diagnosis ('developing pneumonia') instead of the assessment that prompted the workup.",

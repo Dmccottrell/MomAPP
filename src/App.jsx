@@ -30,6 +30,7 @@ import {
   SMART_NOTE_GRADING_FLAG_ID,
   SCENARIO_CATEGORIES_FLAG_ID,
   CARE_SETTINGS_FLAG_ID,
+  SINGLE_ABOUT_FLAG_ID,
 } from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
@@ -65,6 +66,7 @@ export default function App() {
   const [smartGrading, setSmartGrading] = useState(false);
   const [categoriesEnabled, setCategoriesEnabled] = useState(false);
   const [careSettingsEnabled, setCareSettingsEnabled] = useState(false);
+  const [singleAbout, setSingleAbout] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -124,6 +126,8 @@ export default function App() {
   //    the note types in utils/categories.js and adds Home's category filter.
   //  - 'care-settings' splits scenarios into Hospital / Nursing home on Home
   //    and adds a Care setting field to the builder — see utils/careSettings.js.
+  //  - 'single-about' drops Settings' About tab (the nav bar's About page is
+  //    the one place for it) and shows the latest version at the bottom of it.
   useEffect(() => {
     if (!session || !profile) return;
     let cancelled = false;
@@ -135,6 +139,7 @@ export default function App() {
         setSmartGrading(on(SMART_NOTE_GRADING_FLAG_ID));
         setCategoriesEnabled(on(SCENARIO_CATEGORIES_FLAG_ID));
         setCareSettingsEnabled(on(CARE_SETTINGS_FLAG_ID));
+        setSingleAbout(on(SINGLE_ABOUT_FLAG_ID));
       })
       .catch(() => {});
     return () => {
@@ -265,9 +270,16 @@ export default function App() {
       />
     );
   } else if (view === "about") {
-    content = <About />;
+    content = <About showVersion={singleAbout} />;
   } else if (view === "settings") {
-    content = <Settings profile={profile} onProfileChange={setProfile} onSignOut={handleSignOut} />;
+    content = (
+      <Settings
+        profile={profile}
+        onProfileChange={setProfile}
+        onSignOut={handleSignOut}
+        hideAboutTab={singleAbout}
+      />
+    );
   } else {
     content = (
       <Home
