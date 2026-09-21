@@ -32,6 +32,7 @@ import {
   CARE_SETTINGS_FLAG_ID,
   SINGLE_ABOUT_FLAG_ID,
   SCENARIO_BATCH_HN1_FLAG_ID,
+  CARD_SPOTLIGHT_FLAG_ID,
 } from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
@@ -95,6 +96,7 @@ export default function App() {
   const [careSettingsEnabled, setCareSettingsEnabled] = useState(false);
   const [singleAbout, setSingleAbout] = useState(false);
   const [scenarioBatchHN1Enabled, setScenarioBatchHN1Enabled] = useState(false);
+  const [cardSpotlightEnabled, setCardSpotlightEnabled] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -159,6 +161,8 @@ export default function App() {
   //  - 'scenario-batch-hn-1' adds SCENARIO_BATCH_HN1's 10 scenarios to what
   //    Home and History show — held back until their clinical content has
   //    been reviewed, unlike a scenario added straight to SCENARIOS.
+  //  - 'card-spotlight' turns on Home's cursor-tracking glow on each
+  //    scenario card — see index.css's .case--spotlight rules.
   useEffect(() => {
     if (!session || !profile) return;
     let cancelled = false;
@@ -172,6 +176,7 @@ export default function App() {
         setCareSettingsEnabled(on(CARE_SETTINGS_FLAG_ID));
         setSingleAbout(on(SINGLE_ABOUT_FLAG_ID));
         setScenarioBatchHN1Enabled(on(SCENARIO_BATCH_HN1_FLAG_ID));
+        setCardSpotlightEnabled(on(CARD_SPOTLIGHT_FLAG_ID));
       })
       .catch(() => {});
     return () => {
@@ -326,6 +331,7 @@ export default function App() {
         onSelect={selectScenario}
         categoriesEnabled={categoriesEnabled}
         careSettingsEnabled={careSettingsEnabled}
+        spotlightEnabled={cardSpotlightEnabled}
       />
     );
   }

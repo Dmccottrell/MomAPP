@@ -13,6 +13,7 @@ export default function Home({
   onSelect,
   categoriesEnabled = false,
   careSettingsEnabled = false,
+  spotlightEnabled = false,
 }) {
   const [lastByScenario, setLastByScenario] = useState({});
   const [setting, setSetting] = useState("");
@@ -152,7 +153,11 @@ export default function Home({
           const history = lastByScenario[s.id];
           return (
             <li key={s.id}>
-              <button className="case" onClick={() => onSelect(s)} onMouseMove={trackSpotlight}>
+              <button
+                className={spotlightEnabled ? "case case--spotlight" : "case"}
+                onClick={() => onSelect(s)}
+                onMouseMove={spotlightEnabled ? trackSpotlight : undefined}
+              >
                 <span className="case__cat">
                   {[careSettingsEnabled && s.setting, s.category].filter(Boolean).join(" · ")}
                 </span>

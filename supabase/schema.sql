@@ -388,6 +388,14 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into public.feature_flags (id, label, description)
+values (
+  'card-spotlight',
+  'Cursor spotlight on scenario cards',
+  'A subtle glow that follows the cursor over each scenario card on Home, colored from the active accent.'
+)
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------
 -- security_answers: 3 security questions set up at signup, used by the
 -- "forgot password" flow on the sign-in screen as an alternative to the
