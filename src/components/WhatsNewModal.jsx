@@ -10,6 +10,13 @@ import { CloseIcon } from "./icons";
  * shown to a brand-new sign-up (App.jsx marks the current version seen
  * silently for them instead — there's nothing "new" to someone seeing
  * the app for the first time).
+ *
+ * Deliberately just a headline and the changelog paragraph — no
+ * per-flag bullet list. The admin's changelog already says what
+ * changed; repeating each flag's own label/description underneath it
+ * (Previews' Release History does that, for the admin) was the same
+ * information twice and made this feel cluttered for a popup that's
+ * supposed to be a quick, skimmable "here's what's new."
  */
 export default function WhatsNewModal({ release, onDismiss }) {
   useEffect(() => {
@@ -43,16 +50,6 @@ export default function WhatsNewModal({ release, onDismiss }) {
           </button>
         </div>
         <p className="confirm-dialog__message">{release.changelog}</p>
-        {release.published_flags?.length > 0 && (
-          <ul className="release-item__flags">
-            {release.published_flags.map((f) => (
-              <li key={f.id}>
-                <strong>{f.label}</strong>
-                {f.description ? ` — ${f.description}` : ""}
-              </li>
-            ))}
-          </ul>
-        )}
         <div className="confirm-dialog__actions">
           <button type="button" className="btn btn--go" onClick={onDismiss}>
             Got it
