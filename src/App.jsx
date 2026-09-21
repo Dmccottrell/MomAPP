@@ -31,6 +31,7 @@ import {
   SCENARIO_CATEGORIES_FLAG_ID,
   CARE_SETTINGS_FLAG_ID,
   SINGLE_ABOUT_FLAG_ID,
+  SCENARIO_BATCH_HN1_FLAG_ID,
 } from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
@@ -50,9 +51,12 @@ import foley01 from "./scenarios/foley-01.json";
 // only code change needed when Mom writes a new case. See SCENARIOS.md for
 // the full field reference. Scenarios built in-app (My Scenarios) live in
 // the shared database instead — see utils/customScenarios.js.
-const SCENARIOS = [
-  fall01,
-  changeOfCondition01,
+const SCENARIOS = [fall01, changeOfCondition01];
+
+// AI-drafted, not yet clinically reviewed — gated behind
+// SCENARIO_BATCH_HN1_FLAG_ID (preview/admin-only until published) rather
+// than added straight to SCENARIOS like a reviewed scenario would be.
+const SCENARIO_BATCH_HN1 = [
   labUti01,
   medHypoglycemia01,
   painPostop01,
@@ -90,6 +94,7 @@ export default function App() {
   const [categoriesEnabled, setCategoriesEnabled] = useState(false);
   const [careSettingsEnabled, setCareSettingsEnabled] = useState(false);
   const [singleAbout, setSingleAbout] = useState(false);
+  const [scenarioBatchHN1Enabled, setScenarioBatchHN1Enabled] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -151,6 +156,9 @@ export default function App() {
   //    and adds a Care setting field to the builder — see utils/careSettings.js.
   //  - 'single-about' drops Settings' About tab (the nav bar's About page is
   //    the one place for it) and shows the latest version at the bottom of it.
+  //  - 'scenario-batch-hn-1' adds SCENARIO_BATCH_HN1's 10 scenarios to what
+  //    Home and History show — held back until their clinical content has
+  //    been reviewed, unlike a scenario added straight to SCENARIOS.
   useEffect(() => {
     if (!session || !profile) return;
     let cancelled = false;
@@ -163,6 +171,7 @@ export default function App() {
         setCategoriesEnabled(on(SCENARIO_CATEGORIES_FLAG_ID));
         setCareSettingsEnabled(on(CARE_SETTINGS_FLAG_ID));
         setSingleAbout(on(SINGLE_ABOUT_FLAG_ID));
+        setScenarioBatchHN1Enabled(on(SCENARIO_BATCH_HN1_FLAG_ID));
       })
       .catch(() => {});
     return () => {
@@ -262,11 +271,17 @@ export default function App() {
 
   const showBuilder = builderEnabled && canBuildScenarios(profile);
 
+  // Reviewed presets plus, only once published (or for the admin previewing
+  // it), the unreviewed batch — see SCENARIO_BATCH_HN1's comment above.
+  const visibleScenarios = scenarioBatchHN1Enabled
+    ? [...SCENARIOS, ...SCENARIO_BATCH_HN1]
+    : SCENARIOS;
+
   // History needs to resolve a completed run's scenario id back to a
   // playable scenario object even when that scenario was built in-app, so
   // "Practice again" works for custom scenarios too — Home and My Scenarios
   // otherwise keep the two lists deliberately separate.
-  const allScenarios = [...SCENARIOS, ...customScenarios];
+  const allScenarios = [...visibleScenarios, ...customScenarios];
 
   let content;
   if (activeScenario) {
@@ -306,7 +321,7 @@ export default function App() {
   } else {
     content = (
       <Home
-        scenarios={SCENARIOS}
+        scenarios={visibleScenarios}
         profile={profile}
         onSelect={selectScenario}
         categoriesEnabled={categoriesEnabled}

@@ -375,6 +375,19 @@ values (
 )
 on conflict (id) do nothing;
 
+-- Gates 10 new preset scenarios (5 Hospital, 5 Nursing home — see
+-- src/scenarios/) that are AI-drafted and need a clinical-accuracy
+-- review before real learners see them. Unlike most flags this one
+-- doesn't change existing behavior when published — it just adds new
+-- content to Home once someone has actually checked it.
+insert into public.feature_flags (id, label, description)
+values (
+  'scenario-batch-hn-1',
+  '10 new scenarios (Hospital + Nursing home)',
+  'Adds 5 Hospital and 5 Nursing home scenarios covering Lab/Diagnostic, Medication, Pain, SOB/Respiratory, Provider Notification, Admission/Readmission, Transfer, Hospital Return, AMS, and Catheter/Foley. AI-drafted — review clinical accuracy before publishing.'
+)
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------
 -- security_answers: 3 security questions set up at signup, used by the
 -- "forgot password" flow on the sign-in screen as an alternative to the
