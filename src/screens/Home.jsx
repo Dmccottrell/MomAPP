@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { listHistory } from "../utils/storage";
 import { CARE_SETTINGS } from "../utils/careSettings";
+import { ChevronIcon } from "../components/icons";
 
 /**
  * The scenario picker. Each card shows the scenario's basics plus, once
@@ -32,6 +33,15 @@ export default function Home({
   const activeCategory = showFilter && categories.includes(category) ? category : "";
   const visible = activeCategory ? inSetting.filter((s) => s.category === activeCategory) : inSetting;
 
+  // The filter panel starts closed to keep Home uncluttered; the active
+  // filters are summarized next to its button instead.
+  const [filterOpen, setFilterOpen] = useState(false);
+  const activeFilters = [careSettingsEnabled && setting, activeCategory].filter(Boolean);
+  function clearFilters() {
+    setSetting("");
+    setCategory("");
+  }
+
   useEffect(() => {
     let cancelled = false;
     listHistory(profile.id)
@@ -60,35 +70,63 @@ export default function Home({
         </p>
       </header>
 
-      {careSettingsEnabled && (
-        <div className="cat-filter cat-filter--settings" role="group" aria-label="Filter by care setting">
-          {["", ...CARE_SETTINGS].map((c) => (
+      {(careSettingsEnabled || showFilter) && (
+        <div className="home-filter">
+          <div className="home-filter__bar">
             <button
-              key={c || "all"}
               type="button"
-              className={`btn btn--ghost btn--sm cat-filter__btn${setting === c ? " cat-filter__btn--on" : ""}`}
-              aria-pressed={setting === c}
-              onClick={() => setSetting(c)}
+              className="btn btn--ghost btn--sm home-filter__toggle"
+              aria-expanded={filterOpen}
+              onClick={() => setFilterOpen((o) => !o)}
             >
-              {c || "All"}
+              <ChevronIcon className={filterOpen ? "home-filter__chev home-filter__chev--open" : "home-filter__chev"} />
+              Filter
+              {activeFilters.length > 0 && <span className="home-filter__count">{activeFilters.length}</span>}
             </button>
-          ))}
-        </div>
-      )}
+            {activeFilters.length > 0 && (
+              <>
+                <span className="home-filter__summary">{activeFilters.join(" · ")}</span>
+                <button type="button" className="btn btn--ghost btn--sm" onClick={clearFilters}>
+                  Clear
+                </button>
+              </>
+            )}
+          </div>
 
-      {showFilter && (
-        <div className="cat-filter" role="group" aria-label="Filter by category">
-          {["", ...categories].map((c) => (
-            <button
-              key={c || "all"}
-              type="button"
-              className={`btn btn--ghost btn--sm cat-filter__btn${activeCategory === c ? " cat-filter__btn--on" : ""}`}
-              aria-pressed={activeCategory === c}
-              onClick={() => setCategory(c)}
-            >
-              {c || "All"}
-            </button>
-          ))}
+          {filterOpen && (
+            <div className="home-filter__panel">
+              {careSettingsEnabled && (
+                <label className="field">
+                  <span className="field__label">Care setting</span>
+                  <select className="field-input" value={setting} onChange={(e) => setSetting(e.target.value)}>
+                    <option value="">All settings</option>
+                    {CARE_SETTINGS.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              {showFilter && (
+                <label className="field">
+                  <span className="field__label">Category</span>
+                  <select
+                    className="field-input"
+                    value={activeCategory}
+                    onChange={(e) => setCategory(e.target.value)}
+                  >
+                    <option value="">All categories</option>
+                    {categories.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
+          )}
         </div>
       )}
 

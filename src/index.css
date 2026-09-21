@@ -466,9 +466,38 @@ summary:focus-visible {
 
 .cases { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
 
-/* Category filter above the scenario list (behind the 'scenario-categories' flag). */
-.cat-filter { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: -1rem 0 1.5rem; }
-.cat-filter__btn--on { border-color: var(--chart); color: var(--chart); background: var(--chart-wash); }
+/* One collapsible Filter tab above the scenario list (behind the
+   'scenario-categories' and 'care-settings' flags). Closed by default. */
+.home-filter { margin: -1rem 0 1.5rem; }
+.home-filter__bar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem; }
+.home-filter__toggle { display: inline-flex; align-items: center; gap: 0.45rem; }
+.home-filter__chev { width: 0.85rem; height: 0.85rem; transition: transform var(--dur) var(--ease); }
+.home-filter__chev--open { transform: rotate(90deg); }
+.home-filter__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--chart);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.home-filter__summary { color: var(--ink-soft); font-size: 0.88rem; }
+.home-filter__panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem 1rem;
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+}
+.home-filter__panel .field { margin-bottom: 0; }
 
 .field__hint { font-size: 0.85rem; color: var(--ink-soft); }
 .home__empty { color: var(--ink-soft); margin: 0 0 1.5rem; }
