@@ -45,7 +45,7 @@
       "detail": "Check for prior UTIs and current antibiotic allergies before collecting.",
       "correct": true,
       "order": 1,
-      "response": "Order confirms UA with reflex culture and sensitivity. Chart shows two UTIs in the past year, both treated with nitrofurantoin. Allergy list confirms sulfa, not nitrofurantoin or beta-lactams — relevant if this comes back positive and needs treatment.",
+      "response": "Order confirms UA with reflex culture and sensitivity. Chart shows two UTIs in the past year, both treated with cephalexin. Allergy list confirms sulfa, not beta-lactams — relevant if this comes back positive and needs treatment. Her CKD stage 3 also matters: nitrofurantoin is generally avoided with reduced kidney function, since it needs adequate renal concentration to work and clears more slowly, so that's one option already off the table.",
       "timeCost": 2
     },
     {
@@ -94,7 +94,7 @@
       "reveals": { "pain": "2/10" },
       "timeCost": 2,
       "critical": true,
-      "criticalWhy": "A positive UA in a patient with CKD stage 3 and a sulfa allergy needs the provider looped in before empiric treatment is chosen — not every antibiotic is safe for her kidneys."
+      "criticalWhy": "A positive UA in a patient with CKD stage 3 and a sulfa allergy needs the provider looped in before empiric treatment is chosen — nitrofurantoin, a common first-line choice, is generally avoided with reduced kidney function, so this isn't a routine pick."
     },
     {
       "id": "notify-provider",
@@ -102,7 +102,7 @@
       "detail": "Report the result and her relevant history.",
       "correct": true,
       "order": 5,
-      "response": "Dr. Patel reviews the result and her CKD stage and prior nitrofurantoin tolerance. New order: start nitrofurantoin 100 mg BID pending culture, encourage oral fluids, repeat BMP in the morning to trend renal function.",
+      "response": "Dr. Patel reviews the result and her CKD stage. Nitrofurantoin is ruled out given her reduced renal function. New order: start cephalexin 500 mg BID pending culture — safe across her allergy list and appropriate for her kidney function — encourage oral fluids, repeat BMP in the morning to trend renal function.",
       "timeCost": 4
     },
     {
@@ -111,7 +111,7 @@
       "detail": "First dose now, water at bedside.",
       "correct": true,
       "order": 6,
-      "response": "First dose of nitrofurantoin given with food to reduce GI upset, per pharmacy note. Water pitcher filled and placed within reach. She states she understands to finish the full course.",
+      "response": "First dose of cephalexin given. Water pitcher filled and placed within reach. She states she understands to finish the full course and to report any rash, given her sulfa allergy history warrants watching even though cephalexin is a different drug class.",
       "timeCost": 3
     },
     {
@@ -174,7 +174,7 @@
       {
         "id": "med-given",
         "label": "New medication given, with time and dose",
-        "keywords": ["nitrofurantoin", "mg", "given", "administered"],
+        "keywords": ["cephalexin", "mg", "given", "administered"],
         "needs": ["time"],
         "why": "The actual first dose administration needs a timestamp like any medication."
       },
@@ -185,7 +185,7 @@
         "why": "Finishing an antibiotic course matters, and documenting teaching protects both her and you."
       }
     ],
-    "modelNote": "1402 — Reviewing order for UA with reflex culture, placed 0730 for dysuria overnight. Chart reviewed: history of recurrent UTIs, prior treatment with nitrofurantoin without issue, sulfa allergy noted. CKD stage 3.\n\n1407 — Clean-catch specimen obtained with patient assistance and instruction, cloudy with strong odor, approximately 40 mL. Labeled at bedside with two identifiers and sent to lab via tube system.\n\n1425 — UA result reviewed: leukocyte esterase large, nitrites positive, WBC 45/hpf, few bacteria. Culture and sensitivity pending, results expected in 48 hours.\n\n1429 — Dr. Patel notified of positive UA and patient's CKD/allergy history. New order received: nitrofurantoin 100 mg BID pending culture, encourage oral fluids, repeat BMP in AM.\n\n1432 — First dose nitrofurantoin 100 mg given with food. Patient educated on completing full course and reporting any rash or GI upset. Water pitcher filled, encouraged to increase oral intake. Patient verbalizes understanding. Will monitor for symptom improvement and follow up on culture result when available.",
+    "modelNote": "1402 — Reviewing order for UA with reflex culture, placed 0730 for dysuria overnight. Chart reviewed: history of recurrent UTIs, prior treatment with cephalexin without issue, sulfa allergy noted, CKD stage 3.\n\n1407 — Clean-catch specimen obtained with patient assistance and instruction, cloudy with strong odor, approximately 40 mL. Labeled at bedside with two identifiers and sent to lab via tube system.\n\n1425 — UA result reviewed: leukocyte esterase large, nitrites positive, WBC 45/hpf, few bacteria. Culture and sensitivity pending, results expected in 48 hours.\n\n1429 — Dr. Patel notified of positive UA and patient's CKD stage and allergy history. New order received: cephalexin 500 mg BID pending culture (nitrofurantoin avoided given reduced renal function), encourage oral fluids, repeat BMP in AM.\n\n1432 — First dose cephalexin 500 mg given. Patient educated on completing full course and reporting any rash. Water pitcher filled, encouraged to increase oral intake. Patient verbalizes understanding. Will monitor for symptom improvement and follow up on culture result when available.",
     "pitfalls": [
       "Writing 'UA sent' with no result documented once it posts — the loop has to close.",
       "Skipping the specific UA values and just writing 'positive for infection.'",

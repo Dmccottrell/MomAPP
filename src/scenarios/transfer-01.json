@@ -45,7 +45,7 @@
       "detail": "Compare to his known baseline.",
       "correct": true,
       "order": 1,
-      "response": "New right facial droop, slurred speech, and new right arm drift — his known deficit is left-sided, so this is a new, different finding. Last known well was breakfast, approximately 6 hours ago.",
+      "response": "New right facial droop, slurred speech, and new right arm drift — his known deficit is left-sided, so this is a new, different finding. Last known well was breakfast, approximately 6 hours ago. He is on apixaban for his atrial fibrillation — worth having ready, since anticoagulation status is one of the first things a stroke team asks.",
       "timeCost": 3,
       "critical": true,
       "criticalWhy": "A new, different-sided deficit on top of an old stroke is not 'more of the same' — treating it as baseline would miss a time-sensitive new event."
@@ -83,7 +83,7 @@
       "detail": "Report the findings and last known well time.",
       "correct": true,
       "order": 4,
-      "response": "Dr. Farrow is reached, hears the assessment and last known well time. Order given: call 911 for emergency transfer to the hospital for stroke workup, do not delay for further in-house testing.",
+      "response": "Dr. Farrow is reached, hears the assessment, last known well time, and anticoagulation status. Order given: call 911 for emergency transfer to the hospital for stroke workup, report the apixaban directly to EMS and the ED so it factors into their treatment decisions, do not delay for further in-house testing.",
       "timeCost": 3
     },
     {
@@ -162,6 +162,12 @@
         "why": "Rules out an easily reversible cause and gives the receiving team a starting picture."
       },
       {
+        "id": "anticoagulation",
+        "label": "Anticoagulation status called out explicitly",
+        "keywords": ["apixaban", "anticoagul", "blood thinner"],
+        "why": "This changes what the receiving stroke team can safely do — it needs to be stated, not just left sitting in the medication list."
+      },
+      {
         "id": "notify-provider",
         "label": "Provider notified, with time and order to transfer",
         "keywords": ["notified", "provider", "dr.", "911", "transfer"],
@@ -181,7 +187,7 @@
         "why": "Documents that the receiving team got what they needed, not just that he left the building."
       }
     ],
-    "modelNote": "1504 — Roommate reports resident 'looks off,' has not gotten up for lunch. Assessment reveals new right facial droop and slurred speech; resident's known baseline deficit is left-sided weakness from prior CVA. New right-sided arm drift also noted. Last known well: seen walking to breakfast without issue, approximately 6 hours prior.\n\n1506 — Fingerstick glucose 128 mg/dL, within normal limits. Full vitals: BP 168/100, HR 96 irregular, RR 20, SpO2 95%, temp 98.9 — BP elevated from documented baseline of approximately 130/80.\n\n1508 — Dr. Farrow notified of new focal findings and last known well time. Order given: call 911 for emergency transfer for stroke workup, no delay for in-house testing.\n\n1509 — 911 called, EMS dispatched, ETA 12 minutes. Son notified of new findings and transfer; will meet resident at the ED.\n\n1515 — Transfer packet assembled: current medication list, allergies, code status, baseline functional status, last known well time, facility and family contact information. Packet given to EMS on arrival at 1516. Resident transported to hospital for evaluation.",
+    "modelNote": "1504 — Roommate reports resident 'looks off,' has not gotten up for lunch. Assessment reveals new right facial droop and slurred speech; resident's known baseline deficit is left-sided weakness from prior CVA. New right-sided arm drift also noted. Last known well: seen walking to breakfast without issue, approximately 6 hours prior. Resident is on apixaban 5mg BID for atrial fibrillation.\n\n1506 — Fingerstick glucose 128 mg/dL, within normal limits. Full vitals: BP 168/100, HR 96 irregular, RR 20, SpO2 95%, temp 98.9 — BP elevated from documented baseline of approximately 130/80.\n\n1508 — Dr. Farrow notified of new focal findings, last known well time, and anticoagulation status. Order given: call 911 for emergency transfer for stroke workup, report apixaban use directly to EMS and ED, no delay for in-house testing.\n\n1509 — 911 called, EMS dispatched, ETA 12 minutes, apixaban use reported to EMS on arrival. Son notified of new findings and transfer; will meet resident at the ED.\n\n1515 — Transfer packet assembled: current medication list (apixaban flagged), allergies, code status, baseline functional status, last known well time, facility and family contact information. Packet given to EMS on arrival at 1516. Resident transported to hospital for evaluation.",
     "pitfalls": [
       "Writing 'resident seemed off' without the specific new neuro findings.",
       "Leaving out the last known well time — this is one of the most time-critical facts in the whole note.",
