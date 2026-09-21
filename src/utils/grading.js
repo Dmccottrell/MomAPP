@@ -86,10 +86,15 @@ export function gradeNote(text, requirements, { smart = false } = {}) {
     if (forbidden.length) {
       return { ...req, status: "violated", matched: forbidden };
     }
-    if (!req.keywords || req.keywords.length === 0) {
+    // A requirement can list `smartKeywords` to use instead of `keywords`
+    // when smart grading is on — for tightening a keyword that's too broad
+    // (e.g. a bare "notified" also credits telling the provider) without
+    // changing what everyone else gets until the flag is published.
+    const keywords = (smart && req.smartKeywords) || req.keywords;
+    if (!keywords || keywords.length === 0) {
       return { ...req, status: "met", matched: [] };
     }
-    const matched = req.keywords.filter(hasKeyword);
+    const matched = keywords.filter(hasKeyword);
     return {
       ...req,
       status: matched.length ? "met" : "missing",

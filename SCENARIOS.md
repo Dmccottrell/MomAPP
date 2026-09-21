@@ -162,6 +162,15 @@ of them counts. Partial words work — `"anticoagul"` matches both
 "anticoagulant" and "anticoagulated". Being generous here matters, because a
 learner marked wrong for correct-but-different wording learns the wrong lesson.
 
+**Smart-grading extras** (only used once the "Smarter note grading" preview flag
+is on): matching is by whole words — keywords of three letters or fewer must
+match a whole word, longer ones still match as word starts, and common
+shorthand like "pulse" or "doctor" is accepted for `hr` and `provider`. A
+requirement may also list `"smartKeywords"`, which replace `keywords` under
+smart grading — use it when a keyword is too broad (a bare `"notified"` also
+credits telling the provider, so the family requirement's `smartKeywords` leave
+it out).
+
 **Forbidden words** flip the check — used for things that should *not* appear:
 
 ```json

@@ -180,6 +180,7 @@
         "id": "family",
         "label": "Family notified",
         "keywords": ["daughter", "family", "notified"],
+        "smartKeywords": ["daughter", "family"],
         "why": "Required after a fall, and it protects you when the family calls back."
       },
       {
