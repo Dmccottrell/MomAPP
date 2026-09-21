@@ -503,6 +503,7 @@ summary:focus-visible {
 .home__empty { color: var(--ink-soft); margin: 0 0 1.5rem; }
 
 .case {
+  position: relative;
   display: grid;
   gap: 0.25rem;
   width: 100%;
@@ -513,10 +514,32 @@ summary:focus-visible {
   border-radius: var(--radius-md);
   padding: 1.25rem 1.4rem;
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
   transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease),
     box-shadow var(--dur) var(--ease);
+  --mouse-x: 50%;
+  --mouse-y: 50%;
 }
 .case:hover { border-color: var(--chart); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+/* Cursor-follow spotlight — position tracked in Home.jsx's trackSpotlight(),
+   color pulled from the active accent so it matches whichever of the 5
+   presets and light/dark mode the viewer has chosen. */
+.case::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    240px circle at var(--mouse-x) var(--mouse-y),
+    color-mix(in srgb, var(--chart) 16%, transparent),
+    transparent 75%
+  );
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+  pointer-events: none;
+}
+.case:hover::before,
+.case:focus-visible::before { opacity: 1; }
 .case__cat { font-size: 0.8rem; color: var(--chart); font-weight: 500; }
 .case__title { font-family: var(--serif); font-size: 1.5rem; font-weight: 600; }
 .case__meta { font-size: 0.85rem; color: var(--ink-soft); }
@@ -1069,6 +1092,11 @@ summary:focus-visible {
 
 .case--custom { cursor: default; }
 .case--custom:hover { transform: none; box-shadow: var(--shadow-sm); }
+/* Not clickable, and never gets trackSpotlight()'s mousemove handler, so
+   the glow would just sit static at center instead of following the
+   cursor — off entirely reads better than a spotlight that doesn't track. */
+.case--custom:hover::before,
+.case--custom:focus-visible::before { opacity: 0; }
 .case__actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
 .btn--sm { padding: 0.4rem 0.9rem; font-size: 0.88rem; }
 

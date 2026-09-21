@@ -33,6 +33,16 @@ export default function Home({
   const activeCategory = showFilter && categories.includes(category) ? category : "";
   const visible = activeCategory ? inSetting.filter((s) => s.category === activeCategory) : inSetting;
 
+  // Cursor-follow spotlight on each card — position only, no animation loop,
+  // so there's nothing here for prefers-reduced-motion to guard against.
+  // Adapted from reactbits.dev's SpotlightCard (zero dependencies) onto the
+  // existing <button class="case">  instead of introducing a wrapper div.
+  function trackSpotlight(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
+    e.currentTarget.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
+  }
+
   // The filter panel starts closed to keep Home uncluttered; the active
   // filters are summarized next to its button instead.
   const [filterOpen, setFilterOpen] = useState(false);
@@ -142,7 +152,7 @@ export default function Home({
           const history = lastByScenario[s.id];
           return (
             <li key={s.id}>
-              <button className="case" onClick={() => onSelect(s)}>
+              <button className="case" onClick={() => onSelect(s)} onMouseMove={trackSpotlight}>
                 <span className="case__cat">
                   {[careSettingsEnabled && s.setting, s.category].filter(Boolean).join(" · ")}
                 </span>
