@@ -45,11 +45,12 @@ export default function Home({
   }
 
   // The filter panel starts closed to keep Home uncluttered; the active
-  // filters are summarized next to its button instead.
+  // filters are summarized next to its button instead. Care setting lives
+  // in its own persistent sidebar nav now, not in this panel, so only
+  // category counts toward it.
   const [filterOpen, setFilterOpen] = useState(false);
-  const activeFilters = [careSettingsEnabled && setting, activeCategory].filter(Boolean);
+  const activeFilters = [activeCategory].filter(Boolean);
   function clearFilters() {
-    setSetting("");
     setCategory("");
   }
 
@@ -72,54 +73,65 @@ export default function Home({
   }, [profile.id]);
 
   return (
-    <div className="home">
-      <header className="home__head">
-        <h1>Charting Practice</h1>
-        <p>
-          Work a patient scenario from start to finish, then write the note.
-          Every patient here is fictional.
-        </p>
-      </header>
-
-      {(careSettingsEnabled || showFilter) && (
-        <div className="home-filter">
-          <div className="home-filter__bar">
+    <div className={careSettingsEnabled ? "home home--with-sidebar" : "home"}>
+      {careSettingsEnabled && (
+        <nav className="home-sidebar" aria-label="Care setting">
+          <button
+            type="button"
+            className={setting === "" ? "home-sidebar__link home-sidebar__link--active" : "home-sidebar__link"}
+            aria-current={setting === "" ? "true" : undefined}
+            onClick={() => setSetting("")}
+          >
+            All
+          </button>
+          {CARE_SETTINGS.map((name) => (
             <button
               type="button"
-              className="btn btn--ghost btn--sm home-filter__toggle"
-              aria-expanded={filterOpen}
-              onClick={() => setFilterOpen((o) => !o)}
+              key={name}
+              className={setting === name ? "home-sidebar__link home-sidebar__link--active" : "home-sidebar__link"}
+              aria-current={setting === name ? "true" : undefined}
+              onClick={() => setSetting(name)}
             >
-              <ChevronIcon className={filterOpen ? "home-filter__chev home-filter__chev--open" : "home-filter__chev"} />
-              Filter
-              {activeFilters.length > 0 && <span className="home-filter__count">{activeFilters.length}</span>}
+              {name}
             </button>
-            {activeFilters.length > 0 && (
-              <>
-                <span className="home-filter__summary">{activeFilters.join(" · ")}</span>
-                <button type="button" className="btn btn--ghost btn--sm" onClick={clearFilters}>
-                  Clear
-                </button>
-              </>
-            )}
-          </div>
+          ))}
+        </nav>
+      )}
 
-          {filterOpen && (
-            <div className="home-filter__panel">
-              {careSettingsEnabled && (
-                <label className="field">
-                  <span className="field__label">Care setting</span>
-                  <select className="field-input" value={setting} onChange={(e) => setSetting(e.target.value)}>
-                    <option value="">All settings</option>
-                    {CARE_SETTINGS.map((name) => (
-                      <option key={name} value={name}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+      <div className="home-main">
+        <header className="home__head">
+          <h1>Charting Practice</h1>
+          <p>
+            Work a patient scenario from start to finish, then write the note.
+            Every patient here is fictional.
+          </p>
+        </header>
+
+        {showFilter && (
+          <div className="home-filter">
+            <div className="home-filter__bar">
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm home-filter__toggle"
+                aria-expanded={filterOpen}
+                onClick={() => setFilterOpen((o) => !o)}
+              >
+                <ChevronIcon className={filterOpen ? "home-filter__chev home-filter__chev--open" : "home-filter__chev"} />
+                Filter
+                {activeFilters.length > 0 && <span className="home-filter__count">{activeFilters.length}</span>}
+              </button>
+              {activeFilters.length > 0 && (
+                <>
+                  <span className="home-filter__summary">{activeFilters.join(" · ")}</span>
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={clearFilters}>
+                    Clear
+                  </button>
+                </>
               )}
-              {showFilter && (
+            </div>
+
+            {filterOpen && (
+              <div className="home-filter__panel">
                 <label className="field">
                   <span className="field__label">Category</span>
                   <select
@@ -135,48 +147,48 @@ export default function Home({
                     ))}
                   </select>
                 </label>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+              </div>
+            )}
+          </div>
+        )}
 
-      {visible.length === 0 && (
-        <p className="home__empty">
-          No {setting || "matching"} scenarios yet. New ones show up here as soon as they're added
-          with that care setting.
-        </p>
-      )}
+        {visible.length === 0 && (
+          <p className="home__empty">
+            No {setting || "matching"} scenarios yet. New ones show up here as soon as they're added
+            with that care setting.
+          </p>
+        )}
 
-      <ul className="cases">
-        {visible.map((s) => {
-          const history = lastByScenario[s.id];
-          return (
-            <li key={s.id}>
-              <button
-                className={spotlightEnabled ? "case case--spotlight" : "case"}
-                onClick={() => onSelect(s)}
-                onMouseMove={spotlightEnabled ? trackSpotlight : undefined}
-              >
-                <span className="case__cat">
-                  {[careSettingsEnabled && s.setting, s.category].filter(Boolean).join(" · ")}
-                </span>
-                <span className="case__title">{s.title}</span>
-                <span className="case__meta">
-                  {s.unit} · {s.difficulty} · about {s.estimatedMinutes} min
-                </span>
-                <span className="case__objectives">{s.objectives[0]}</span>
-                {history && (
-                  <span className="case__history">
-                    Last run: {history.score}/{history.total} ·{" "}
-                    {new Date(history.completedAt).toLocaleDateString()}
+        <ul className="cases">
+          {visible.map((s) => {
+            const history = lastByScenario[s.id];
+            return (
+              <li key={s.id}>
+                <button
+                  className={spotlightEnabled ? "case case--spotlight" : "case"}
+                  onClick={() => onSelect(s)}
+                  onMouseMove={spotlightEnabled ? trackSpotlight : undefined}
+                >
+                  <span className="case__cat">
+                    {[careSettingsEnabled && s.setting, s.category].filter(Boolean).join(" · ")}
                   </span>
-                )}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+                  <span className="case__title">{s.title}</span>
+                  <span className="case__meta">
+                    {s.unit} · {s.difficulty} · about {s.estimatedMinutes} min
+                  </span>
+                  <span className="case__objectives">{s.objectives[0]}</span>
+                  {history && (
+                    <span className="case__history">
+                      Last run: {history.score}/{history.total} ·{" "}
+                      {new Date(history.completedAt).toLocaleDateString()}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </div>
   );
 }

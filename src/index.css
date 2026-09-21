@@ -451,6 +451,44 @@ summary:focus-visible {
 /* ---------------- home ---------------- */
 
 .home { max-width: 60ch; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+
+/* Behind the 'care-settings' flag: a persistent vertical nav for Hospital /
+   Nursing home sits beside the page instead of inside the Filter panel,
+   which keeps only Category (see .home-filter below). .home-main keeps
+   the original single-column reading width; .home itself widens to fit
+   the sidebar beside it. */
+.home--with-sidebar {
+  max-width: 56rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 2.5rem;
+}
+.home-main { flex: 1; min-width: 0; max-width: 60ch; }
+
+.home-sidebar {
+  flex: 0 0 12rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  position: sticky;
+  top: 5.5rem;
+}
+.home-sidebar__link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.home-sidebar__link:hover { background: var(--chart-wash); color: var(--chart); }
+.home-sidebar__link--active { background: var(--chart-wash); color: var(--chart); font-weight: 600; }
+
 .home__head h1 {
   font-family: var(--serif);
   font-size: 2.6rem;
@@ -1235,6 +1273,18 @@ summary:focus-visible {
   .entry { grid-template-columns: 1fr; gap: 0.3rem; }
   .history__row { grid-template-columns: auto 1fr; }
   .history__redo { grid-column: 1 / -1; justify-self: start; }
+
+  /* The Hospital/Nursing home sidebar becomes a horizontal scrollable row
+     above the cards instead of eating a quarter of a narrow screen. */
+  .home--with-sidebar { flex-direction: column; gap: 1.25rem; }
+  .home-sidebar {
+    position: static;
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+    gap: 0.4rem;
+  }
+  .home-sidebar__link { white-space: nowrap; }
 }
 
 /* ---------------- view transitions ---------------- */
