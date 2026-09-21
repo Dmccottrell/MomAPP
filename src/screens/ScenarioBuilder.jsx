@@ -6,6 +6,7 @@ import { ChevronIcon } from "../components/icons";
 import { slugify } from "../utils/customScenarios";
 import { findPossiblePHI } from "../utils/phiCheck";
 import { CATEGORIES, categoryDescription } from "../utils/categories";
+import { CARE_SETTINGS } from "../utils/careSettings";
 
 /** Drops `removed` from an open-item index set and shifts the rest down. */
 function withoutIndex(set, removed) {
@@ -84,7 +85,13 @@ function emptyRequirement() {
  * field that reference documents). Saving writes straight to
  * utils/customScenarios.js; there is no server round-trip to fail.
  */
-export default function ScenarioBuilder({ initial, onSave, onCancel, categoriesEnabled = false }) {
+export default function ScenarioBuilder({
+  initial,
+  onSave,
+  onCancel,
+  categoriesEnabled = false,
+  careSettingsEnabled = false,
+}) {
   const [scenario, setScenario] = useState(initial);
   const [error, setError] = useState("");
   const [pendingSave, setPendingSave] = useState(null);
@@ -272,6 +279,23 @@ export default function ScenarioBuilder({ initial, onSave, onCancel, categoriesE
                 value={scenario.category}
                 onChange={(e) => set(["category"], e.target.value)}
               />
+            </label>
+          )}
+          {careSettingsEnabled && (
+            <label className="field">
+              <span className="field__label">Care setting</span>
+              <select
+                className="field-input"
+                value={scenario.setting || ""}
+                onChange={(e) => set(["setting"], e.target.value)}
+              >
+                <option value="">Choose a setting…</option>
+                {CARE_SETTINGS.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
             </label>
           )}
           <label className="field">

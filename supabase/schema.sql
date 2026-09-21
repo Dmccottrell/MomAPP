@@ -359,6 +359,14 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into public.feature_flags (id, label, description)
+values (
+  'care-settings',
+  'Hospital / Nursing home split',
+  'Splits scenarios into Hospital and Nursing home tabs on Home, and adds a Care setting field to the scenario builder.'
+)
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------
 -- security_answers: 3 security questions set up at signup, used by the
 -- "forgot password" flow on the sign-in screen as an alternative to the

@@ -14,6 +14,7 @@ export const ACCOUNT_PROFILE_TOOLS_FLAG_ID = "account-profile-tools";
 export const NAV_SCROLL_FIX_FLAG_ID = "nav-scroll-fix";
 export const SMART_NOTE_GRADING_FLAG_ID = "smart-note-grading";
 export const SCENARIO_CATEGORIES_FLAG_ID = "scenario-categories";
+export const CARE_SETTINGS_FLAG_ID = "care-settings";
 
 /** Every feature flag, oldest first. */
 export async function listFeatureFlags() {

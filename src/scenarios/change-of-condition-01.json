@@ -2,6 +2,7 @@
   "id": "change-of-condition-01",
   "title": "New shortness of breath, post-op",
   "category": "Clinical judgment",
+  "setting": "Hospital",
   "unit": "Med-Surg",
   "difficulty": "Intermediate",
   "estimatedMinutes": 12,

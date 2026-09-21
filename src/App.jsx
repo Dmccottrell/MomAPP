@@ -29,6 +29,7 @@ import {
   NAV_SCROLL_FIX_FLAG_ID,
   SMART_NOTE_GRADING_FLAG_ID,
   SCENARIO_CATEGORIES_FLAG_ID,
+  CARE_SETTINGS_FLAG_ID,
 } from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
@@ -63,6 +64,7 @@ export default function App() {
   const [whatsNew, setWhatsNew] = useState(null);
   const [smartGrading, setSmartGrading] = useState(false);
   const [categoriesEnabled, setCategoriesEnabled] = useState(false);
+  const [careSettingsEnabled, setCareSettingsEnabled] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -120,6 +122,8 @@ export default function App() {
   //    see utils/grading.js.
   //  - 'scenario-categories' turns the builder's Category into a dropdown of
   //    the note types in utils/categories.js and adds Home's category filter.
+  //  - 'care-settings' splits scenarios into Hospital / Nursing home on Home
+  //    and adds a Care setting field to the builder — see utils/careSettings.js.
   useEffect(() => {
     if (!session || !profile) return;
     let cancelled = false;
@@ -130,6 +134,7 @@ export default function App() {
         document.documentElement.classList.toggle("no-hscroll", on(NAV_SCROLL_FIX_FLAG_ID));
         setSmartGrading(on(SMART_NOTE_GRADING_FLAG_ID));
         setCategoriesEnabled(on(SCENARIO_CATEGORIES_FLAG_ID));
+        setCareSettingsEnabled(on(CARE_SETTINGS_FLAG_ID));
       })
       .catch(() => {});
     return () => {
@@ -252,7 +257,12 @@ export default function App() {
     // this view was selected (e.g. the admin just revoked access), this
     // falls through to Home instead of rendering the builder anyway.
     content = (
-      <MyScenarios profile={profile} onPlay={selectScenario} categoriesEnabled={categoriesEnabled} />
+      <MyScenarios
+        profile={profile}
+        onPlay={selectScenario}
+        categoriesEnabled={categoriesEnabled}
+        careSettingsEnabled={careSettingsEnabled}
+      />
     );
   } else if (view === "about") {
     content = <About />;
@@ -265,6 +275,7 @@ export default function App() {
         profile={profile}
         onSelect={selectScenario}
         categoriesEnabled={categoriesEnabled}
+        careSettingsEnabled={careSettingsEnabled}
       />
     );
   }

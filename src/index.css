@@ -471,6 +471,7 @@ summary:focus-visible {
 .cat-filter__btn--on { border-color: var(--chart); color: var(--chart); background: var(--chart-wash); }
 
 .field__hint { font-size: 0.85rem; color: var(--ink-soft); }
+.home__empty { color: var(--ink-soft); margin: 0 0 1.5rem; }
 
 .case {
   display: grid;
