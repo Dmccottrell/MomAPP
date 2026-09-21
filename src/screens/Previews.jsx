@@ -1,41 +1,28 @@
 import { useEffect, useState } from "react";
 import PublishDialog from "../components/PublishDialog";
 import ReleaseHistoryList from "../components/ReleaseHistoryList";
-import {
-  listFeatureFlags,
-  createFeatureFlag,
-  unpublishFeatureFlag,
-  publishFeatureFlags,
-  suggestFlagDescription,
-} from "../utils/featureFlags";
-import { listReleases, suggestNextVersion } from "../utils/releases";
+import { listFeatureFlags, unpublishFeatureFlag, publishFeatureFlags } from "../utils/featureFlags";
+import { listReleases, suggestNextVersion, maxVersion } from "../utils/releases";
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
 
 /**
- * Feature-flag management and the full changelog. Admin-only — see
- * Settings.jsx. A flag "in preview" only shows for the admin (see
- * utils/featureFlags.js's isFeatureEnabled — not actually wired into any
- * feature yet, since nothing in the app reads flags today; this is the
- * control surface for whenever a feature starts checking one).
- * "Published" flags are live for the whole household, and every publish
- * — one flag or several at once — becomes a permanent row in the
- * `releases` table with the version and changelog the admin wrote.
+ * Feature-flag publishing and the full changelog. Admin-only — see
+ * Settings.jsx. There's no "add a flag" form here on purpose: every flag
+ * is registered directly in the database as part of building the feature
+ * it gates (see utils/featureFlags.js's id constants), not typed in by
+ * hand from this screen. A flag "in preview" only shows for the admin
+ * (see utils/featureFlags.js's isFeatureEnabled); "published" is live for
+ * the whole household, and every publish — one flag or several at once —
+ * becomes a permanent row in the `releases` table with the version and
+ * changelog the admin wrote.
  */
 export default function Previews({ profile }) {
   const [flags, setFlags] = useState(null);
   const [releases, setReleases] = useState(null);
   const [loadError, setLoadError] = useState("");
-
-  const [newLabel, setNewLabel] = useState("");
-  const [newDescription, setNewDescription] = useState("");
-  // Tracks whether the admin has typed their own description — until
-  // then, it auto-fills from the name (same "auto until overridden"
-  // pattern as the scenario builder's id-from-title).
-  const [descriptionTouched, setDescriptionTouched] = useState(false);
-  const [addError, setAddError] = useState("");
 
   const [publishRequest, setPublishRequest] = useState(null);
   const [publishError, setPublishError] = useState("");
@@ -52,30 +39,6 @@ export default function Previews({ profile }) {
         setReleases(r);
       })
       .catch((err) => setLoadError(err.message || "Couldn't load previews."));
-  }
-
-  function handleLabelChange(value) {
-    setNewLabel(value);
-    if (!descriptionTouched) setNewDescription(suggestFlagDescription(value));
-  }
-
-  function handleDescriptionChange(value) {
-    setNewDescription(value);
-    setDescriptionTouched(true);
-  }
-
-  async function handleAddFlag(e) {
-    e.preventDefault();
-    setAddError("");
-    try {
-      await createFeatureFlag(newLabel, newDescription);
-      setNewLabel("");
-      setNewDescription("");
-      setDescriptionTouched(false);
-      refresh();
-    } catch (err) {
-      setAddError(err.message || "Couldn't add that.");
-    }
   }
 
   async function handleUnpublish(flag) {
@@ -119,32 +82,11 @@ export default function Previews({ profile }) {
       <section className="settings-section">
         <h2 className="settings-section__title">Feature previews</h2>
         <p className="settings-row settings-row--muted">
-          Register a work-in-progress feature here to try it yourself first.
-          "In preview" only shows for you; "Published" is live for
-          everyone. Publishing — one flag or several at once — bumps the
-          app's version and adds an entry to the release history below.
+          Work-in-progress features land here already registered. "In
+          preview" only shows for you; "Published" is live for everyone.
+          Publishing — one flag or several at once — bumps the app's
+          version and adds an entry to the release history below.
         </p>
-
-        <form className="inline-form" onSubmit={handleAddFlag}>
-          <input
-            className="field-input"
-            style={{ flex: "1 1 12rem" }}
-            value={newLabel}
-            onChange={(e) => handleLabelChange(e.target.value)}
-            placeholder="Feature name"
-          />
-          <input
-            className="field-input"
-            style={{ flex: "2 1 16rem" }}
-            value={newDescription}
-            onChange={(e) => handleDescriptionChange(e.target.value)}
-            placeholder="Short description (auto-suggested from the name)"
-          />
-          <button type="submit" className="btn btn--ghost" disabled={!newLabel.trim()}>
-            + Add
-          </button>
-        </form>
-        {addError && <p className="settings-row settings-row--muted">{addError}</p>}
         {loadError && <p className="settings-row settings-row--muted">{loadError}</p>}
 
         <div className="preview-group">
@@ -213,7 +155,13 @@ export default function Previews({ profile }) {
         <PublishDialog
           key={publishRequest.map((f) => f.id).join(",")}
           flags={publishRequest}
-          initialVersion={suggestNextVersion(latestVersion)}
+          // Bumping from the higher of the latest release and the admin's
+          // own last_seen_version (not just the latest release) keeps an
+          // unpublish-then-republish cycle from reissuing a version number
+          // the admin already dismissed "what's new" for — unpublishing
+          // deletes that release row, so latestVersion alone would suggest
+          // the same number again, and the popup would never re-fire.
+          initialVersion={suggestNextVersion(maxVersion(latestVersion, profile.last_seen_version))}
           error={publishError}
           busy={publishBusy}
           onCancel={() => setPublishRequest(null)}

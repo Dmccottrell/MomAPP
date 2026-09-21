@@ -5,11 +5,11 @@
 // supabase/schema.sql for both tables and their RLS policies.
 
 import { supabase } from "./supabaseClient";
-import { slugify } from "./customScenarios";
 
-// Flags seeded directly in supabase/schema.sql (rather than created
-// through the Previews tab) get a stable id here, so the feature they
-// gate can look itself up without matching on a label that might change.
+// Every flag is seeded directly in supabase/schema.sql (there's no
+// "add a flag" UI in Previews — see its own comment) and gets a stable id
+// here, so the feature it gates can look itself up without matching on a
+// label that might change.
 export const ACCOUNT_PROFILE_TOOLS_FLAG_ID = "account-profile-tools";
 export const NAV_SCROLL_FIX_FLAG_ID = "nav-scroll-fix";
 export const SMART_NOTE_GRADING_FLAG_ID = "smart-note-grading";
@@ -29,20 +29,6 @@ export async function listFeatureFlags() {
     .order("created_at", { ascending: true });
   if (error) throw error;
   return data;
-}
-
-/** Creates a new flag in "preview". RLS requires admin. */
-export async function createFeatureFlag(label, description) {
-  const trimmed = label.trim();
-  if (!trimmed) throw new Error("Give the feature a name.");
-  const id = slugify(trimmed);
-  const { error } = await supabase
-    .from("feature_flags")
-    .insert({ id, label: trimmed, description: description.trim() });
-  if (error) {
-    if (error.code === "23505") throw new Error("A feature with that name already exists.");
-    throw error;
-  }
 }
 
 /**
@@ -130,19 +116,6 @@ export async function publishFeatureFlags(flags, { version, changelog, published
 export function isFeatureEnabled(flag, profile) {
   if (!flag) return false;
   return flag.status === "published" || Boolean(profile?.is_admin);
-}
-
-/**
- * A starting-point description for a new flag, from its name alone —
- * template text, not anything AI-written (this app has no LLM
- * integration). Shown as a live suggestion while adding a flag in
- * Previews.jsx; freely editable, same as the version number suggested
- * when publishing.
- */
-export function suggestFlagDescription(label) {
-  const trimmed = label.trim();
-  if (!trimmed) return "";
-  return `Try out ${trimmed} before it ships to everyone.`;
 }
 
 /**

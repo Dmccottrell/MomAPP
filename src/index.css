@@ -329,11 +329,21 @@ summary:focus-visible {
 }
 .confirm-dialog {
   width: min(100%, 22rem);
+  max-height: 85vh;
+  overflow-y: auto;
   background: var(--card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: 1.5rem;
   animation: confirmPopIn 220ms var(--ease);
+}
+@media (max-width: 480px) {
+  /* Same dialog, just less padding to give small-screen content more
+     room, and a touch smaller message text so a longer changelog (or the
+     what's-new flag list) doesn't force as much scrolling. */
+  .confirm-backdrop { padding: 1rem; }
+  .confirm-dialog { padding: 1.15rem; }
+  .confirm-dialog__message { font-size: 0.92rem; }
 }
 .confirm-dialog__message {
   margin: 0 0 1.25rem;
@@ -375,6 +385,35 @@ summary:focus-visible {
   color: var(--ink-soft);
 }
 .publish-dialog__hint { display: block; margin-top: 0.3rem; font-size: 0.78rem; color: var(--stop); }
+
+/* WhatsNewModal's own header row: title + version badge on the left, an
+   always-visible close button on the right — independent of whether
+   "Got it" at the bottom is currently scrolled into view (see
+   .confirm-dialog's max-height/overflow-y above). */
+.whats-new__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.whats-new__title { margin: 0; }
+.whats-new__close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: -0.25rem -0.25rem 0 0;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  border-radius: var(--radius-sm);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.whats-new__close svg { width: 16px; height: 16px; }
+.whats-new__close:hover { background: var(--chart-wash); color: var(--chart); }
 
 /* ---------------- avatar ---------------- */
 

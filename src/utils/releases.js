@@ -35,3 +35,26 @@ export function suggestNextVersion(version) {
   const [, major, minor, patch] = match;
   return `${major}.${minor}.${Number(patch) + 1}`;
 }
+
+/**
+ * The higher of two "x.y.z" version strings, comparing numerically part by
+ * part (so "1.2.10" beats "1.2.9"). An invalid or missing version loses to
+ * a valid one. Used to keep a re-published version number from colliding
+ * with one someone (often the admin themself) already has recorded as
+ * seen — see suggestNextVersion's caller in Previews.jsx: unpublishing a
+ * flag deletes its release row, so the *next* release's version would
+ * otherwise get suggested from the prior row again, which can reissue a
+ * version number someone already dismissed the "what's new" popup for.
+ */
+export function maxVersion(a, b) {
+  const pa = /^(\d+)\.(\d+)\.(\d+)$/.exec(a || "");
+  const pb = /^(\d+)\.(\d+)\.(\d+)$/.exec(b || "");
+  if (!pa) return b || a;
+  if (!pb) return a;
+  for (let i = 1; i <= 3; i++) {
+    const na = Number(pa[i]);
+    const nb = Number(pb[i]);
+    if (na !== nb) return na > nb ? a : b;
+  }
+  return a;
+}
