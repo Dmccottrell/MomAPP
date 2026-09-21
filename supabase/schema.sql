@@ -335,6 +335,14 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into public.feature_flags (id, label, description)
+values (
+  'nav-scroll-fix',
+  'Fix sideways page scroll',
+  'Stops the closed menu drawer from adding a horizontal scrollbar to every screen.'
+)
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------
 -- security_answers: 3 security questions set up at signup, used by the
 -- "forgot password" flow on the sign-in screen as an alternative to the

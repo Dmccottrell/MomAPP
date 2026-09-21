@@ -11,6 +11,7 @@ import { slugify } from "./customScenarios";
 // through the Previews tab) get a stable id here, so the feature they
 // gate can look itself up without matching on a label that might change.
 export const ACCOUNT_PROFILE_TOOLS_FLAG_ID = "account-profile-tools";
+export const NAV_SCROLL_FIX_FLAG_ID = "nav-scroll-fix";
 
 /** Every feature flag, oldest first. */
 export async function listFeatureFlags() {

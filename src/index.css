@@ -38,6 +38,11 @@
 
 html { font-size: var(--text-scale); }
 
+/* Behind the 'nav-scroll-fix' feature flag (App.jsx toggles the class). The
+   closed nav drawer is parked off-screen at translateX(100%); inside the
+   backdrop-filter nav bar it counts toward page width, so clip it here. */
+html.no-hscroll { overflow-x: hidden; }
+
 /* System preference drives the palette when the user hasn't overridden it. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {

@@ -23,6 +23,7 @@ import {
 } from "./utils/profiles";
 import { listCustomScenarios, isBuilderEnabled } from "./utils/customScenarios";
 import { latestRelease } from "./utils/releases";
+import { listFeatureFlags, isFeatureEnabled, NAV_SCROLL_FIX_FLAG_ID } from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
 import changeOfCondition01 from "./scenarios/change-of-condition-01.json";
@@ -101,6 +102,25 @@ export default function App() {
     listCustomScenarios().then(setCustomScenarios).catch(() => setCustomScenarios([]));
     isBuilderEnabled().then(setBuilderEnabledState).catch(() => setBuilderEnabledState(false));
   }, [session, view]);
+
+  // The 'nav-scroll-fix' flag turns on html.no-hscroll (index.css), which
+  // clips the closed nav drawer's off-screen overflow. In preview only the
+  // admin gets it; once published everyone does. Re-checked on each nav
+  // switch so publishing/unpublishing shows up without a reload.
+  useEffect(() => {
+    if (!session || !profile) return;
+    let cancelled = false;
+    listFeatureFlags()
+      .then((flags) => {
+        if (cancelled) return;
+        const flag = flags.find((f) => f.id === NAV_SCROLL_FIX_FLAG_ID);
+        document.documentElement.classList.toggle("no-hscroll", isFeatureEnabled(flag, profile));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [session, profile, view]);
 
   // Shows the "what's new" popup once per account per version — see
   // WhatsNewModal.jsx. A profile that's never been checked
