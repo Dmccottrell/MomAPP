@@ -396,6 +396,14 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into public.feature_flags (id, label, description)
+values (
+  'appearance-redesign',
+  'Redesigned Appearance settings',
+  'Settings navigation becomes a row list instead of pill tabs; Appearance gains Density, Corner radius, Animations, Reduce motion, High contrast, a custom accent color, a live preview, and Reset appearance.'
+)
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------
 -- security_answers: 3 security questions set up at signup, used by the
 -- "forgot password" flow on the sign-in screen as an alternative to the

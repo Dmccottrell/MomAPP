@@ -29,6 +29,7 @@
   --serif: "Source Serif 4", Georgia, serif;
 
   --text-scale: 16px;
+  --density-mult: 1;
 }
 
 /* Text size preference (Settings → Appearance) — scales the root font
@@ -37,6 +38,28 @@
 :root[data-text-size="large"] { --text-scale: 18px; }
 
 html { font-size: var(--text-scale); }
+
+/* Corner radius preference — overrides the same three tokens every
+   rounded element in the app already uses, so this is genuinely global. */
+:root[data-corner-radius="square"] { --radius-sm: 2px; --radius-md: 4px; --radius-lg: 6px; }
+:root[data-corner-radius="subtle"] { --radius-sm: 4px; --radius-md: 6px; --radius-lg: 10px; }
+:root[data-corner-radius="extra-rounded"] { --radius-sm: 14px; --radius-md: 20px; --radius-lg: 28px; }
+
+/* Density preference — a single multiplier applied via calc() to the
+   handful of spacing rules that set the felt density of a list of cards
+   or settings rows (see .cases, .case, .settings-section, .account-row,
+   .field, .home-filter below), rather than a token nobody reads. */
+:root[data-density="compact"] { --density-mult: 0.72; }
+:root[data-density="spacious"] { --density-mult: 1.35; }
+
+/* Animations (Interface) and Reduce motion (Accessibility) both collapse
+   to this one attribute — see utils/motion.js. Same transition/animation
+   kill as the prefers-reduced-motion block at the end of this file, just
+   user-triggered instead of OS-only. View transitions specifically are
+   skipped in JS instead (utils/viewTransition.js) — a *started*
+   transition's own animation isn't reliably reachable by a plain
+   selector the way the OS-level media query's is. */
+:root[data-motion="reduce"] * { transition: none !important; animation: none !important; }
 
 /* Behind the 'nav-scroll-fix' feature flag (App.jsx toggles the class). The
    closed nav drawer is parked off-screen at translateX(100%); inside the
@@ -502,7 +525,7 @@ summary:focus-visible {
   max-width: 46ch;
 }
 
-.cases { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
+.cases { list-style: none; padding: 0; margin: 0; display: grid; gap: calc(1rem * var(--density-mult)); }
 
 /* One collapsible Filter tab above the scenario list (behind the
    'scenario-categories' and 'care-settings' flags). Closed by default. */
@@ -550,7 +573,7 @@ summary:focus-visible {
   border: 1px solid var(--rule);
   border-left: 3px solid var(--chart);
   border-radius: var(--radius-md);
-  padding: 1.25rem 1.4rem;
+  padding: calc(1.25rem * var(--density-mult)) calc(1.4rem * var(--density-mult));
   box-shadow: var(--shadow-sm);
   transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease),
     box-shadow var(--dur) var(--ease);
@@ -634,8 +657,8 @@ summary:focus-visible {
   background: var(--card);
   border: 1px solid var(--rule);
   border-radius: var(--radius-md);
-  padding: 1.4rem 1.5rem;
-  margin-bottom: 1.25rem;
+  padding: calc(1.4rem * var(--density-mult)) calc(1.5rem * var(--density-mult));
+  margin-bottom: calc(1.25rem * var(--density-mult));
   box-shadow: var(--shadow-sm);
 }
 .settings-section__title { font-size: 0.95rem; font-weight: 600; margin: 0 0 1rem; }
@@ -650,7 +673,7 @@ summary:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 0;
+  padding: calc(0.75rem * var(--density-mult)) 0;
   border-top: 1px solid var(--rule);
 }
 .account-row:first-of-type { border-top: none; padding-top: 0.25rem; }
@@ -689,6 +712,40 @@ summary:focus-visible {
 .settings-tab:hover { border-color: var(--chart); color: var(--chart); }
 .settings-tab--active,
 .settings-tab--active:hover { background: var(--chart); border-color: var(--chart); color: #fff; }
+
+/* Settings navigation, behind the 'appearance-redesign' flag — a row
+   list with chevrons instead of pill tabs, sidebar on a wide screen and
+   stacked above the content on a narrow one (same responsive pattern as
+   Home's care-setting sidebar). */
+.settings-layout { display: flex; align-items: flex-start; gap: 2.5rem; }
+.settings-nav {
+  flex: 0 0 13rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  position: sticky;
+  top: 5.5rem;
+}
+.settings-nav__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.settings-nav__row:hover { background: var(--chart-wash); color: var(--chart); }
+.settings-nav__row--active { background: var(--chart-wash); color: var(--chart); font-weight: 600; }
+.settings-nav__chev { width: 0.85rem; height: 0.85rem; flex-shrink: 0; opacity: 0.6; }
+.settings-content { flex: 1; min-width: 0; }
 
 .settings-footer {
   margin: 2rem 0 0;
@@ -775,6 +832,119 @@ summary:focus-visible {
 }
 .swatch:hover { transform: scale(1.08); }
 .swatch--active { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--ink); }
+.swatch--custom {
+  background: conic-gradient(from 90deg, #e15252, #e1a83a, #dfd23e, #4bb662, #3c8fd6, #8a5fd6, #d64fa8, #e15252);
+}
+
+/* ---------------- appearance settings (redesign) ---------------- */
+
+.appearance-settings__lede { color: var(--ink-soft); margin: 0 0 1.5rem; }
+.appearance-settings__group { margin-bottom: 1.5rem; }
+.appearance-settings__group:last-child { margin-bottom: 0; }
+.appearance-settings__divider { padding-top: 1.5rem; border-top: 1px solid var(--rule); }
+.appearance-settings__note { margin-top: 0.75rem; }
+.appearance-settings__reset {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--chart);
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+.appearance-settings__reset:hover { color: var(--chart-strong); }
+
+/* Row-based selector (Density, Corner radius) and the on/off switch
+   (Animations, Reduce motion, High contrast) — the two control shapes
+   the redesign uses for "several choices" and "on/off" respectively,
+   see AppearanceSettings.jsx's RowSelect and Switch. */
+.settings-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 44px;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--rule);
+}
+.appearance-settings__group > .settings-list-row:first-of-type { border-top: none; }
+.settings-list-row__label { font-weight: 500; }
+.settings-list-row__hint { display: block; font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.15rem; }
+.settings-list-row__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+.settings-list-row__value { color: var(--ink-soft); font-size: 0.92rem; }
+.settings-list-row__chev { width: 0.8rem; height: 0.8rem; color: var(--ink-soft); }
+.settings-list-row__select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.switch { position: relative; display: inline-flex; flex-shrink: 0; }
+.switch input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  appearance: none;
+  cursor: pointer;
+}
+.switch__track {
+  width: 2.6rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--rule);
+  transition: background var(--dur) var(--ease);
+  display: block;
+}
+.switch__knob {
+  display: block;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0.175rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur) var(--ease);
+}
+.switch input:checked ~ .switch__track { background: var(--chart); }
+.switch input:checked ~ .switch__track .switch__knob { transform: translateX(1.1rem); }
+.switch input:focus-visible ~ .switch__track { outline: 2px solid var(--chart); outline-offset: 2px; }
+
+/* The mini, non-interactive UI mockup at the bottom of the redesigned
+   Appearance tab — see components/AppearancePreview.jsx. Reuses the
+   real .case/.btn/.segmented classes, scaled down, so it reflects every
+   appearance setting through the same CSS custom properties those
+   classes already read — nothing here re-derives a color or radius. */
+.appearance-preview {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--paper);
+}
+.appearance-preview__nav {
+  padding: 0.6rem 0.9rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--rule);
+}
+.appearance-preview__brand { font-family: var(--serif); font-weight: 600; font-size: 0.85rem; }
+.appearance-preview__body { padding: 0.9rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.appearance-preview__case { padding: 0.8rem 0.9rem; gap: 0.15rem; }
+.appearance-preview__case .case__title { font-size: 1rem; }
+.appearance-preview__row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.appearance-preview__segmented { transform: scale(0.85); transform-origin: left center; }
+.appearance-preview__btn { padding: 0.4rem 0.9rem; font-size: 0.85rem; }
 
 /* ---------------- layout ---------------- */
 
@@ -1142,7 +1312,7 @@ summary:focus-visible {
 .builder { max-width: 52rem; }
 .settings-section__hint { font-weight: 400; color: var(--ink-soft); font-size: 0.85rem; }
 
-.field { display: block; margin-bottom: 0.9rem; }
+.field { display: block; margin-bottom: calc(0.9rem * var(--density-mult)); }
 .field--spaced { margin-top: 1.25rem; }
 .field--checkbox { display: flex; align-items: center; gap: 0.5rem; }
 .field--checkbox input { width: 1.1rem; height: 1.1rem; }
@@ -1285,6 +1455,17 @@ summary:focus-visible {
     gap: 0.4rem;
   }
   .home-sidebar__link { white-space: nowrap; }
+
+  /* Settings' nav (behind 'appearance-redesign') collapses the same way. */
+  .settings-layout { flex-direction: column; gap: 1.25rem; }
+  .settings-nav {
+    position: static;
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+    gap: 0.3rem;
+  }
+  .settings-nav__row { white-space: nowrap; }
 }
 
 /* ---------------- view transitions ---------------- */
@@ -1305,4 +1486,14 @@ summary:focus-visible {
   ::view-transition-new(root) {
     animation: none !important;
   }
+}
+
+/* ---------------- high contrast ---------------- */
+/* Computed relative to --ink/--paper rather than fixed hex values, so
+   this one block works in light or dark mode without needing a copy of
+   itself inside each theme's media/attribute block — placed last so it
+   wins the cascade over both. */
+:root[data-contrast="high"] {
+  --ink-soft: color-mix(in srgb, var(--ink) 82%, var(--paper) 18%);
+  --rule: color-mix(in srgb, var(--ink) 50%, var(--paper) 50%);
 }
