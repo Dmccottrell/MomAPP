@@ -1,0 +1,197 @@
+{
+  "id": "provider-notify-chestpain-01",
+  "title": "New chest pain, escalating fast",
+  "category": "Provider Notification",
+  "setting": "Hospital",
+  "unit": "Med-Surg/Telemetry",
+  "difficulty": "Advanced",
+  "estimatedMinutes": 15,
+  "objectives": [
+    "Use a structured format (SBAR) to notify a provider of a time-sensitive finding",
+    "Obtain an EKG and relevant assessment data before and while escalating",
+    "Document a rapid escalation with the full SBAR content and timeline"
+  ],
+  "patient": {
+    "name": "Priya Nair",
+    "age": 61,
+    "sex": "F",
+    "room": "612-A",
+    "mrn": "SIM-0119",
+    "admitted": "Day 1",
+    "diagnosis": "Community-acquired pneumonia",
+    "history": ["Hypertension", "Type 2 diabetes", "Hyperlipidemia"],
+    "medications": ["Ceftriaxone IV daily", "Metformin 500 mg BID (held)", "Amlodipine 5 mg daily"],
+    "allergies": ["NKDA"],
+    "code": "Full code",
+    "fallRisk": "Low — Morse 15"
+  },
+  "vitals": {
+    "bp": "156/94",
+    "hr": "104",
+    "rr": "24",
+    "temp": "99.0",
+    "spo2": "94%",
+    "pain": "7/10"
+  },
+  "opening": "Ms. Nair puts her call light on reporting new chest pain that started five minutes ago — described as pressure across her chest, radiating to her left jaw, with some nausea. She has no cardiac history but does have diabetes, hypertension, and high cholesterol.",
+  "clock": {
+    "start": "08:52",
+    "label": "Time since pain onset"
+  },
+  "actions": [
+    {
+      "id": "focused-assessment",
+      "label": "Perform a focused chest pain assessment",
+      "detail": "Onset, location, quality, radiation, associated symptoms.",
+      "correct": true,
+      "order": 1,
+      "response": "Pain described as pressure, 7/10, started at rest five minutes ago, radiating to left jaw. Associated nausea, mild diaphoresis. No prior episodes like this. Denies shortness of breath at rest.",
+      "timeCost": 2
+    },
+    {
+      "id": "wait-for-vitals-machine",
+      "label": "Wait for the next scheduled vitals check in an hour",
+      "detail": "She's due for routine vitals soon anyway.",
+      "correct": false,
+      "response": "New chest pain with cardiac risk factors is never a 'wait for the routine check' situation — this needs vitals and an EKG right now, not on the hour.",
+      "penalty": "Delayed time-sensitive assessment",
+      "timeCost": 1
+    },
+    {
+      "id": "obtain-ekg",
+      "label": "Obtain a 12-lead EKG immediately",
+      "detail": "Time to EKG matters for chest pain of cardiac concern.",
+      "correct": true,
+      "order": 2,
+      "response": "EKG obtained within 8 minutes of pain onset. Shows sinus tachycardia with 1-2mm ST depression in leads V4-V6, not present on her admission EKG.",
+      "timeCost": 3,
+      "critical": true,
+      "criticalWhy": "New ST changes with new chest pain, in a patient with diabetes and hypertension, is a time-sensitive finding — minutes matter for cardiac workup."
+    },
+    {
+      "id": "recheck-vitals",
+      "label": "Recheck a full set of vitals",
+      "detail": "Compare against her baseline this shift.",
+      "correct": true,
+      "order": 3,
+      "response": "BP 156/94 (baseline 128/78), HR 104 (baseline 78), RR 24, SpO2 94% on room air, temp 99.0.",
+      "timeCost": 2
+    },
+    {
+      "id": "give-own-aspirin",
+      "label": "Give her aspirin from the med room since it's standard for chest pain",
+      "detail": "It's the go-to for suspected cardiac chest pain.",
+      "correct": false,
+      "response": "Giving a medication that isn't currently ordered for her, without provider awareness, is outside your scope even when the indication seems obvious — and you don't yet know about contraindications like a bleeding risk or allergy that the provider needs to weigh in on. This needs an order.",
+      "penalty": "Gave unordered medication",
+      "timeCost": 1
+    },
+    {
+      "id": "notify-provider-sbar",
+      "label": "Notify the provider using SBAR",
+      "detail": "Situation, background, assessment, recommendation.",
+      "correct": true,
+      "order": 4,
+      "response": "Dr. Collins is reached. SBAR delivered: new chest pain 7/10 with radiation and diaphoresis, cardiac risk factors, new ST depression on EKG, vitals reported. Orders received: STAT troponin and BMP, aspirin 324 mg chewed now, oxygen to keep SpO2 >94%, cardiology consult, continuous telemetry monitoring, repeat EKG in 30 minutes.",
+      "timeCost": 4
+    },
+    {
+      "id": "give-aspirin-per-order",
+      "label": "Give the ordered aspirin",
+      "detail": "324 mg chewed, per the new order.",
+      "correct": true,
+      "order": 5,
+      "response": "Aspirin 324 mg given, chewed as ordered. No allergy history, tolerated without issue.",
+      "timeCost": 2
+    },
+    {
+      "id": "apply-oxygen-and-telemetry",
+      "label": "Apply oxygen and start continuous telemetry",
+      "detail": "Per the new order.",
+      "correct": true,
+      "order": 6,
+      "response": "Oxygen applied at 2L nasal cannula, SpO2 rises to 97%. Telemetry leads placed, continuous monitoring active, showing sinus tachycardia without acute ectopy.",
+      "reveals": { "spo2": "97%" },
+      "timeCost": 3
+    },
+    {
+      "id": "draw-labs",
+      "label": "Send the STAT troponin and BMP",
+      "detail": "Label and send per protocol.",
+      "correct": true,
+      "order": 7,
+      "response": "Labs drawn and labeled at bedside, sent STAT to lab. Confirmation of receipt obtained.",
+      "timeCost": 3
+    },
+    {
+      "id": "repeat-ekg",
+      "label": "Obtain the repeat EKG at 30 minutes as ordered",
+      "detail": "Compare to the first EKG.",
+      "correct": true,
+      "order": 8,
+      "response": "Repeat EKG at 30 minutes shows ST depression essentially unchanged from the first. Patient reports pain now 4/10. Cardiology is en route.",
+      "reveals": { "pain": "4/10" },
+      "timeCost": 3
+    }
+  ],
+  "hints": [
+    "SBAR isn't optional formatting here — a provider hearing this cold needs it organized to act fast.",
+    "The clock is running from the moment she reports the pain, not from when you finish your assessment.",
+    "Nothing gets given outside what's currently ordered, no matter how obviously indicated it seems."
+  ],
+  "documentation": {
+    "prompt": "Write your nursing note covering the assessment, escalation, and interventions.",
+    "placeholder": "Begin with the time pain was reported...",
+    "requirements": [
+      {
+        "id": "pain-assessment",
+        "label": "Full pain assessment: onset, quality, radiation, associated symptoms",
+        "keywords": ["pressure", "jaw", "nausea", "diaphoresis", "7/10"],
+        "needs": ["number"],
+        "why": "A generic 'chest pain reported' loses the details that made this concerning."
+      },
+      {
+        "id": "ekg-finding",
+        "label": "EKG obtained, with the specific finding and time",
+        "keywords": ["ekg", "st depression", "12-lead"],
+        "needs": ["time"],
+        "why": "Time-to-EKG is a tracked quality measure for chest pain — the note needs to show it happened and when."
+      },
+      {
+        "id": "vitals",
+        "label": "Vitals compared to baseline",
+        "keywords": ["104", "156/94", "baseline"],
+        "needs": ["number"],
+        "why": "Shows the change from her normal, not just an isolated reading."
+      },
+      {
+        "id": "notify-provider-sbar",
+        "label": "Provider notified with SBAR content, time, and orders received",
+        "keywords": ["sbar", "notified", "provider", "dr.", "orders"],
+        "needs": ["time"],
+        "why": "This is the core of the note — what was reported, when, and what came back."
+      },
+      {
+        "id": "interventions",
+        "label": "Interventions given: aspirin, oxygen, telemetry, labs — with times",
+        "keywords": ["aspirin", "oxygen", "telemetry", "troponin"],
+        "needs": ["time"],
+        "why": "Each intervention is its own timestamped action, not a bundled 'orders carried out.'"
+      },
+      {
+        "id": "repeat-ekg",
+        "label": "Repeat EKG and updated pain level at 30 minutes",
+        "keywords": ["repeat ekg", "30 minutes", "4/10"],
+        "needs": ["number"],
+        "why": "Closes the loop on whether the picture changed or stayed the same."
+      }
+    ],
+    "modelNote": "0852 — Patient reports new chest pain, onset five minutes prior, described as pressure across chest radiating to left jaw, associated nausea and mild diaphoresis. Denies prior episodes, denies dyspnea at rest. No cardiac history; history significant for hypertension, type 2 diabetes, hyperlipidemia.\n\n0854 — 12-lead EKG obtained, showing sinus tachycardia with new 1-2mm ST depression in V4-V6 compared to admission EKG.\n\n0856 — Vitals rechecked: BP 156/94 (baseline 128/78), HR 104 (baseline 78), RR 24, SpO2 94% RA, temp 99.0.\n\n0857 — Dr. Collins notified via SBAR: new chest pain with radiation and diaphoresis in a patient with diabetes/hypertension/hyperlipidemia, new ST depression on EKG, vitals as above. Orders received: STAT troponin and BMP, aspirin 324mg chewed, oxygen to keep SpO2 >94%, cardiology consult, continuous telemetry, repeat EKG in 30 minutes.\n\n0859 — Aspirin 324mg given, chewed, tolerated without issue. Oxygen applied 2L NC, SpO2 rose to 97%. Continuous telemetry initiated, showing sinus tachycardia without acute ectopy. STAT labs drawn and sent.\n\n0927 — Repeat EKG obtained: ST depression unchanged from initial. Patient reports pain now 4/10. Cardiology notified and en route to evaluate. Will continue continuous monitoring and follow up on lab results.",
+    "pitfalls": [
+      "Writing 'MD notified' with no SBAR content — what was actually reported matters for the record.",
+      "Leaving out the time-to-EKG — this is specifically tracked for chest pain presentations.",
+      "Giving the medication list without the times each one was actually administered.",
+      "Skipping the repeat EKG and updated pain level — the note needs to show whether the picture changed."
+    ]
+  }
+}

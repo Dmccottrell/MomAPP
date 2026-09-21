@@ -1,0 +1,193 @@
+{
+  "id": "med-hypoglycemia-01",
+  "title": "Low blood sugar after insulin",
+  "category": "Medication",
+  "setting": "Hospital",
+  "unit": "Med-Surg",
+  "difficulty": "Intermediate",
+  "estimatedMinutes": 14,
+  "objectives": [
+    "Recognize and treat hypoglycemia following an insulin dose",
+    "Follow the treat-then-recheck sequence rather than a single blind treatment",
+    "Document a medication-related event with the full timeline of treatment and recheck"
+  ],
+  "patient": {
+    "name": "Walter Kim",
+    "age": 67,
+    "sex": "M",
+    "room": "215-A",
+    "mrn": "SIM-0078",
+    "admitted": "Day 4",
+    "diagnosis": "Type 2 diabetes, hyperglycemia on admission",
+    "history": ["Type 2 diabetes", "Hypertension", "Peripheral neuropathy"],
+    "medications": ["Insulin glargine 20 units nightly", "Insulin lispro sliding scale", "Amlodipine 5 mg daily"],
+    "allergies": ["NKDA"],
+    "code": "Full code",
+    "fallRisk": "Moderate — Morse 40"
+  },
+  "vitals": {
+    "bp": "108/64",
+    "hr": "102",
+    "rr": "18",
+    "temp": "98.2",
+    "spo2": "96%",
+    "pain": "0/10"
+  },
+  "opening": "You gave Mr. Kim his scheduled sliding-scale lispro at 1130 based on a fingerstick of 240, then went to your next patient. Forty-five minutes later, his call light goes on. You find him diaphoretic, shaky, and saying he feels 'off' and lightheaded. His lunch tray is untouched on the table.",
+  "clock": {
+    "start": "12:16",
+    "label": "Time since call light"
+  },
+  "actions": [
+    {
+      "id": "recheck-fingerstick",
+      "label": "Recheck his blood glucose immediately",
+      "detail": "Confirm before treating.",
+      "correct": true,
+      "order": 1,
+      "response": "Fingerstick reads 52 mg/dL. He is diaphoretic, tremulous, and able to answer questions appropriately — alert and able to swallow safely.",
+      "reveals": { "pain": "0/10" },
+      "timeCost": 1,
+      "critical": true,
+      "criticalWhy": "Confirming the number before treating avoids both under- and over-treating, and tells you whether he can safely take something by mouth."
+    },
+    {
+      "id": "give-more-insulin",
+      "label": "Give his next scheduled insulin dose since it's near mealtime",
+      "detail": "It's almost time for lunch coverage anyway.",
+      "correct": false,
+      "response": "Giving insulin to a patient who is already hypoglycemic would worsen a dangerous situation. Any scheduled insulin is held until this episode is treated and resolved — this is exactly the kind of order you'd question rather than follow automatically.",
+      "penalty": "Would have worsened hypoglycemia",
+      "timeCost": 1
+    },
+    {
+      "id": "treat-15-15",
+      "label": "Give 15–20 g of fast-acting carbohydrate",
+      "detail": "He is alert and able to swallow safely.",
+      "correct": true,
+      "order": 2,
+      "response": "He drinks 4 oz of juice from his tray. Reports feeling slightly less shaky already but still lightheaded.",
+      "timeCost": 3
+    },
+    {
+      "id": "wait-and-assume-fixed",
+      "label": "Assume the juice fixed it and move on to your next task",
+      "detail": "He said he feels a little better.",
+      "correct": false,
+      "response": "Feeling subjectively better is not the same as a confirmed number. The standard is to recheck in 15 minutes and treat again if still low — moving on without that recheck risks missing a persistent or rebounding low.",
+      "penalty": "Skipped the 15-minute recheck",
+      "timeCost": 1
+    },
+    {
+      "id": "recheck-15min",
+      "label": "Recheck his blood glucose after 15 minutes",
+      "detail": "Confirm the treatment worked before clearing him.",
+      "correct": true,
+      "order": 3,
+      "response": "Fingerstick now reads 78 mg/dL. He states he feels much better, tremors resolved. Still below target range for a stable reading.",
+      "reveals": { "hr": "88" },
+      "timeCost": 2
+    },
+    {
+      "id": "give-second-round",
+      "label": "Give another 15 g of carbohydrate since it's still under 80",
+      "detail": "Standard is to repeat if still below target.",
+      "correct": true,
+      "order": 4,
+      "response": "He eats crackers from his tray. Tolerates well, no nausea.",
+      "timeCost": 3
+    },
+    {
+      "id": "notify-provider",
+      "label": "Notify the provider of the hypoglycemic episode",
+      "detail": "Report the value, treatment given, and current status.",
+      "correct": true,
+      "order": 5,
+      "response": "Dr. Alvarez is notified. New order: recheck fingerstick before dinner dose, hold the next sliding-scale dose if under 100, and reduce tonight's glargine to 16 units given the trend.",
+      "timeCost": 4
+    },
+    {
+      "id": "encourage-meal",
+      "label": "Encourage him to eat his lunch tray now",
+      "detail": "A sustained source, not just simple sugar.",
+      "correct": true,
+      "order": 6,
+      "response": "He eats roughly 75% of his tray, including protein and starch. States he feels back to normal.",
+      "timeCost": 3
+    },
+    {
+      "id": "final-recheck",
+      "label": "Recheck blood glucose one more time before charting the episode closed",
+      "detail": "Confirm a stable, safe number before considering this resolved.",
+      "correct": true,
+      "order": 7,
+      "response": "Fingerstick reads 118 mg/dL. Stable, no further symptoms. He is resting comfortably.",
+      "timeCost": 2
+    }
+  ],
+  "hints": [
+    "The first step is always to confirm the number, not to treat off of how he looks.",
+    "One round of carbohydrate and one recheck is often not enough — check the trend.",
+    "A number back in range doesn't mean the shift's job here is done — the provider still needs this for tonight's orders."
+  ],
+  "documentation": {
+    "prompt": "Write your nursing note covering the episode from recognition through resolution.",
+    "placeholder": "Begin with the time and what prompted you to check...",
+    "requirements": [
+      {
+        "id": "initial-finding",
+        "label": "Symptoms and initial glucose value that prompted treatment",
+        "keywords": ["diaphoretic", "shaky", "tremulous", "52"],
+        "needs": ["number"],
+        "why": "Establishes this was a real, confirmed low, not a guess."
+      },
+      {
+        "id": "treatment-1",
+        "label": "First treatment given, with amount and time",
+        "keywords": ["juice", "carbohydrate", "15 g", "oz"],
+        "needs": ["time"],
+        "why": "The 15-15 rule only works if the dose and timing are documented, not just 'treated.'"
+      },
+      {
+        "id": "recheck-1",
+        "label": "First recheck value after treatment",
+        "keywords": ["recheck", "78", "rechecked"],
+        "needs": ["number"],
+        "why": "Shows the treatment was verified, not assumed to have worked."
+      },
+      {
+        "id": "treatment-2",
+        "label": "Second round of treatment, since the recheck was still low",
+        "keywords": ["crackers", "second", "additional", "repeat"],
+        "why": "Shows the protocol was followed through to an actual resolution, not stopped after one round."
+      },
+      {
+        "id": "final-value",
+        "label": "Final glucose value confirming resolution",
+        "keywords": ["118", "stable", "resolved"],
+        "needs": ["number"],
+        "why": "The episode isn't closed in the note until a stable number is documented."
+      },
+      {
+        "id": "notify-provider",
+        "label": "Provider notified, with time and new orders",
+        "keywords": ["notified", "provider", "dr.", "orders", "glargine"],
+        "needs": ["time"],
+        "why": "This event needs to change tonight's insulin plan, not repeat itself."
+      },
+      {
+        "id": "held-dose",
+        "label": "Scheduled insulin held or adjusted as a result",
+        "keywords": ["held", "reduce", "adjusted", "16 units"],
+        "why": "Documents the safety action taken, not just the recovery."
+      }
+    ],
+    "modelNote": "1216 — Called to room by call light. Patient found diaphoretic, tremulous, reporting feeling 'off' and lightheaded, lunch tray untouched. Received scheduled sliding-scale lispro at 1130 per fingerstick of 240. Fingerstick rechecked immediately: 52 mg/dL. Patient alert, able to swallow safely.\n\n1217 — 4 oz juice (approx. 15 g carbohydrate) given per hypoglycemia protocol. Patient reports feeling slightly improved but still lightheaded.\n\n1231 — Fingerstick rechecked: 78 mg/dL. Tremors resolved but still below target. Additional 15 g carbohydrate (crackers) given, tolerated without nausea.\n\n1235 — Dr. Alvarez notified of hypoglycemic episode, treatment given, and current trend. New orders: recheck fingerstick before dinner dose, hold next sliding-scale dose if under 100, reduce tonight's glargine to 16 units.\n\n1238 — Patient encouraged to eat remainder of lunch tray for sustained glucose source; consumed approximately 75% including protein and starch.\n\n1246 — Final fingerstick recheck: 118 mg/dL, stable. Patient reports feeling back to normal, resting comfortably, no further symptoms. Will continue to monitor per new orders.",
+    "pitfalls": [
+      "Charting 'treated for low blood sugar' without the actual glucose number.",
+      "Stopping after one recheck instead of following through to a stable, resolved value.",
+      "Forgetting to note that the scheduled insulin dose was held, not just that the low was treated.",
+      "Leaving out the time the provider was notified — this event changes tonight's orders."
+    ]
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "id": "ams-01",
+  "title": "New confusion at dinner",
+  "category": "Altered Mental Status (AMS)",
+  "setting": "Nursing home",
+  "unit": "Long-term care",
+  "difficulty": "Intermediate",
+  "estimatedMinutes": 14,
+  "objectives": [
+    "Distinguish a new acute change in mental status from a resident's documented baseline",
+    "Work through reversible causes before assuming a cognitive decline is permanent",
+    "Document an AMS note that clearly separates new findings from known baseline"
+  ],
+  "patient": {
+    "name": "Irene Castellano",
+    "age": 86,
+    "sex": "F",
+    "room": "118",
+    "mrn": "SIM-0171",
+    "admitted": "Long-term resident, 2 years",
+    "diagnosis": "Stable baseline: no dementia diagnosis, independent with conversation and orientation",
+    "history": ["Hypertension", "Osteoarthritis", "Recurrent UTIs"],
+    "medications": ["Amlodipine 5 mg daily", "Acetaminophen 650 mg q6h PRN"],
+    "allergies": ["NKDA"],
+    "code": "Full code",
+    "fallRisk": "Moderate — Morse 40"
+  },
+  "vitals": {
+    "bp": "108/64",
+    "hr": "98",
+    "rr": "20",
+    "temp": "100.2",
+    "spo2": "95%",
+    "pain": "0/10"
+  },
+  "opening": "At the dinner table, a CNA reports that Mrs. Castellano — normally sharp and talkative — is calling her by the wrong name and seems unsure where she is. She's normally oriented and independent with conversation; this is new as of today. She didn't eat much of her lunch either, which is unusual for her.",
+  "clock": {
+    "start": "17:32",
+    "label": "Time since noticed"
+  },
+  "actions": [
+    {
+      "id": "confirm-baseline-change",
+      "label": "Confirm with staff and chart that this is a change from her baseline",
+      "detail": "Check her documented normal mental status.",
+      "correct": true,
+      "order": 1,
+      "response": "Chart confirms no dementia diagnosis; documented as consistently alert and oriented x3, independent with conversation. Today's confusion, poor appetite, and disorientation to place are new and different from her baseline.",
+      "timeCost": 2,
+      "critical": true,
+      "criticalWhy": "AMS in someone with a normal cognitive baseline is treated as acute until proven otherwise — this isn't 'expected' the way it might be in a resident with known dementia."
+    },
+    {
+      "id": "assume-just-aging",
+      "label": "Chart it as expected age-related decline",
+      "detail": "She is 86, after all.",
+      "correct": false,
+      "response": "A sudden change in someone with a stable, documented baseline is not routine aging — it's a signal something acute is going on, and it deserves a workup for a reversible cause, not a label of decline.",
+      "penalty": "Dismissed acute change as normal aging",
+      "timeCost": 1
+    },
+    {
+      "id": "full-vitals",
+      "label": "Obtain a full set of vitals",
+      "detail": "Temperature especially relevant with recurrent UTI history.",
+      "correct": true,
+      "order": 2,
+      "response": "Temp 100.2, HR 98, BP 108/64 — slightly lower than her usual 128/78, RR 20, SpO2 95%. Low-grade fever noted.",
+      "timeCost": 2
+    },
+    {
+      "id": "check-glucose",
+      "label": "Check her blood glucose",
+      "detail": "Rule out a reversible metabolic cause.",
+      "correct": true,
+      "order": 3,
+      "response": "Fingerstick 102 mg/dL, within normal range. Not a hypoglycemic cause.",
+      "timeCost": 2
+    },
+    {
+      "id": "check-hydration-intake",
+      "label": "Review her recent food and fluid intake",
+      "detail": "Poor intake can contribute to delirium in older adults.",
+      "correct": true,
+      "order": 4,
+      "response": "Intake record shows reduced fluid intake over the past two days and minimal food at both breakfast and lunch today. Skin turgor slightly decreased, mucous membranes appear dry.",
+      "timeCost": 3
+    },
+    {
+      "id": "give-sedative-to-calm-her",
+      "label": "Give a PRN sedative to help her settle since she seems agitated",
+      "detail": "She seems anxious about not recognizing her surroundings.",
+      "correct": false,
+      "response": "Sedating a resident with new, unexplained confusion before finding the cause can mask worsening symptoms and make it harder to assess her — and in an older adult, sedatives themselves can deepen delirium. The cause needs to be found first.",
+      "penalty": "Sedated before identifying the cause",
+      "timeCost": 1
+    },
+    {
+      "id": "bladder-scan-or-urine-check",
+      "label": "Check for urinary symptoms, given her UTI history",
+      "detail": "UTIs are a classic reversible cause of AMS in older adults.",
+      "correct": true,
+      "order": 5,
+      "response": "Reports no pain but staff note urine appears cloudy and has a strong odor. Given her recurrent UTI history and today's fever, this is a strong candidate cause.",
+      "timeCost": 3
+    },
+    {
+      "id": "notify-provider",
+      "label": "Notify the provider of the full picture",
+      "detail": "New confusion, fever, poor intake, possible UTI signs.",
+      "correct": true,
+      "order": 6,
+      "response": "Dr. Osei is notified of the full assessment. Orders given: UA with reflex culture, encourage oral fluids, recheck temperature in 2 hours, hold PRN sedatives, reassess mental status each shift.",
+      "timeCost": 4
+    },
+    {
+      "id": "collect-specimen",
+      "label": "Collect the urine specimen as ordered",
+      "detail": "Clean-catch technique with assistance given her confusion.",
+      "correct": true,
+      "order": 7,
+      "response": "Specimen obtained with staff assistance given her current confusion. Labeled and sent to lab.",
+      "timeCost": 4
+    },
+    {
+      "id": "encourage-fluids-and-reorient",
+      "label": "Encourage fluids and reorient her frequently",
+      "detail": "Supportive measures while the cause is being worked up.",
+      "correct": true,
+      "order": 8,
+      "response": "Offered water and juice, encouraged small sips. Reoriented to name, location, and time of day. She remains confused but calmer, accepts fluids without resistance.",
+      "timeCost": 3
+    }
+  ],
+  "hints": [
+    "The first question is always 'is this different from how she normally is,' not 'is this expected for her age.'",
+    "Think through the reversible causes before assuming this is permanent — glucose, infection, hydration.",
+    "Sedating a confused resident before finding the cause can make the picture harder to read, not easier."
+  ],
+  "documentation": {
+    "prompt": "Write your nursing note covering the assessment, workup, and interventions.",
+    "placeholder": "Begin with the time the change was noticed and who reported it...",
+    "requirements": [
+      {
+        "id": "baseline-comparison",
+        "label": "Explicit comparison to her documented baseline",
+        "keywords": ["baseline", "normally", "new", "change"],
+        "why": "The note has to show this was recognized as acute, not assumed to be her norm."
+      },
+      {
+        "id": "vitals-fever",
+        "label": "Vitals, including the fever",
+        "keywords": ["100.2", "fever", "temp"],
+        "needs": ["number"],
+        "why": "A specific objective finding pointing toward an infectious cause."
+      },
+      {
+        "id": "ruled-out-causes",
+        "label": "Reversible causes checked: glucose and hydration status",
+        "keywords": ["glucose", "102", "hydration", "intake"],
+        "needs": ["number"],
+        "why": "Shows a systematic workup, not a jump straight to one assumed cause."
+      },
+      {
+        "id": "uti-signs",
+        "label": "Urinary findings supporting a possible UTI cause",
+        "keywords": ["urine", "cloudy", "odor"],
+        "why": "Given her history, this is the lead finding that shaped the provider's orders."
+      },
+      {
+        "id": "notify-provider",
+        "label": "Provider notified, with time and orders received",
+        "keywords": ["notified", "provider", "dr.", "orders", "ua"],
+        "needs": ["time"],
+        "why": "Documents the escalation and what was ordered as a result."
+      },
+      {
+        "id": "supportive-care",
+        "label": "Supportive interventions: fluids offered, reorientation",
+        "keywords": ["fluids", "reorient", "encouraged"],
+        "why": "Shows care continued while the cause was being worked up, not just a wait-and-see approach."
+      }
+    ],
+    "modelNote": "1732 — CNA reports resident calling her by wrong name and appearing disoriented to place at dinner; new finding for a resident normally alert and oriented x3, independent with conversation. Reduced appetite at lunch also noted as atypical.\n\n1734 — Vitals: temp 100.2, HR 98, BP 108/64 (baseline approx. 128/78), RR 20, SpO2 95%. Low-grade fever present. Fingerstick glucose 102 mg/dL, within normal limits.\n\n1737 — Intake review: reduced fluid intake over past 2 days, minimal food at breakfast and lunch today. Skin turgor slightly decreased, mucous membranes dry.\n\n1740 — Urinary assessment given history of recurrent UTIs: no reported dysuria, but urine noted cloudy with strong odor.\n\n1744 — Dr. Osei notified of new confusion, fever, poor intake, and urinary findings. Orders received: UA with reflex culture, encourage oral fluids, recheck temperature in 2 hours, hold PRN sedatives, reassess mental status each shift.\n\n1748 — Urine specimen obtained with staff assistance given current confusion, labeled and sent to lab. Fluids offered and small amounts accepted. Resident reoriented to name, location, and time; remains confused but calmer. Will continue to monitor and follow up on UA result.",
+    "pitfalls": [
+      "Writing 'resident confused' without stating that this is new for her, not her baseline.",
+      "Jumping straight to a UTI without documenting that other causes (glucose, hydration) were also checked.",
+      "Leaving out the intake history — poor fluid intake is a real contributor, not a side detail.",
+      "Charting a PRN sedative given for agitation before the cause was identified."
+    ]
+  }
+}

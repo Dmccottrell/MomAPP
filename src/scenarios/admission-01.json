@@ -1,0 +1,183 @@
+{
+  "id": "admission-01",
+  "title": "New admission after hip fracture repair",
+  "category": "Admission/Readmission",
+  "setting": "Nursing home",
+  "unit": "Long-term care",
+  "difficulty": "Foundational",
+  "estimatedMinutes": 15,
+  "objectives": [
+    "Complete a baseline admission assessment before assuming the transfer paperwork covers everything",
+    "Reconcile medications against what actually arrived with the resident",
+    "Document an admission note that establishes a clear baseline for future shifts"
+  ],
+  "patient": {
+    "name": "Eleanor Whitfield",
+    "age": 84,
+    "sex": "F",
+    "room": "112",
+    "mrn": "SIM-0133",
+    "admitted": "New admission today",
+    "diagnosis": "Post-op right hip fracture repair (ORIF), for rehab",
+    "history": ["Osteoporosis", "Hypertension", "Mild cognitive impairment"],
+    "medications": ["Acetaminophen 650 mg q6h PRN", "Lisinopril 10 mg daily", "Enoxaparin 40 mg subQ daily x14 days"],
+    "allergies": ["Codeine (nausea)"],
+    "code": "Full code — per transfer paperwork, to be confirmed with family",
+    "fallRisk": "High — new hip repair, prior cognitive impairment"
+  },
+  "vitals": {
+    "bp": "138/84",
+    "hr": "82",
+    "rr": "18",
+    "temp": "98.7",
+    "spo2": "96%",
+    "pain": "4/10"
+  },
+  "opening": "Mrs. Whitfield arrives by medical transport from the hospital for rehab after a right hip fracture repair four days ago. The transport team hands you a packet of discharge paperwork and helps her into bed. She seems tired and a little confused about where she is, asking twice if she's 'home yet.'",
+  "clock": {
+    "start": "13:15",
+    "label": "Time since arrival"
+  },
+  "actions": [
+    {
+      "id": "review-transfer-paperwork",
+      "label": "Review the hospital transfer paperwork in full",
+      "detail": "Discharge summary, medication list, care orders.",
+      "correct": true,
+      "order": 1,
+      "response": "Discharge summary confirms right hip ORIF four days ago, weight-bearing as tolerated with walker, enoxaparin for 14 days total (day 4 of 14), code status listed as full code. Medication list included.",
+      "timeCost": 3
+    },
+    {
+      "id": "assume-paperwork-complete",
+      "label": "Send the paperwork to the chart and move to the next task",
+      "detail": "It looks complete enough.",
+      "correct": false,
+      "response": "Paperwork gives you a starting point, but it isn't a substitute for laying eyes and hands on the resident yourself — code status especially needs confirming with family, not just carried over from a hospital form, and a physical assessment may turn up something the transfer notes missed.",
+      "penalty": "Skipped independent verification",
+      "timeCost": 1
+    },
+    {
+      "id": "baseline-assessment",
+      "label": "Perform a full baseline assessment",
+      "detail": "Skin, mobility, cognition, pain, surgical site.",
+      "correct": true,
+      "order": 2,
+      "response": "Incision to right hip clean, dry, intact, staples in place, no drainage. Skin otherwise intact, no pressure areas noted. Oriented to person, inconsistently to place and time — consistent with known mild cognitive impairment plus travel fatigue. Reports pain 4/10 at incision site.",
+      "timeCost": 5
+    },
+    {
+      "id": "reconcile-medications",
+      "label": "Reconcile the medication list against what physically arrived with her",
+      "detail": "Compare the paperwork list to the actual medications sent.",
+      "correct": true,
+      "order": 3,
+      "response": "Paperwork lists three medications; only two arrived in the transport bag — the enoxaparin was not sent. This needs to be caught now, on day 4 of a 14-day course, not discovered at the next scheduled dose.",
+      "timeCost": 3,
+      "critical": true,
+      "criticalWhy": "A missed anticoagulant dose after a major orthopedic surgery raises her clot risk — catching this gap on admission, not at the next dose time, is what prevents a missed dose."
+    },
+    {
+      "id": "assume-pharmacy-will-catch-it",
+      "label": "Assume the pharmacy will catch the missing medication automatically",
+      "detail": "They usually review new admission orders.",
+      "correct": false,
+      "response": "Pharmacy review happens on a schedule, not necessarily before her next dose is due. Waiting on that process to catch a gap you've already found risks a missed dose in the meantime — this needs to be flagged now.",
+      "penalty": "Relied on an unconfirmed safety net",
+      "timeCost": 1
+    },
+    {
+      "id": "notify-provider-med-gap",
+      "label": "Notify the provider of the missing enoxaparin",
+      "detail": "Confirm the order and get the medication sourced.",
+      "correct": true,
+      "order": 4,
+      "response": "Dr. Osei confirms the order should continue as prescribed and authorizes obtaining enoxaparin from the facility's emergency supply until the resident's own prescription is filled, so today's dose isn't missed.",
+      "timeCost": 4
+    },
+    {
+      "id": "confirm-code-status-family",
+      "label": "Contact family to confirm code status",
+      "detail": "Per facility policy, confirm rather than assume from the hospital form.",
+      "correct": true,
+      "order": 5,
+      "response": "Daughter confirms full code status is correct and current, matching the transfer paperwork. Also confirms Mrs. Whitfield's baseline is usually oriented and alert — the confusion today is new since the fall and hospitalization, worth tracking.",
+      "timeCost": 4
+    },
+    {
+      "id": "give-todays-dose",
+      "label": "Give today's enoxaparin dose from the emergency supply",
+      "detail": "Per the provider's order.",
+      "correct": true,
+      "order": 6,
+      "response": "40 mg enoxaparin given subQ to the abdomen. Site rotated and documented. No adverse reaction.",
+      "timeCost": 3
+    },
+    {
+      "id": "orient-and-reassure",
+      "label": "Orient her to the new setting and reassure her",
+      "detail": "Explain where she is and why, in simple terms.",
+      "correct": true,
+      "order": 7,
+      "response": "She is oriented to the facility and the plan for rehab. She relaxes visibly and says she understands she's here to get stronger before going home. Call light and room orientation reviewed.",
+      "timeCost": 3
+    }
+  ],
+  "hints": [
+    "Paperwork gives you a starting point, not a finished picture — verify it against what's actually in front of you.",
+    "Compare the medication list to what physically arrived, not just what's written down.",
+    "A confused new admission on a cognitive-impairment history still needs a baseline established today, for comparison tomorrow."
+  ],
+  "documentation": {
+    "prompt": "Write your admission note establishing her baseline and covering the medication gap.",
+    "placeholder": "Begin with the time of arrival and source of admission...",
+    "requirements": [
+      {
+        "id": "admission-source",
+        "label": "Source of admission and reason",
+        "keywords": ["hospital", "hip fracture", "orif", "rehab"],
+        "why": "Establishes why she's here and what the facility is treating."
+      },
+      {
+        "id": "baseline-assessment",
+        "label": "Baseline assessment: skin, incision, cognition, pain",
+        "keywords": ["incision", "intact", "oriented", "pain"],
+        "needs": ["number"],
+        "why": "This note is the reference point every future shift compares against."
+      },
+      {
+        "id": "med-reconciliation",
+        "label": "Medication reconciliation finding, including the gap found",
+        "keywords": ["reconcil", "enoxaparin", "missing", "not sent"],
+        "why": "Documents that the check happened and what it caught — this is a real safety catch, not routine paperwork."
+      },
+      {
+        "id": "notify-provider",
+        "label": "Provider notified of the medication gap, with time and outcome",
+        "keywords": ["notified", "provider", "dr.", "order"],
+        "needs": ["time"],
+        "why": "Shows the gap was closed through the right channel, not worked around."
+      },
+      {
+        "id": "code-status-confirmed",
+        "label": "Code status confirmed with family",
+        "keywords": ["code status", "full code", "family", "daughter"],
+        "why": "Code status carried over from a hospital form needs independent confirmation before it's acted on here."
+      },
+      {
+        "id": "med-given",
+        "label": "Today's dose given, with time and site",
+        "keywords": ["enoxaparin", "given", "subq", "abdomen"],
+        "needs": ["time"],
+        "why": "Confirms the gap didn't turn into an actual missed dose."
+      }
+    ],
+    "modelNote": "1315 — Resident admitted from hospital via medical transport, day 4 post-op right hip ORIF, for rehab. Discharge summary and medication list reviewed. Resident tired, intermittently oriented to place and time, consistent with known mild cognitive impairment and travel.\n\n1318 — Baseline assessment: right hip incision clean, dry, intact, staples in place, no drainage. Skin otherwise intact, no pressure areas. Pain 4/10 at incision site. Oriented to person, inconsistently to place/time.\n\n1321 — Medication reconciliation performed: transfer paperwork lists enoxaparin 40mg daily (day 4 of 14), acetaminophen PRN, and lisinopril daily; only acetaminophen and lisinopril physically arrived with resident. Enoxaparin not sent with transport.\n\n1325 — Dr. Osei notified of missing enoxaparin. Order confirmed to continue as prescribed; authorized to source from facility emergency supply until resident's own prescription is filled.\n\n1329 — Daughter contacted to confirm code status: full code confirmed as accurate. Daughter reports resident's cognitive baseline is usually alert and oriented; today's confusion is new since the fall/hospitalization and will be tracked.\n\n1332 — Enoxaparin 40mg given subQ to abdomen from emergency supply, site documented, no adverse reaction. Resident oriented to room, call light, and rehab plan; verbalizes understanding. Will continue to monitor cognition against this baseline and follow up on prescription fill for ongoing enoxaparin supply.",
+    "pitfalls": [
+      "Copying the hospital's medication list into the chart without confirming what actually arrived.",
+      "Assuming code status from a transfer form without confirming it with family per policy.",
+      "Writing 'confused' without noting whether that's a change from baseline or expected for this resident.",
+      "Leaving out the time and outcome of the provider notification about the missing medication."
+    ]
+  }
+}

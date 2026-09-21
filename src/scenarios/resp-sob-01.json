@@ -1,0 +1,195 @@
+{
+  "id": "resp-sob-01",
+  "title": "Sudden shortness of breath",
+  "category": "SOB/Respiratory",
+  "setting": "Hospital",
+  "unit": "Med-Surg/Telemetry",
+  "difficulty": "Intermediate",
+  "estimatedMinutes": 14,
+  "objectives": [
+    "Recognize and act on acute respiratory distress before completing a full head-to-toe assessment",
+    "Position and oxygenate a patient in distress while escalating",
+    "Document a respiratory event with objective findings and the full intervention timeline"
+  ],
+  "patient": {
+    "name": "Frank Delgado",
+    "age": 72,
+    "sex": "M",
+    "room": "410-A",
+    "mrn": "SIM-0104",
+    "admitted": "Day 2",
+    "diagnosis": "Heart failure exacerbation",
+    "history": ["Congestive heart failure (EF 35%)", "Atrial fibrillation", "Hypertension"],
+    "medications": ["Furosemide 40 mg IV BID", "Metoprolol 25 mg BID", "Apixaban 5 mg BID"],
+    "allergies": ["NKDA"],
+    "code": "Full code",
+    "fallRisk": "Moderate — Morse 35"
+  },
+  "vitals": {
+    "bp": "162/98",
+    "hr": "118",
+    "rr": "30",
+    "temp": "98.6",
+    "spo2": "86%",
+    "pain": "0/10"
+  },
+  "opening": "You walk in for a routine check and find Mr. Delgado sitting bolt upright, gripping the bed rail, visibly working to breathe. He is speaking in short, broken phrases. His oxygen is off — he says he took it off to use the bathroom twenty minutes ago and forgot to put it back on.",
+  "clock": {
+    "start": "16:08",
+    "label": "Time since found"
+  },
+  "actions": [
+    {
+      "id": "reapply-oxygen",
+      "label": "Reapply his oxygen immediately",
+      "detail": "Check the saturation as you do it.",
+      "correct": true,
+      "order": 1,
+      "response": "Nasal cannula reapplied at his prior ordered rate of 2L. SpO2 rises slowly to 89%. He remains visibly labored, speaking in 3-4 word phrases.",
+      "timeCost": 1,
+      "critical": true,
+      "criticalWhy": "Getting oxygen back on is the single fastest thing you can do while you assess and escalate — it should happen before anything else, not after a full workup."
+    },
+    {
+      "id": "finish-other-tasks-first",
+      "label": "Finish passing meds to your other patients, then come back",
+      "detail": "You're only a few rooms behind schedule.",
+      "correct": false,
+      "response": "A patient in acute respiratory distress with an SpO2 in the 80s cannot wait for you to finish an unrelated task. This is the priority the moment you see it — everything else on your list waits.",
+      "penalty": "Delayed response to acute distress",
+      "timeCost": 1
+    },
+    {
+      "id": "position-upright",
+      "label": "Position him upright with the head of bed elevated",
+      "detail": "He's already sitting up, but confirm the bed supports it.",
+      "correct": true,
+      "order": 2,
+      "response": "Head of bed raised to 90 degrees, pillows adjusted for support. He reports slightly easier breathing in this position, though still visibly distressed.",
+      "timeCost": 1
+    },
+    {
+      "id": "auscultate-lungs",
+      "label": "Auscultate lung sounds",
+      "detail": "Compare to his baseline exam from this morning.",
+      "correct": true,
+      "order": 3,
+      "response": "Crackles audible bilaterally, worse at the bases, extending higher than documented this morning. No wheeze. Use of accessory muscles noted.",
+      "timeCost": 2
+    },
+    {
+      "id": "check-legs-and-weight",
+      "label": "Check for new or worsening lower extremity edema",
+      "detail": "Relevant given his heart failure history.",
+      "correct": true,
+      "order": 4,
+      "response": "Bilateral lower extremity edema, 2+ pitting, appears increased from this morning's assessment. Consistent with fluid overload.",
+      "timeCost": 2
+    },
+    {
+      "id": "give-prn-furosemide-without-order",
+      "label": "Give an extra dose of furosemide since he seems fluid overloaded",
+      "detail": "He's already on it twice a day.",
+      "correct": false,
+      "response": "Giving an extra dose outside the current order, without the provider aware of this acute change, is practicing outside your scope and could worsen his electrolytes or blood pressure without appropriate monitoring in place. This needs a new order, not an assumption.",
+      "penalty": "Gave medication without a new order",
+      "timeCost": 1
+    },
+    {
+      "id": "notify-provider",
+      "label": "Notify the provider of the acute change",
+      "detail": "Report SpO2, lung sounds, edema, and vitals.",
+      "correct": true,
+      "order": 5,
+      "response": "Dr. Nguyen is notified. New orders: increase oxygen to 4L via nasal cannula titrate to keep SpO2 >92%, STAT furosemide 40mg IV now, strict I&O, daily weight, portable chest X-ray, repeat assessment in 30 minutes.",
+      "timeCost": 4
+    },
+    {
+      "id": "titrate-oxygen",
+      "label": "Increase oxygen per the new order and recheck saturation",
+      "detail": "Titrate to the target range.",
+      "correct": true,
+      "order": 6,
+      "response": "Oxygen increased to 4L nasal cannula. SpO2 rises to 93% over several minutes. Work of breathing appears slightly improved, still using some accessory muscles.",
+      "reveals": { "spo2": "93%" },
+      "timeCost": 3
+    },
+    {
+      "id": "give-stat-furosemide",
+      "label": "Give the STAT furosemide dose",
+      "detail": "Per the new order.",
+      "correct": true,
+      "order": 7,
+      "response": "40 mg furosemide given IV push over 2 minutes. Foley not in place — bedside urinal placed within reach for output measurement.",
+      "timeCost": 3
+    },
+    {
+      "id": "reassess-30min",
+      "label": "Reassess at 30 minutes as ordered",
+      "detail": "Vitals, lung sounds, work of breathing.",
+      "correct": true,
+      "order": 8,
+      "response": "At 30 minutes: RR 24, HR 102, SpO2 94% on 4L, breathing visibly less labored, able to speak in full sentences. Voided 400 mL, documented.",
+      "reveals": { "rr": "24", "hr": "102" },
+      "timeCost": 3
+    }
+  ],
+  "hints": [
+    "The first move here doesn't require an assessment at all — what's the fastest thing you can fix right now?",
+    "His heart failure history should shape what you're checking for, not just his lungs.",
+    "A new medication dose outside the standing order needs the provider, even if it seems obviously indicated."
+  ],
+  "documentation": {
+    "prompt": "Write your nursing note covering the event from discovery through the 30-minute reassessment.",
+    "placeholder": "Begin with the time and what you found...",
+    "requirements": [
+      {
+        "id": "found-state",
+        "label": "How he was found, including oxygen status and initial SpO2",
+        "keywords": ["sitting upright", "labored", "off", "86%"],
+        "needs": ["number"],
+        "why": "The starting point — oxygen off, saturation in the 80s — is what justified acting before finishing the assessment."
+      },
+      {
+        "id": "lung-findings",
+        "label": "Lung auscultation findings",
+        "keywords": ["crackles", "bilateral", "bases", "accessory"],
+        "why": "The specific exam finding, not just 'lungs sound bad.'"
+      },
+      {
+        "id": "edema-findings",
+        "label": "Lower extremity edema findings",
+        "keywords": ["edema", "pitting", "2+"],
+        "why": "Ties the respiratory event to the fluid overload picture given his heart failure history."
+      },
+      {
+        "id": "notify-provider",
+        "label": "Provider notified, with time and new orders",
+        "keywords": ["notified", "provider", "dr.", "orders", "furosemide"],
+        "needs": ["time"],
+        "why": "Times and orders — this shows the escalation actually happened and what came of it."
+      },
+      {
+        "id": "interventions",
+        "label": "Interventions given: oxygen titration and furosemide, with times",
+        "keywords": ["oxygen", "4l", "furosemide", "given"],
+        "needs": ["time"],
+        "why": "Each intervention needs its own timestamp, not a general 'treatment given.'"
+      },
+      {
+        "id": "reassessment",
+        "label": "Reassessment findings after treatment, with new vitals",
+        "keywords": ["reassess", "94%", "24", "improved"],
+        "needs": ["number"],
+        "why": "Shows the interventions worked, with objective evidence, not just 'patient improved.'"
+      }
+    ],
+    "modelNote": "1608 — Found patient sitting upright in bed, visibly labored breathing, speaking in short phrases. Oxygen found off; patient reports removing it to use the bathroom approximately 20 minutes prior. SpO2 on room air 86%, RR 30, HR 118.\n\n1609 — Oxygen reapplied via nasal cannula at prior ordered 2L. Head of bed raised to 90 degrees for positioning. SpO2 rose to 89%.\n\n1611 — Lung auscultation: crackles bilaterally, worse at bases, extending higher than this morning's baseline exam. Accessory muscle use noted. Bilateral lower extremity edema, 2+ pitting, increased from this morning.\n\n1613 — Dr. Nguyen notified of acute change: SpO2, lung findings, edema, vitals. Orders received: oxygen titrate to 4L to keep SpO2 >92%, STAT furosemide 40mg IV, strict I&O, daily weight, portable chest X-ray, reassessment in 30 minutes.\n\n1614 — Oxygen increased to 4L nasal cannula, SpO2 rose to 93%. Furosemide 40mg given IV push over 2 minutes. Bedside urinal placed for output measurement.\n\n1638 — Reassessment at 30 minutes: RR 24, HR 102, SpO2 94% on 4L, breathing visibly less labored, speaking in full sentences. Voided 400 mL, documented on I&O. Will continue to monitor respiratory status and await chest X-ray result.",
+    "pitfalls": [
+      "Writing 'SOB noted, oxygen reapplied' without the actual saturation numbers before and after.",
+      "Leaving out that the oxygen had been removed and for how long — that context matters.",
+      "Documenting the furosemide given but not the urine output that followed.",
+      "Skipping the 30-minute reassessment entirely — the note needs to show the intervention actually worked."
+    ]
+  }
+}

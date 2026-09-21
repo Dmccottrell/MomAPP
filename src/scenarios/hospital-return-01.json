@@ -1,0 +1,173 @@
+{
+  "id": "hospital-return-01",
+  "title": "Returning from the hospital after pneumonia",
+  "category": "Hospital Return",
+  "setting": "Nursing home",
+  "unit": "Long-term care",
+  "difficulty": "Foundational",
+  "estimatedMinutes": 13,
+  "objectives": [
+    "Re-establish a resident's baseline after a hospital stay rather than assuming it matches before",
+    "Reconcile new discharge medications against the resident's prior medication list",
+    "Document a return-from-hospital note that flags any care plan changes needed"
+  ],
+  "patient": {
+    "name": "Marjorie Stanton",
+    "age": 88,
+    "sex": "F",
+    "room": "306",
+    "mrn": "SIM-0158",
+    "admitted": "Long-term resident, 3 years; returning after 5-day hospital stay",
+    "diagnosis": "Recent hospitalization for community-acquired pneumonia, returning to baseline care",
+    "history": ["COPD", "Osteoporosis", "Mild dementia"],
+    "medications": ["Amoxicillin-clavulanate 875 mg BID x 3 more days (new)", "Tiotropium inhaler daily", "Calcium/vitamin D daily", "Donepezil 5 mg daily"],
+    "allergies": ["Penicillin — hospital notes reaction as rash, to be confirmed"],
+    "code": "Full code — per facility record, to be reconfirmed",
+    "fallRisk": "High — deconditioned after hospital stay"
+  },
+  "vitals": {
+    "bp": "126/78",
+    "hr": "88",
+    "rr": "20",
+    "temp": "98.4",
+    "spo2": "93%",
+    "pain": "2/10"
+  },
+  "opening": "Mrs. Stanton returns by medical transport after five days in the hospital for pneumonia. She looks noticeably weaker than when she left and needs two-person assist to transfer from the stretcher to her bed, whereas she was walking with a walker before admission. The transport team hands over a discharge packet.",
+  "clock": {
+    "start": "11:20",
+    "label": "Time since arrival"
+  },
+  "actions": [
+    {
+      "id": "review-discharge-summary",
+      "label": "Review the hospital discharge summary in full",
+      "detail": "Diagnosis, new medications, any new orders or precautions.",
+      "correct": true,
+      "order": 1,
+      "response": "Summary confirms pneumonia treated with IV then oral antibiotics, 3 days of oral course remaining. Notes a new allergy flag added during the stay: penicillin, reaction described as rash, not previously on her facility allergy list.",
+      "timeCost": 3
+    },
+    {
+      "id": "check-allergy-discrepancy",
+      "label": "Flag and verify the new allergy that wasn't on her prior chart",
+      "detail": "A penicillin allergy wasn't previously documented here.",
+      "correct": true,
+      "order": 2,
+      "response": "Confirmed the facility's prior record had no documented allergies; the hospital added penicillin based on a rash noted during this admission. Updating the facility allergy list now prevents this medication from being given later by mistake.",
+      "timeCost": 3,
+      "critical": true,
+      "criticalWhy": "A new allergy discovered during a hospital stay has to make it into the facility's own record immediately — otherwise the next person to order medications won't see it."
+    },
+    {
+      "id": "assume-old-chart-is-current",
+      "label": "Leave her chart as-is since the facility record already has her info",
+      "detail": "She's been here for years; the chart should be up to date.",
+      "correct": false,
+      "response": "A hospital stay is exactly when new information — like a new allergy — gets discovered. Assuming the existing chart already reflects it risks a serious medication error the next time someone orders for her.",
+      "penalty": "Failed to update chart with new hospital information",
+      "timeCost": 1
+    },
+    {
+      "id": "baseline-reassessment",
+      "label": "Reassess her functional baseline now, not from memory",
+      "detail": "Mobility, cognition, and vitals compared to before she left.",
+      "correct": true,
+      "order": 3,
+      "response": "Requires two-person assist to transfer, compared to walker-with-supervision before admission. SpO2 93% on room air, slightly below her usual 95-96%. Oriented to person only, more confused than her documented baseline — consistent with hospital-associated delirium risk in an older adult with existing mild dementia.",
+      "reveals": { "spo2": "93%" },
+      "timeCost": 4
+    },
+    {
+      "id": "reconcile-medications",
+      "label": "Reconcile the new discharge medication list against her prior list",
+      "detail": "What's new, what's changed, what stayed the same.",
+      "correct": true,
+      "order": 4,
+      "response": "New: amoxicillin-clavulanate for 3 more days. Unchanged: tiotropium, calcium/vitamin D, donepezil. No conflicts identified between the new antibiotic and her existing medications.",
+      "timeCost": 3
+    },
+    {
+      "id": "notify-provider-changes",
+      "label": "Notify the facility provider of the functional decline and new allergy",
+      "detail": "Update the care plan based on what changed.",
+      "correct": true,
+      "order": 5,
+      "response": "Dr. Lindqvist is notified. Orders given: update allergy list to include penicillin, physical therapy re-evaluation for the new two-person assist level, continue antibiotic course as prescribed, recheck SpO2 in 4 hours.",
+      "timeCost": 4
+    },
+    {
+      "id": "update-careplan-only-verbally",
+      "label": "Just tell the oncoming shift verbally about the changes",
+      "detail": "Faster than updating the written care plan right now.",
+      "correct": false,
+      "response": "A verbal handoff can be missed, forgotten, or not passed to every shift after this one. The allergy and the new assist level both need to be in the written record and care plan, not just spoken once.",
+      "penalty": "Relied on verbal handoff instead of documentation",
+      "timeCost": 1
+    },
+    {
+      "id": "give-next-antibiotic-dose",
+      "label": "Give her next scheduled antibiotic dose",
+      "detail": "Per the discharge medication schedule.",
+      "correct": true,
+      "order": 6,
+      "response": "Amoxicillin-clavulanate 875 mg given per schedule. No reaction observed. Instructed to monitor for rash given the newly flagged allergy history.",
+      "timeCost": 3
+    }
+  ],
+  "hints": [
+    "A discharge packet often contains new information that isn't yet in the facility's own chart — check for it specifically.",
+    "Don't assume her functional level is the same as before she left — reassess it directly.",
+    "A change like a new allergy needs to be in the written record immediately, not just mentioned out loud."
+  ],
+  "documentation": {
+    "prompt": "Write your return-from-hospital note covering the reassessment and any changes found.",
+    "placeholder": "Begin with the time of return and reason for the hospital stay...",
+    "requirements": [
+      {
+        "id": "return-context",
+        "label": "Reason for hospitalization and length of stay",
+        "keywords": ["pneumonia", "hospital", "5 day", "five day"],
+        "why": "Establishes why she was gone and what she was treated for."
+      },
+      {
+        "id": "new-allergy",
+        "label": "New allergy discovered and added to the record",
+        "keywords": ["penicillin", "allergy", "rash", "added"],
+        "why": "This is the single highest-stakes finding in the note — it has to be unmistakable."
+      },
+      {
+        "id": "functional-change",
+        "label": "Functional/mobility status compared to before admission",
+        "keywords": ["two-person assist", "walker", "decline", "deconditioned"],
+        "why": "Shows the baseline was actually reassessed, not assumed unchanged."
+      },
+      {
+        "id": "cognition-change",
+        "label": "Cognitive status compared to baseline",
+        "keywords": ["oriented", "confused", "baseline"],
+        "why": "Delirium risk after a hospital stay in an older adult needs to be tracked from day one back."
+      },
+      {
+        "id": "med-reconciliation",
+        "label": "Medication reconciliation: what's new versus unchanged",
+        "keywords": ["reconcil", "amoxicillin", "new", "unchanged"],
+        "why": "Shows the discharge list was actually compared against her prior medications, not just filed."
+      },
+      {
+        "id": "notify-provider",
+        "label": "Provider notified, with time and orders for the care plan update",
+        "keywords": ["notified", "provider", "dr.", "orders"],
+        "needs": ["time"],
+        "why": "The changes found need a provider-authorized update to the plan of care, not just a chart note."
+      }
+    ],
+    "modelNote": "1120 — Resident returned via medical transport after 5-day hospitalization for community-acquired pneumonia. Discharge summary reviewed: treated with IV then oral antibiotics, 3 days of oral course remaining. New allergy noted during hospital stay: penicillin, reaction described as rash — not previously documented on facility record.\n\n1123 — New allergy verified and flagged for immediate update to facility allergy list.\n\n1124 — Functional reassessment: requires two-person assist to transfer, compared to walker-with-supervision prior to admission. SpO2 93% RA, below usual baseline of 95-96%. Oriented to person only, more confused than documented baseline, consistent with delirium risk post-hospitalization in resident with mild dementia.\n\n1127 — Medication reconciliation completed: new amoxicillin-clavulanate for 3 more days; tiotropium, calcium/vitamin D, and donepezil unchanged. No conflicts identified.\n\n1131 — Dr. Lindqvist notified of new allergy, functional decline, and cognitive change. Orders received: update allergy list, PT re-evaluation for new assist level, continue antibiotic course, recheck SpO2 in 4 hours.\n\n1134 — Amoxicillin-clavulanate 875 mg given per schedule, no reaction observed, instructed to monitor for rash. Allergy list and care plan updated to reflect today's findings. Will continue to monitor functional and cognitive status against this new baseline.",
+    "pitfalls": [
+      "Filing the discharge paperwork without checking it against the resident's existing facility chart.",
+      "Assuming mobility and cognition are unchanged from before the hospital stay.",
+      "Adding the new allergy to a note but forgetting to actually update the chart's allergy list.",
+      "Leaving out the provider notification that authorized the care plan changes."
+    ]
+  }
+}

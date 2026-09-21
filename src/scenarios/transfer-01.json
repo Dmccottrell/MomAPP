@@ -1,0 +1,192 @@
+{
+  "id": "transfer-01",
+  "title": "Sending a resident out to the ED",
+  "category": "Transfer",
+  "setting": "Nursing home",
+  "unit": "Long-term care",
+  "difficulty": "Intermediate",
+  "estimatedMinutes": 14,
+  "objectives": [
+    "Recognize a change in condition that warrants transfer rather than in-house management",
+    "Assemble the information EMS and the receiving ED actually need",
+    "Document a transfer note that gives the next team everything without duplicating the full chart"
+  ],
+  "patient": {
+    "name": "Bernard Okafor",
+    "age": 79,
+    "sex": "M",
+    "room": "224",
+    "mrn": "SIM-0147",
+    "admitted": "Resident for 8 months",
+    "diagnosis": "Vascular dementia, history of stroke",
+    "history": ["Prior CVA with residual left-sided weakness", "Atrial fibrillation", "Type 2 diabetes"],
+    "medications": ["Apixaban 5 mg BID", "Metformin 500 mg BID", "Donepezil 10 mg daily"],
+    "allergies": ["NKDA"],
+    "code": "Full code",
+    "fallRisk": "High — Morse 65"
+  },
+  "vitals": {
+    "bp": "168/100",
+    "hr": "96",
+    "rr": "20",
+    "temp": "98.9",
+    "spo2": "95%",
+    "pain": "0/10"
+  },
+  "opening": "During your 1500 rounds, Mr. Okafor's roommate tells you he 'looks off' and hasn't gotten out of his chair for lunch. You find him with new right facial droop and slurred speech. His left-sided weakness is his known baseline, but this looks different — and he was seen walking to breakfast this morning without issue.",
+  "clock": {
+    "start": "15:04",
+    "label": "Time since noticed"
+  },
+  "actions": [
+    {
+      "id": "stroke-assessment",
+      "label": "Perform a focused stroke assessment (face, arm, speech, time)",
+      "detail": "Compare to his known baseline.",
+      "correct": true,
+      "order": 1,
+      "response": "New right facial droop, slurred speech, and new right arm drift — his known deficit is left-sided, so this is a new, different finding. Last known well was breakfast, approximately 6 hours ago.",
+      "timeCost": 3,
+      "critical": true,
+      "criticalWhy": "A new, different-sided deficit on top of an old stroke is not 'more of the same' — treating it as baseline would miss a time-sensitive new event."
+    },
+    {
+      "id": "assume-baseline-dementia",
+      "label": "Chart it as his usual baseline and continue rounds",
+      "detail": "He already has a known stroke history.",
+      "correct": false,
+      "response": "His known deficit is left-sided weakness — new right-sided facial droop and slurred speech is a different finding, not a continuation of his baseline. Assuming it's 'just him' misses a possible new stroke that needs emergency evaluation.",
+      "penalty": "Missed a new deficit as baseline",
+      "timeCost": 1
+    },
+    {
+      "id": "check-glucose",
+      "label": "Check his blood glucose",
+      "detail": "Rule out a reversible cause of his change.",
+      "correct": true,
+      "order": 2,
+      "response": "Fingerstick 128 mg/dL, within normal range. Not a hypoglycemic cause for his presentation.",
+      "timeCost": 2
+    },
+    {
+      "id": "full-vitals",
+      "label": "Obtain a full set of vitals",
+      "detail": "Blood pressure especially relevant here.",
+      "correct": true,
+      "order": 3,
+      "response": "BP 168/100, HR 96 irregular, RR 20, SpO2 95%, temp 98.9. Elevated from his usual baseline of roughly 130/80.",
+      "timeCost": 2
+    },
+    {
+      "id": "notify-provider-and-family",
+      "label": "Notify the provider immediately",
+      "detail": "Report the findings and last known well time.",
+      "correct": true,
+      "order": 4,
+      "response": "Dr. Farrow is reached, hears the assessment and last known well time. Order given: call 911 for emergency transfer to the hospital for stroke workup, do not delay for further in-house testing.",
+      "timeCost": 3
+    },
+    {
+      "id": "run-more-inhouse-tests-first",
+      "label": "Get a full set of labs drawn in-house before calling EMS",
+      "detail": "More information before he goes out seems safer.",
+      "correct": false,
+      "response": "Time is the critical factor in a possible new stroke — the receiving hospital has the imaging and lab capability to work this up fast, and delaying transfer to collect in-house labs first costs minutes that matter far more here than they would for a routine transfer.",
+      "penalty": "Delayed transfer for non-essential testing",
+      "timeCost": 1
+    },
+    {
+      "id": "call-911",
+      "label": "Call 911 for emergency transport",
+      "detail": "Per the provider's order.",
+      "correct": true,
+      "order": 5,
+      "response": "EMS dispatched, ETA 12 minutes. Facility begins preparing transfer paperwork and a copy of the current medication list.",
+      "timeCost": 3
+    },
+    {
+      "id": "notify-family",
+      "label": "Notify his family of the transfer",
+      "detail": "They should hear it from the facility, not find out after the fact.",
+      "correct": true,
+      "order": 6,
+      "response": "Son is reached, informed of the new findings and that Mr. Okafor is being sent to the hospital via EMS for evaluation. He states he will meet him at the ED.",
+      "timeCost": 3
+    },
+    {
+      "id": "prepare-transfer-packet",
+      "label": "Prepare the transfer packet: medication list, code status, last known well time, contact info",
+      "detail": "What EMS and the ED actually need on arrival.",
+      "correct": true,
+      "order": 7,
+      "response": "Packet assembled: current medication list, allergies, code status, baseline functional status, last known well time, and facility/family contact information. Handed to EMS on arrival.",
+      "timeCost": 3
+    },
+    {
+      "id": "give-EMS-full-chart-printout",
+      "label": "Print the resident's entire chart for EMS to review on the way",
+      "detail": "More information seems more helpful.",
+      "correct": false,
+      "response": "EMS needs a focused, fast handoff — the key facts, not the entire chart to sort through en route. A full printout slows the handoff down and buries the information that actually matters right now.",
+      "penalty": "Gave an unfocused handoff",
+      "timeCost": 1
+    }
+  ],
+  "hints": [
+    "Compare any new finding to his known, documented baseline — not to a general assumption about his diagnosis.",
+    "Time is the resource that matters most here — every extra in-house step has a cost.",
+    "EMS and the ED need a focused packet, not the whole chart."
+  ],
+  "documentation": {
+    "prompt": "Write your transfer note covering the finding, escalation, and handoff.",
+    "placeholder": "Begin with the time the change was noticed...",
+    "requirements": [
+      {
+        "id": "new-finding",
+        "label": "New finding, described as a change from documented baseline",
+        "keywords": ["right", "facial droop", "slurred", "new"],
+        "why": "The note needs to show this was recognized as different from his known deficit, not assumed to be baseline."
+      },
+      {
+        "id": "last-known-well",
+        "label": "Last known well time",
+        "keywords": ["last known well", "breakfast", "6 hours"],
+        "needs": ["time"],
+        "why": "This is a specific, required data point for any possible stroke — the receiving team needs it immediately."
+      },
+      {
+        "id": "vitals-glucose",
+        "label": "Vitals and glucose check",
+        "keywords": ["glucose", "128", "bp", "168/100"],
+        "needs": ["number"],
+        "why": "Rules out an easily reversible cause and gives the receiving team a starting picture."
+      },
+      {
+        "id": "notify-provider",
+        "label": "Provider notified, with time and order to transfer",
+        "keywords": ["notified", "provider", "dr.", "911", "transfer"],
+        "needs": ["time"],
+        "why": "Documents the order authorizing emergency transfer, not a unilateral decision to send him out."
+      },
+      {
+        "id": "family-notified",
+        "label": "Family notified of the transfer",
+        "keywords": ["family", "son", "notified"],
+        "why": "Required, and it's part of a complete transfer record."
+      },
+      {
+        "id": "handoff-packet",
+        "label": "What was sent with him: medication list, code status, contact info",
+        "keywords": ["medication list", "code status", "packet", "ems"],
+        "why": "Documents that the receiving team got what they needed, not just that he left the building."
+      }
+    ],
+    "modelNote": "1504 — Roommate reports resident 'looks off,' has not gotten up for lunch. Assessment reveals new right facial droop and slurred speech; resident's known baseline deficit is left-sided weakness from prior CVA. New right-sided arm drift also noted. Last known well: seen walking to breakfast without issue, approximately 6 hours prior.\n\n1506 — Fingerstick glucose 128 mg/dL, within normal limits. Full vitals: BP 168/100, HR 96 irregular, RR 20, SpO2 95%, temp 98.9 — BP elevated from documented baseline of approximately 130/80.\n\n1508 — Dr. Farrow notified of new focal findings and last known well time. Order given: call 911 for emergency transfer for stroke workup, no delay for in-house testing.\n\n1509 — 911 called, EMS dispatched, ETA 12 minutes. Son notified of new findings and transfer; will meet resident at the ED.\n\n1515 — Transfer packet assembled: current medication list, allergies, code status, baseline functional status, last known well time, facility and family contact information. Packet given to EMS on arrival at 1516. Resident transported to hospital for evaluation.",
+    "pitfalls": [
+      "Writing 'resident seemed off' without the specific new neuro findings.",
+      "Leaving out the last known well time — this is one of the most time-critical facts in the whole note.",
+      "Documenting that EMS was called without noting what information was sent with the resident.",
+      "Forgetting to note that family was notified separately from the provider order to transfer."
+    ]
+  }
+}

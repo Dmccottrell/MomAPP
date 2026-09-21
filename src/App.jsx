@@ -35,12 +35,35 @@ import {
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
 import changeOfCondition01 from "./scenarios/change-of-condition-01.json";
+import labUti01 from "./scenarios/lab-uti-01.json";
+import medHypoglycemia01 from "./scenarios/med-hypoglycemia-01.json";
+import painPostop01 from "./scenarios/pain-postop-01.json";
+import respSob01 from "./scenarios/resp-sob-01.json";
+import providerNotifyChestpain01 from "./scenarios/provider-notify-chestpain-01.json";
+import admission01 from "./scenarios/admission-01.json";
+import transfer01 from "./scenarios/transfer-01.json";
+import hospitalReturn01 from "./scenarios/hospital-return-01.json";
+import ams01 from "./scenarios/ams-01.json";
+import foley01 from "./scenarios/foley-01.json";
 
 // Add new preset scenarios here. One import line per file — that's the
 // only code change needed when Mom writes a new case. See SCENARIOS.md for
 // the full field reference. Scenarios built in-app (My Scenarios) live in
 // the shared database instead — see utils/customScenarios.js.
-const SCENARIOS = [fall01, changeOfCondition01];
+const SCENARIOS = [
+  fall01,
+  changeOfCondition01,
+  labUti01,
+  medHypoglycemia01,
+  painPostop01,
+  respSob01,
+  providerNotifyChestpain01,
+  admission01,
+  transfer01,
+  hospitalReturn01,
+  ams01,
+  foley01,
+];
 
 /**
  * App shell. Waits for a Supabase session, loads that session's profile

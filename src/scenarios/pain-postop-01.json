@@ -1,0 +1,184 @@
+{
+  "id": "pain-postop-01",
+  "title": "Post-op pain out of proportion",
+  "category": "Pain",
+  "setting": "Hospital",
+  "unit": "Ortho/Surgical",
+  "difficulty": "Intermediate",
+  "estimatedMinutes": 13,
+  "objectives": [
+    "Assess pain using more than the numeric scale before treating",
+    "Recognize when pain is disproportionate to the expected post-op course",
+    "Document a pain reassessment cycle, not just a single number"
+  ],
+  "patient": {
+    "name": "Renata Souza",
+    "age": 54,
+    "sex": "F",
+    "room": "520-B",
+    "mrn": "SIM-0091",
+    "admitted": "Day 1 (post-op day 1)",
+    "diagnosis": "Post-op left total knee arthroplasty",
+    "history": ["Osteoarthritis", "Obesity", "GERD"],
+    "medications": ["Oxycodone 5-10 mg PO q4h PRN", "Acetaminophen 1000 mg PO q6h scheduled", "Enoxaparin 40 mg subQ daily"],
+    "allergies": ["NKDA"],
+    "code": "Full code",
+    "fallRisk": "High — Morse 60"
+  },
+  "vitals": {
+    "bp": "148/92",
+    "hr": "108",
+    "rr": "22",
+    "temp": "99.3",
+    "spo2": "95%",
+    "pain": "9/10"
+  },
+  "opening": "You enter to find Ms. Souza gripping the bed rail, rating her left knee pain 9/10 — up from a 4/10 an hour ago after her last dose. The knee looks more swollen than it did on your last check, and the dressing has a small amount of new drainage. She says the pain 'feels different, like pressure,' not the usual soreness.",
+  "clock": {
+    "start": "10:40",
+    "label": "Time since found"
+  },
+  "actions": [
+    {
+      "id": "assess-pain-quality",
+      "label": "Ask her to describe the pain, not just rate it",
+      "detail": "Location, quality, what makes it worse or better.",
+      "correct": true,
+      "order": 1,
+      "response": "She describes a tight, pressure-like pain distinct from her usual post-op soreness, worse with any movement, not relieved by repositioning. She denies numbness but reports the leg 'feels tight.'",
+      "timeCost": 2
+    },
+    {
+      "id": "just-give-more-oxy",
+      "label": "Give the next oxycodone dose right away since it's due",
+      "detail": "She's due for another dose.",
+      "correct": false,
+      "response": "Giving more opioid without examining the leg risks masking a developing complication like compartment syndrome or a surgical site issue — treating the number without assessing the change can delay recognizing something that needs the surgeon, not more medication.",
+      "penalty": "Treated the number without examining the change",
+      "timeCost": 1
+    },
+    {
+      "id": "assess-limb",
+      "label": "Assess the affected limb: pulses, color, sensation, swelling",
+      "detail": "Compare to your last documented assessment.",
+      "correct": true,
+      "order": 2,
+      "response": "Pedal pulse present but diminished compared to last check. Foot cool to touch, capillary refill 4 seconds. Calf and knee visibly more swollen and tense than an hour ago. She reports decreased sensation in her toes.",
+      "reveals": { "hr": "112" },
+      "timeCost": 3,
+      "critical": true,
+      "criticalWhy": "Pain out of proportion, pallor, diminished pulse, and tense swelling are compartment syndrome red flags — this needs the surgical team now, not routine pain management."
+    },
+    {
+      "id": "check-dressing",
+      "label": "Check the surgical dressing and drainage",
+      "detail": "Note amount, color, and whether it's increasing.",
+      "correct": true,
+      "order": 3,
+      "response": "Dressing shows a quarter-sized area of serosanguinous drainage, appears to have increased since the last check. No frank bleeding.",
+      "timeCost": 2
+    },
+    {
+      "id": "reposition-and-wait",
+      "label": "Reposition her leg and reassess in an hour",
+      "detail": "Elevation sometimes helps post-op swelling.",
+      "correct": false,
+      "response": "Given the diminished pulse, cool foot, and tense swelling already found, waiting an hour to reassess risks losing the window to intervene before permanent tissue damage. These findings need to go to the surgical team now.",
+      "penalty": "Delayed escalation of a limb-threatening finding",
+      "timeCost": 1
+    },
+    {
+      "id": "notify-surgeon",
+      "label": "Notify the surgical team immediately",
+      "detail": "Report the full picture: pain, pulse, color, sensation, swelling.",
+      "correct": true,
+      "order": 4,
+      "response": "Dr. Reyes is reached and hears the full assessment. New orders: hold further opioids until evaluated, stat orthopedic consult, prepare for possible loosening of the dressing/wrap, continuous pulse checks q15min.",
+      "timeCost": 4
+    },
+    {
+      "id": "loosen-dressing",
+      "label": "Loosen the compressive wrap per the new order",
+      "detail": "May relieve pressure while awaiting evaluation.",
+      "correct": true,
+      "order": 5,
+      "response": "Wrap loosened one layer. She reports the tight, pressure sensation easing slightly. Pulse rechecked, slightly stronger.",
+      "reveals": { "pain": "7/10" },
+      "timeCost": 3
+    },
+    {
+      "id": "frequent-neurovascular-checks",
+      "label": "Begin neurovascular checks every 15 minutes",
+      "detail": "Pulse, color, temperature, capillary refill, sensation, movement.",
+      "correct": true,
+      "order": 6,
+      "response": "Neurovascular checks initiated and documented per protocol. No further deterioration noted over the next 30 minutes; orthopedics is en route to evaluate.",
+      "timeCost": 3
+    },
+    {
+      "id": "wait-for-ortho-no-checks",
+      "label": "Wait for orthopedics to arrive before doing anything else",
+      "detail": "They're the ones who need to see it.",
+      "correct": false,
+      "response": "Continuous monitoring while waiting for the consult is exactly what protects the limb in the meantime — stopping monitoring because a consult is pending leaves a deteriorating limb unwatched during the highest-risk window.",
+      "penalty": "Stopped monitoring while awaiting consult",
+      "timeCost": 1
+    }
+  ],
+  "hints": [
+    "A pain number by itself doesn't tell you why the pain changed — ask about the quality of it.",
+    "Pain out of proportion plus a change in pulse, color, or sensation is not routine post-op pain.",
+    "This isn't a 'give the next dose and reassess later' situation — the assessment findings need to go up the chain now."
+  ],
+  "documentation": {
+    "prompt": "Write your nursing note covering the assessment, escalation, and interventions.",
+    "placeholder": "Begin with the time and what prompted your assessment...",
+    "requirements": [
+      {
+        "id": "pain-change",
+        "label": "Change in pain — quality and level, not just a number",
+        "keywords": ["9/10", "pressure", "tight", "different"],
+        "needs": ["number"],
+        "why": "The change in character is what made this more than routine pain, and the note needs to show that reasoning."
+      },
+      {
+        "id": "neurovascular-findings",
+        "label": "Neurovascular findings: pulse, color, temperature, sensation",
+        "keywords": ["pulse", "cool", "capillary refill", "sensation", "diminished"],
+        "why": "These are the objective findings that justified escalating instead of just medicating."
+      },
+      {
+        "id": "swelling-drainage",
+        "label": "Swelling and drainage findings compared to baseline",
+        "keywords": ["swelling", "swollen", "drainage", "dressing"],
+        "why": "Shows the physical exam supporting the concern, not just how she felt."
+      },
+      {
+        "id": "notify-surgeon",
+        "label": "Surgical team notified, with time and orders received",
+        "keywords": ["notified", "surgeon", "dr.", "orders", "consult"],
+        "needs": ["time"],
+        "why": "This is a limb-threatening concern — the time it was escalated matters for the record."
+      },
+      {
+        "id": "held-opioid",
+        "label": "Opioid held pending evaluation",
+        "keywords": ["held", "opioid", "oxycodone"],
+        "why": "Shows the medication decision was deliberate, tied to the new order, not an oversight."
+      },
+      {
+        "id": "interventions",
+        "label": "Interventions taken: dressing loosened, frequent monitoring started",
+        "keywords": ["loosened", "neurovascular", "q15", "monitor"],
+        "why": "Documents what was actually done to protect the limb while awaiting the consult."
+      }
+    ],
+    "modelNote": "1040 — Found patient gripping bed rail, rating left knee pain 9/10, up from 4/10 one hour prior. Describes pain as tight, pressure-like, different in quality from usual post-op soreness, not relieved by repositioning.\n\n1042 — Neurovascular assessment of left lower extremity: pedal pulse present but diminished from prior check, foot cool to touch, capillary refill 4 seconds, decreased sensation reported in toes. Calf and knee visibly more swollen and tense compared to last documented check. Dressing with quarter-sized area of serosanguinous drainage, increased from prior check, no frank bleeding.\n\n1044 — Dr. Reyes notified of full assessment: pain quality, neurovascular findings, swelling, and drainage. Orders received: hold further opioids pending evaluation, STAT orthopedic consult, loosen compressive wrap, neurovascular checks q15min.\n\n1047 — Compressive wrap loosened one layer per order. Patient reports pressure sensation easing, pain now 7/10. Pulse rechecked, slightly stronger.\n\n1050 — Neurovascular checks initiated q15min per protocol. No further deterioration over subsequent 30 minutes. Orthopedics notified and en route to evaluate. Will continue frequent monitoring and update as evaluation occurs.",
+    "pitfalls": [
+      "Charting only the pain number without the quality that made it concerning.",
+      "Documenting the medication given but not the neurovascular findings that changed the plan.",
+      "Leaving out the time the surgical team was notified.",
+      "Writing 'will continue to monitor' without specifying the actual interval (q15min) being used."
+    ]
+  }
+}

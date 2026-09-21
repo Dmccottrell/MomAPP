@@ -1,0 +1,194 @@
+{
+  "id": "foley-01",
+  "title": "New urinary retention, Foley inserted",
+  "category": "Catheter/Foley",
+  "setting": "Nursing home",
+  "unit": "Long-term care",
+  "difficulty": "Intermediate",
+  "estimatedMinutes": 13,
+  "objectives": [
+    "Recognize signs of urinary retention before jumping to catheterization",
+    "Follow sterile technique and get an order before inserting a Foley",
+    "Document a catheter insertion note with the assessment that justified it and the output that followed"
+  ],
+  "patient": {
+    "name": "Arthur Blevins",
+    "age": 83,
+    "sex": "M",
+    "room": "215",
+    "mrn": "SIM-0186",
+    "admitted": "Long-term resident, 1 year",
+    "diagnosis": "Benign prostatic hyperplasia, history of urinary retention",
+    "history": ["BPH", "Hypertension", "Mild dementia"],
+    "medications": ["Tamsulosin 0.4 mg daily", "Amlodipine 5 mg daily", "Donepezil 5 mg daily"],
+    "allergies": ["Latex (mild rash)"],
+    "code": "Full code",
+    "fallRisk": "Moderate — Morse 35"
+  },
+  "vitals": {
+    "bp": "148/88",
+    "hr": "94",
+    "rr": "20",
+    "temp": "98.8",
+    "spo2": "96%",
+    "pain": "6/10"
+  },
+  "opening": "Mr. Blevins is restless and guarding his lower abdomen, telling you it 'feels like he has to go but can't.' He hasn't voided in over 10 hours per the intake and output record, which is unusual for him. His abdomen appears distended on inspection.",
+  "clock": {
+    "start": "14:10",
+    "label": "Time since noticed"
+  },
+  "actions": [
+    {
+      "id": "focused-assessment",
+      "label": "Perform a focused assessment: bladder palpation, last void time, pain",
+      "detail": "Confirm retention before assuming it.",
+      "correct": true,
+      "order": 1,
+      "response": "Bladder palpable and distended above the pubic symphysis, tender to palpation. Last documented void was over 10 hours ago. Pain 6/10, described as pressure, lower abdomen.",
+      "timeCost": 2,
+      "critical": true,
+      "criticalWhy": "Confirming a distended, palpable bladder — not just relying on a report of 'can't go' — is what tells you this needs intervention rather than more time."
+    },
+    {
+      "id": "just-wait-longer",
+      "label": "Encourage him to keep trying and check back in a few hours",
+      "detail": "He might just need more time.",
+      "correct": false,
+      "response": "A palpable, tender, distended bladder with 10+ hours of no output is not something to wait out — prolonged retention risks bladder damage and can back up pressure to the kidneys. This needs the provider now.",
+      "penalty": "Delayed intervention for confirmed retention",
+      "timeCost": 1
+    },
+    {
+      "id": "review-med-contributors",
+      "label": "Review his medication list for contributors to retention",
+      "detail": "Some medications worsen BPH-related retention.",
+      "correct": true,
+      "order": 2,
+      "response": "No new anticholinergic or antihistamine medications recently added. His tamsulosin is current and unchanged, ruling out a recent medication change as the cause.",
+      "timeCost": 2
+    },
+    {
+      "id": "notify-provider",
+      "label": "Notify the provider of the findings",
+      "detail": "Report the assessment and ask for orders.",
+      "correct": true,
+      "order": 3,
+      "response": "Dr. Farrow is notified of the distended, tender bladder and 10+ hour void gap. Order given: straight catheterize now for relief, and if retention recurs, place an indwelling Foley — assess residual volume to guide the decision.",
+      "timeCost": 4
+    },
+    {
+      "id": "insert-without-order",
+      "label": "Go ahead and catheterize him before waiting for a call back",
+      "detail": "He's clearly in distress.",
+      "correct": false,
+      "response": "Catheterization is an invasive procedure — going in without an order, even when the need seems obvious, skips a check that could catch something you don't know, like a recent urology note against catheterizing him. Distress doesn't override needing the order first.",
+      "penalty": "Performed an invasive procedure without an order",
+      "timeCost": 1
+    },
+    {
+      "id": "check-allergy-supplies",
+      "label": "Check his allergy list before gathering supplies",
+      "detail": "He has a documented latex allergy.",
+      "correct": true,
+      "order": 4,
+      "response": "Latex allergy confirmed on the chart. Latex-free catheterization kit selected instead of the standard kit.",
+      "timeCost": 2
+    },
+    {
+      "id": "straight-cath",
+      "label": "Perform straight catheterization using sterile technique",
+      "detail": "Per the provider's order, using the latex-free kit.",
+      "correct": true,
+      "order": 5,
+      "response": "Straight catheterization performed using sterile technique. 850 mL of clear yellow urine drained. He reports immediate relief of the pressure and pain.",
+      "reveals": { "pain": "1/10" },
+      "timeCost": 5
+    },
+    {
+      "id": "monitor-for-recurrence",
+      "label": "Monitor whether he's able to void on his own over the next few hours",
+      "detail": "Per the provider's plan to reassess before deciding on an indwelling Foley.",
+      "correct": true,
+      "order": 6,
+      "response": "Over the next 3 hours, he reports the urge to void again but is unable to produce any output despite attempts. Bladder again palpable and mildly distended.",
+      "timeCost": 3
+    },
+    {
+      "id": "place-indwelling-foley",
+      "label": "Place an indwelling Foley catheter per the provider's contingency order",
+      "detail": "Sterile technique, latex-free kit, secure and connect to drainage bag.",
+      "correct": true,
+      "order": 7,
+      "response": "Indwelling Foley inserted using sterile technique and latex-free kit, 14 Fr, balloon inflated with 10 mL sterile water, secured to thigh, connected to closed drainage system. 200 mL urine returned immediately on insertion, clear yellow. He tolerates the procedure well.",
+      "timeCost": 5
+    },
+    {
+      "id": "notify-provider-foley-placed",
+      "label": "Notify the provider that the indwelling Foley was placed",
+      "detail": "Close the loop on the contingency order.",
+      "correct": true,
+      "order": 8,
+      "response": "Dr. Farrow acknowledges the update. Plan: monitor output, urology referral for BPH follow-up, reassess for trial voiding in 5-7 days.",
+      "timeCost": 3
+    }
+  ],
+  "hints": [
+    "Confirm retention with an actual physical finding, not just what he tells you.",
+    "An invasive procedure needs an order before it needs a distressed resident to justify it.",
+    "Check the allergy list before you gather supplies, not after you've already opened the kit."
+  ],
+  "documentation": {
+    "prompt": "Write your nursing note covering the assessment through the Foley placement.",
+    "placeholder": "Begin with the time and what prompted your assessment...",
+    "requirements": [
+      {
+        "id": "retention-findings",
+        "label": "Assessment findings confirming retention",
+        "keywords": ["distended", "palpable", "tender", "10 hours"],
+        "needs": ["number"],
+        "why": "The physical findings, not just his report, are what justify the intervention."
+      },
+      {
+        "id": "notify-provider",
+        "label": "Provider notified, with time and orders",
+        "keywords": ["notified", "provider", "dr.", "order", "catheter"],
+        "needs": ["time"],
+        "why": "Documents this was an authorized procedure, not a unilateral decision."
+      },
+      {
+        "id": "allergy-check",
+        "label": "Latex allergy checked and latex-free supplies used",
+        "keywords": ["latex", "allergy", "latex-free"],
+        "why": "A specific safety check that changed which supplies were used — worth documenting explicitly."
+      },
+      {
+        "id": "straight-cath-output",
+        "label": "Straight catheterization performed, with output volume",
+        "keywords": ["straight cath", "850", "ml", "drained"],
+        "needs": ["number"],
+        "why": "The output volume is the objective evidence of how significant the retention was."
+      },
+      {
+        "id": "recurrence",
+        "label": "Recurrence of retention after the straight catheterization",
+        "keywords": ["unable to void", "recur", "distended again"],
+        "why": "Shows the reasoning for moving from straight cath to an indwelling Foley."
+      },
+      {
+        "id": "foley-placement",
+        "label": "Indwelling Foley placement details: size, technique, output on insertion",
+        "keywords": ["foley", "14 fr", "sterile", "balloon"],
+        "needs": ["number"],
+        "why": "Standard documentation for any indwelling catheter insertion — size, technique, and immediate output."
+      }
+    ],
+    "modelNote": "1410 — Resident restless, guarding lower abdomen, reports urge to void without ability to do so. Assessment: bladder palpable and distended above pubic symphysis, tender to palpation. Last documented void over 10 hours prior. Pain 6/10, described as pressure, lower abdomen. Medication list reviewed, no new contributors to retention identified.\n\n1414 — Dr. Farrow notified of findings. Order received: straight catheterize now for relief; if retention recurs, place indwelling Foley with residual assessment to guide decision.\n\n1416 — Allergy list reviewed: latex allergy confirmed, latex-free catheterization kit selected.\n\n1418 — Straight catheterization performed using sterile technique, latex-free kit. 850 mL clear yellow urine drained. Resident reports immediate relief, pain now 1/10.\n\n1720 — Resident reports urge to void again but unable to produce output despite attempts. Bladder again palpable and mildly distended.\n\n1723 — Indwelling Foley catheter placed per provider's contingency order: 14 Fr, sterile technique, latex-free kit, balloon inflated with 10 mL sterile water, secured to thigh, connected to closed drainage system. 200 mL clear yellow urine returned immediately. Resident tolerated procedure well.\n\n1726 — Dr. Farrow notified of Foley placement. Plan: monitor output, urology referral for BPH follow-up, reassess for trial voiding in 5-7 days.",
+    "pitfalls": [
+      "Writing 'catheterized for retention' without the bladder assessment findings that confirmed it.",
+      "Leaving out the allergy check — a latex reaction from the wrong kit is an avoidable harm.",
+      "Documenting the Foley placement without noting the straight catheterization that came first and why it wasn't enough.",
+      "Forgetting to note the output volume on insertion — it's the standard first data point on any new catheter."
+    ]
+  }
+}
