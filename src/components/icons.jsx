@@ -81,3 +81,13 @@ export function ChevronIcon(props) {
     </svg>
   );
 }
+
+export function ShareIcon(props) {
+  return (
+    <svg {...common} {...props}>
+      <path d="M10 2.5v10" />
+      <path d="M6.8 5.7 10 2.5l3.2 3.2" />
+      <path d="M4.5 9v6a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V9" />
+    </svg>
+  );
+}

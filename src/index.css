@@ -1332,6 +1332,51 @@ summary:focus-visible {
 }
 .update-prompt__btn { padding: 0.45rem 1rem; font-size: 0.85rem; }
 
+/* ---------------- install hint ---------------- */
+/* A brief "add to home screen" nudge — mobile only (see
+   components/InstallHint.jsx), self-dismissing, so it never competes
+   with the update prompt's spot for attention on a small screen for
+   long. */
+
+.install-hint {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  bottom: max(1.25rem, calc(env(safe-area-inset-bottom) + 0.5rem));
+  z-index: 39;
+  display: none;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.7rem 0.7rem 1rem;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  font-size: 0.85rem;
+  animation: viewIn 260ms var(--ease);
+}
+@media (max-width: 640px) {
+  .install-hint { display: flex; }
+}
+.install-hint__text { flex: 1; line-height: 1.35; }
+.install-hint__icon { width: 14px; height: 14px; vertical-align: -2px; }
+.install-hint__btn { flex-shrink: 0; padding: 0.45rem 0.9rem; font-size: 0.85rem; white-space: nowrap; }
+.install-hint__close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  border-radius: var(--radius-sm);
+}
+.install-hint__close svg { width: 14px; height: 14px; }
+.install-hint__close:hover { background: var(--chart-wash); color: var(--chart); }
+
 /* ---------------- my scenarios ---------------- */
 
 .case--custom { cursor: default; }

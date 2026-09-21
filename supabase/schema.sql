@@ -404,6 +404,14 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into public.feature_flags (id, label, description)
+values (
+  'mobile-install-hint',
+  'Mobile "add to home screen" hint',
+  'A brief, self-dismissing nudge on mobile (5 seconds) to install the app — a real Install button on Android, Share-sheet instructions on iOS.'
+)
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------
 -- security_answers: 3 security questions set up at signup, used by the
 -- "forgot password" flow on the sign-in screen as an alternative to the

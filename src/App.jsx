@@ -12,6 +12,7 @@ import SupabaseSetupNotice from "./screens/SupabaseSetupNotice";
 import Onboarding from "./screens/Onboarding";
 import ResetPassword from "./screens/ResetPassword";
 import WhatsNewModal from "./components/WhatsNewModal";
+import InstallHint from "./components/InstallHint";
 import { isSupabaseConfigured } from "./utils/supabaseClient";
 import { getSession, onAuthChange, signOut } from "./utils/auth";
 import {
@@ -33,6 +34,7 @@ import {
   SINGLE_ABOUT_FLAG_ID,
   SCENARIO_BATCH_HN1_FLAG_ID,
   CARD_SPOTLIGHT_FLAG_ID,
+  MOBILE_INSTALL_HINT_FLAG_ID,
 } from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
@@ -97,6 +99,7 @@ export default function App() {
   const [singleAbout, setSingleAbout] = useState(false);
   const [scenarioBatchHN1Enabled, setScenarioBatchHN1Enabled] = useState(false);
   const [cardSpotlightEnabled, setCardSpotlightEnabled] = useState(false);
+  const [installHintEnabled, setInstallHintEnabled] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -163,6 +166,8 @@ export default function App() {
   //    been reviewed, unlike a scenario added straight to SCENARIOS.
   //  - 'card-spotlight' turns on Home's cursor-tracking glow on each
   //    scenario card — see index.css's .case--spotlight rules.
+  //  - 'mobile-install-hint' turns on the brief "add to home screen" nudge
+  //    on mobile — see components/InstallHint.jsx.
   useEffect(() => {
     if (!session || !profile) return;
     let cancelled = false;
@@ -177,6 +182,7 @@ export default function App() {
         setSingleAbout(on(SINGLE_ABOUT_FLAG_ID));
         setScenarioBatchHN1Enabled(on(SCENARIO_BATCH_HN1_FLAG_ID));
         setCardSpotlightEnabled(on(CARD_SPOTLIGHT_FLAG_ID));
+        setInstallHintEnabled(on(MOBILE_INSTALL_HINT_FLAG_ID));
       })
       .catch(() => {});
     return () => {
@@ -350,6 +356,7 @@ export default function App() {
         {content}
       </div>
       <WhatsNewModal release={whatsNew} onDismiss={dismissWhatsNew} />
+      {installHintEnabled && <InstallHint />}
       <Analytics />
     </div>
   );

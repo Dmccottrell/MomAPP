@@ -19,6 +19,7 @@ export const SINGLE_ABOUT_FLAG_ID = "single-about";
 export const SCENARIO_BATCH_HN1_FLAG_ID = "scenario-batch-hn-1";
 export const CARD_SPOTLIGHT_FLAG_ID = "card-spotlight";
 export const APPEARANCE_REDESIGN_FLAG_ID = "appearance-redesign";
+export const MOBILE_INSTALL_HINT_FLAG_ID = "mobile-install-hint";
 
 /** Every feature flag, oldest first. */
 export async function listFeatureFlags() {
