@@ -330,6 +330,14 @@ summary:focus-visible {
 .confirm-dialog {
   width: min(100%, 22rem);
   max-height: 85vh;
+  /* Mobile browsers' address/toolbar can shrink the *visible* viewport
+     without shrinking what `vh` measures (it's sized off the largest
+     possible viewport, toolbar collapsed) — so a long dialog capped only
+     at 85vh can still render taller than the screen actually showing,
+     with no way to scroll to it. `dvh` tracks the real, current visible
+     viewport instead; layered after vh as a fallback for older browsers
+     that don't support dvh, which just ignore this second line. */
+  max-height: 85dvh;
   overflow-y: auto;
   background: var(--card);
   border-radius: var(--radius-lg);
@@ -375,6 +383,7 @@ summary:focus-visible {
   padding: 1.5rem;
   animation: confirmPopIn 220ms var(--ease);
   max-height: 85vh;
+  max-height: 85dvh; /* see .confirm-dialog's comment on vh vs dvh on mobile */
   overflow-y: auto;
 }
 .publish-dialog__title { margin: 0 0 0.75rem; font-size: 1.05rem; }
