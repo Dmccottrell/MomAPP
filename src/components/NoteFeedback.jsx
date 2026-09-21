@@ -12,6 +12,7 @@ import { splitByMatches } from "../utils/highlight";
  */
 export default function NoteFeedback({
   graded,
+  tips = [],
   missteps,
   note,
   documentation,
@@ -53,6 +54,7 @@ export default function NoteFeedback({
                 Found: "{g.matched.join('", "')}"
               </p>
             )}
+            {g.status === "missing" && g.hint && <p className="rubric__flag">{g.hint}</p>}
             {g.status === "violated" && (
               <p className="rubric__flag">
                 Found in your note: "{g.matched.join('", "')}"
@@ -61,6 +63,17 @@ export default function NoteFeedback({
           </li>
         ))}
       </ul>
+
+      {tips.length > 0 && (
+        <div className="pitfalls">
+          <h3 className="section-head">Wording to tighten</h3>
+          <ul>
+            {tips.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="compare">
         <h3 className="section-head">Your note</h3>

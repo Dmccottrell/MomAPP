@@ -4,7 +4,7 @@ import ActionList from "./components/ActionList";
 import ShiftLog from "./components/ShiftLog";
 import NoteEditor from "./components/NoteEditor";
 import NoteFeedback from "./components/NoteFeedback";
-import { gradeNote } from "./utils/grading";
+import { gradeNote, noteTips } from "./utils/grading";
 import { addMinutes } from "./utils/time";
 import { loadRun, saveRun, clearRun, addHistoryEntry } from "./utils/storage";
 
@@ -34,6 +34,7 @@ export default function ScenarioPlayer({ scenario, profile, smartGrading = false
   const [hintsUsed, setHintsUsed] = useState(resumed?.hintsUsed ?? 0);
   const [note, setNote] = useState(resumed?.note ?? "");
   const [graded, setGraded] = useState(null);
+  const [tips, setTips] = useState([]);
 
   // Keep the saved run in sync with state. Only "care" and "documentation"
   // are worth resuming — "brief" has nothing to lose, and "feedback" is
@@ -97,6 +98,7 @@ export default function ScenarioPlayer({ scenario, profile, smartGrading = false
   function submitNote() {
     const result = gradeNote(note, scenario.documentation.requirements, { smart: smartGrading });
     setGraded(result);
+    setTips(smartGrading ? noteTips(note) : []);
     setPhase("feedback");
     addHistoryEntry(
       {
@@ -123,6 +125,7 @@ export default function ScenarioPlayer({ scenario, profile, smartGrading = false
     setHintsUsed(0);
     setNote("");
     setGraded(null);
+    setTips([]);
   }
 
   const p = scenario.patient;
@@ -222,6 +225,7 @@ export default function ScenarioPlayer({ scenario, profile, smartGrading = false
         {phase === "feedback" && graded && (
           <NoteFeedback
             graded={graded}
+            tips={tips}
             missteps={missteps}
             note={note}
             documentation={scenario.documentation}

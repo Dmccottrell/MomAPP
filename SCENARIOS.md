@@ -165,11 +165,18 @@ learner marked wrong for correct-but-different wording learns the wrong lesson.
 **Smart-grading extras** (only used once the "Smarter note grading" preview flag
 is on): matching is by whole words — keywords of three letters or fewer must
 match a whole word, longer ones still match as word starts, and common
-shorthand like "pulse" or "doctor" is accepted for `hr` and `provider`. A
-requirement may also list `"smartKeywords"`, which replace `keywords` under
-smart grading — use it when a keyword is too broad (a bare `"notified"` also
-credits telling the provider, so the family requirement's `smartKeywords` leave
-it out).
+shorthand like "pulse" or "doctor" is accepted for `hr` and `provider`, and
+long keywords (7+ letters, no spaces) tolerate a one-letter typo. A requirement
+may also list:
+
+- `"smartKeywords"`, which replace `keywords` under smart grading — use it when
+  a keyword is too broad (a bare `"notified"` also credits telling the
+  provider, so the family requirement's `smartKeywords` leave it out).
+- `"needs": ["time"]` and/or `["number"]`, which require an actual time
+  (`2118`, `21:18`, `2 pm`) or number (`128/76`, `3 cm`) in the same or next
+  sentence as the matched keyword. Without one the requirement is marked
+  missing, with a hint saying what to add. Use it where the `why` says
+  "with time" or "measurements". Scenarios built in the app don't set it.
 
 **Forbidden words** flip the check — used for things that should *not* appear:
 

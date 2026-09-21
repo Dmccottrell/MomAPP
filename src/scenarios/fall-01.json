@@ -156,12 +156,14 @@
         "id": "injury",
         "label": "Injuries found, with location and size",
         "keywords": ["skin tear", "forearm", "hip", "pain"],
+        "needs": ["number"],
         "why": "Measurements and locations, not 'small wound noted'."
       },
       {
         "id": "vitals",
         "label": "Vital signs taken after the fall",
         "keywords": ["bp", "blood pressure", "hr", "vitals", "o2", "spo2"],
+        "needs": ["number"],
         "why": "Post-fall vitals are the objective evidence of his condition at that moment."
       },
       {
@@ -174,6 +176,7 @@
         "id": "notify",
         "label": "Provider notified, with time and new orders",
         "keywords": ["notified", "provider", "md", "np", "orders"],
+        "needs": ["time"],
         "why": "Times and names. 'MD made aware' with no time is not documentation."
       },
       {

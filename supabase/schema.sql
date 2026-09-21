@@ -347,7 +347,7 @@ insert into public.feature_flags (id, label, description)
 values (
   'smart-note-grading',
   'Smarter note grading',
-  'Matches whole words instead of fragments, accepts common shorthand like pulse and doctor, and no longer flags a cause the note rules out.'
+  'Matches whole words instead of fragments, accepts shorthand and small typos, checks that times and measurements are actually written down, and adds wording tips.'
 )
 on conflict (id) do nothing;
 

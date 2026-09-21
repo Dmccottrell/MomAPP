@@ -160,6 +160,7 @@
         "id": "vitals",
         "label": "Full vital signs, including SpO2 and respiratory rate",
         "keywords": ["spo2", "o2 sat", "rr", "respiratory rate", "hr", "heart rate", "bp", "blood pressure", "temp"],
+        "needs": ["number"],
         "why": "These numbers are the objective evidence that something changed."
       },
       {
@@ -178,12 +179,14 @@
         "id": "glucose",
         "label": "Blood glucose checked",
         "keywords": ["glucose", "blood sugar", "fingerstick", "bg "],
+        "needs": ["number"],
         "why": "She's diabetic — ruling out a metabolic cause is expected."
       },
       {
         "id": "notify",
         "label": "Provider notified, with time and new orders",
         "keywords": ["notified", "dr.", "provider", "np", "orders", "sbar"],
+        "needs": ["time"],
         "why": "Times and names, and what changed as a result."
       },
       {
