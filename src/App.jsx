@@ -23,7 +23,12 @@ import {
 } from "./utils/profiles";
 import { listCustomScenarios, isBuilderEnabled } from "./utils/customScenarios";
 import { latestRelease } from "./utils/releases";
-import { listFeatureFlags, isFeatureEnabled, NAV_SCROLL_FIX_FLAG_ID } from "./utils/featureFlags";
+import {
+  listFeatureFlags,
+  isFeatureEnabled,
+  NAV_SCROLL_FIX_FLAG_ID,
+  SMART_NOTE_GRADING_FLAG_ID,
+} from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
 import changeOfCondition01 from "./scenarios/change-of-condition-01.json";
@@ -55,6 +60,7 @@ export default function App() {
   const [builderEnabled, setBuilderEnabledState] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
   const [whatsNew, setWhatsNew] = useState(null);
+  const [smartGrading, setSmartGrading] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -103,18 +109,22 @@ export default function App() {
     isBuilderEnabled().then(setBuilderEnabledState).catch(() => setBuilderEnabledState(false));
   }, [session, view]);
 
-  // The 'nav-scroll-fix' flag turns on html.no-hscroll (index.css), which
-  // clips the closed nav drawer's off-screen overflow. In preview only the
-  // admin gets it; once published everyone does. Re-checked on each nav
+  // Preview flags that change app-wide behavior. In preview only the admin
+  // gets each one; once published everyone does. Re-checked on each nav
   // switch so publishing/unpublishing shows up without a reload.
+  //  - 'nav-scroll-fix' turns on html.no-hscroll (index.css), which clips
+  //    the closed nav drawer's off-screen overflow.
+  //  - 'smart-note-grading' switches gradeNote() to word-aware matching —
+  //    see utils/grading.js.
   useEffect(() => {
     if (!session || !profile) return;
     let cancelled = false;
     listFeatureFlags()
       .then((flags) => {
         if (cancelled) return;
-        const flag = flags.find((f) => f.id === NAV_SCROLL_FIX_FLAG_ID);
-        document.documentElement.classList.toggle("no-hscroll", isFeatureEnabled(flag, profile));
+        const on = (id) => isFeatureEnabled(flags.find((f) => f.id === id), profile);
+        document.documentElement.classList.toggle("no-hscroll", on(NAV_SCROLL_FIX_FLAG_ID));
+        setSmartGrading(on(SMART_NOTE_GRADING_FLAG_ID));
       })
       .catch(() => {});
     return () => {
@@ -223,7 +233,12 @@ export default function App() {
   let content;
   if (activeScenario) {
     content = (
-      <ScenarioPlayer scenario={activeScenario} profile={profile} onExit={exitScenario} />
+      <ScenarioPlayer
+        scenario={activeScenario}
+        profile={profile}
+        smartGrading={smartGrading}
+        onExit={exitScenario}
+      />
     );
   } else if (view === "history") {
     content = <History scenarios={allScenarios} profile={profile} onSelectScenario={selectScenario} />;

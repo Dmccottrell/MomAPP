@@ -12,6 +12,7 @@ import { slugify } from "./customScenarios";
 // gate can look itself up without matching on a label that might change.
 export const ACCOUNT_PROFILE_TOOLS_FLAG_ID = "account-profile-tools";
 export const NAV_SCROLL_FIX_FLAG_ID = "nav-scroll-fix";
+export const SMART_NOTE_GRADING_FLAG_ID = "smart-note-grading";
 
 /** Every feature flag, oldest first. */
 export async function listFeatureFlags() {

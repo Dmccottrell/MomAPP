@@ -22,7 +22,7 @@ import { loadRun, saveRun, clearRun, addHistoryEntry } from "./utils/storage";
  * or mid-"documentation" resumes rather than starting over. A completed
  * run is recorded to the shared database instead (see submitNote).
  */
-export default function ScenarioPlayer({ scenario, profile, onExit }) {
+export default function ScenarioPlayer({ scenario, profile, smartGrading = false, onExit }) {
   // Read once, at mount, whatever run was last saved for this scenario.
   const [resumed] = useState(() => loadRun(profile.id, scenario.id));
 
@@ -95,7 +95,7 @@ export default function ScenarioPlayer({ scenario, profile, onExit }) {
    * a network round-trip to see their own score.
    */
   function submitNote() {
-    const result = gradeNote(note, scenario.documentation.requirements);
+    const result = gradeNote(note, scenario.documentation.requirements, { smart: smartGrading });
     setGraded(result);
     setPhase("feedback");
     addHistoryEntry(

@@ -343,6 +343,14 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into public.feature_flags (id, label, description)
+values (
+  'smart-note-grading',
+  'Smarter note grading',
+  'Matches whole words instead of fragments, accepts common shorthand like pulse and doctor, and no longer flags a cause the note rules out.'
+)
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------
 -- security_answers: 3 security questions set up at signup, used by the
 -- "forgot password" flow on the sign-in screen as an alternative to the
