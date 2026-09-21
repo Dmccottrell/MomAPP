@@ -51,7 +51,7 @@ function blankScenario() {
  * deliberately separate from the Home list of preset scenarios — these
  * are shared, editable, deletable content, not the shipped set.
  */
-export default function MyScenarios({ profile, onPlay }) {
+export default function MyScenarios({ profile, onPlay, categoriesEnabled = false }) {
   const [scenarios, setScenarios] = useState(null);
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState("");
@@ -96,6 +96,7 @@ export default function MyScenarios({ profile, onPlay }) {
     return (
       <ScenarioBuilder
         initial={editing}
+        categoriesEnabled={categoriesEnabled}
         onSave={handleSave}
         onCancel={() => setEditing(null)}
       />

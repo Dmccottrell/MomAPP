@@ -5,8 +5,16 @@ import { listHistory } from "../utils/storage";
  * The scenario picker. Each card shows the scenario's basics plus, once
  * the signed-in user has attempted it, their most recent score for it.
  */
-export default function Home({ scenarios, profile, onSelect }) {
+export default function Home({ scenarios, profile, onSelect, categoriesEnabled = false }) {
   const [lastByScenario, setLastByScenario] = useState({});
+  const [category, setCategory] = useState("");
+
+  // Only categories that have a scenario, in the order they first appear —
+  // an empty filter button would just lead to an empty list. Filtering is
+  // pointless with a single category, so it stays hidden until there are two.
+  const categories = [...new Set(scenarios.map((s) => s.category).filter(Boolean))];
+  const showFilter = categoriesEnabled && categories.length > 1;
+  const visible = showFilter && category ? scenarios.filter((s) => s.category === category) : scenarios;
 
   useEffect(() => {
     let cancelled = false;
@@ -36,8 +44,24 @@ export default function Home({ scenarios, profile, onSelect }) {
         </p>
       </header>
 
+      {showFilter && (
+        <div className="cat-filter" role="group" aria-label="Filter by category">
+          {["", ...categories].map((c) => (
+            <button
+              key={c || "all"}
+              type="button"
+              className={`btn btn--ghost btn--sm cat-filter__btn${category === c ? " cat-filter__btn--on" : ""}`}
+              aria-pressed={category === c}
+              onClick={() => setCategory(c)}
+            >
+              {c || "All"}
+            </button>
+          ))}
+        </div>
+      )}
+
       <ul className="cases">
-        {scenarios.map((s) => {
+        {visible.map((s) => {
           const history = lastByScenario[s.id];
           return (
             <li key={s.id}>

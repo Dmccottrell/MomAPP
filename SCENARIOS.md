@@ -25,6 +25,14 @@ file, a missing comma is the first thing to check.
 `id` must be unique and match the filename. `difficulty` is free text —
 "Foundational", "Intermediate", whatever vocabulary makes sense.
 
+`category` is the note type. It's free text in the file, but the app's list
+(`src/utils/categories.js`) is: Lab/Diagnostic, Medication,
+Admission/Readmission, Transfer, Hospital Return, Pain, SOB/Respiratory,
+Altered Mental Status (AMS), Catheter/Foley, Provider Notification, Routine,
+Quarterly. Use one of those names exactly for a preset scenario so it groups
+with the rest. When the "Scenario categories" preview flag is on, the in-app
+builder offers them as a dropdown and Home can filter by them.
+
 ### Objectives
 
 What the learner should be able to do afterward. Three is a good number.

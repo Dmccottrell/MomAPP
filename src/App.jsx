@@ -28,6 +28,7 @@ import {
   isFeatureEnabled,
   NAV_SCROLL_FIX_FLAG_ID,
   SMART_NOTE_GRADING_FLAG_ID,
+  SCENARIO_CATEGORIES_FLAG_ID,
 } from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
@@ -61,6 +62,7 @@ export default function App() {
   const [passwordRecovery, setPasswordRecovery] = useState(false);
   const [whatsNew, setWhatsNew] = useState(null);
   const [smartGrading, setSmartGrading] = useState(false);
+  const [categoriesEnabled, setCategoriesEnabled] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -116,6 +118,8 @@ export default function App() {
   //    the closed nav drawer's off-screen overflow.
   //  - 'smart-note-grading' switches gradeNote() to word-aware matching —
   //    see utils/grading.js.
+  //  - 'scenario-categories' turns the builder's Category into a dropdown of
+  //    the note types in utils/categories.js and adds Home's category filter.
   useEffect(() => {
     if (!session || !profile) return;
     let cancelled = false;
@@ -125,6 +129,7 @@ export default function App() {
         const on = (id) => isFeatureEnabled(flags.find((f) => f.id === id), profile);
         document.documentElement.classList.toggle("no-hscroll", on(NAV_SCROLL_FIX_FLAG_ID));
         setSmartGrading(on(SMART_NOTE_GRADING_FLAG_ID));
+        setCategoriesEnabled(on(SCENARIO_CATEGORIES_FLAG_ID));
       })
       .catch(() => {});
     return () => {
@@ -246,13 +251,22 @@ export default function App() {
     // Guards the same access check the nav bar uses — if it changed since
     // this view was selected (e.g. the admin just revoked access), this
     // falls through to Home instead of rendering the builder anyway.
-    content = <MyScenarios profile={profile} onPlay={selectScenario} />;
+    content = (
+      <MyScenarios profile={profile} onPlay={selectScenario} categoriesEnabled={categoriesEnabled} />
+    );
   } else if (view === "about") {
     content = <About />;
   } else if (view === "settings") {
     content = <Settings profile={profile} onProfileChange={setProfile} onSignOut={handleSignOut} />;
   } else {
-    content = <Home scenarios={SCENARIOS} profile={profile} onSelect={selectScenario} />;
+    content = (
+      <Home
+        scenarios={SCENARIOS}
+        profile={profile}
+        onSelect={selectScenario}
+        categoriesEnabled={categoriesEnabled}
+      />
+    );
   }
 
   return (

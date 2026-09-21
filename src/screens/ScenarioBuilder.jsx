@@ -5,6 +5,7 @@ import CollapsibleSection from "../components/CollapsibleSection";
 import { ChevronIcon } from "../components/icons";
 import { slugify } from "../utils/customScenarios";
 import { findPossiblePHI } from "../utils/phiCheck";
+import { CATEGORIES, categoryDescription } from "../utils/categories";
 
 /** Drops `removed` from an open-item index set and shifts the rest down. */
 function withoutIndex(set, removed) {
@@ -83,7 +84,7 @@ function emptyRequirement() {
  * field that reference documents). Saving writes straight to
  * utils/customScenarios.js; there is no server round-trip to fail.
  */
-export default function ScenarioBuilder({ initial, onSave, onCancel }) {
+export default function ScenarioBuilder({ initial, onSave, onCancel, categoriesEnabled = false }) {
   const [scenario, setScenario] = useState(initial);
   const [error, setError] = useState("");
   const [pendingSave, setPendingSave] = useState(null);
@@ -239,14 +240,40 @@ export default function ScenarioBuilder({ initial, onSave, onCancel }) {
             <span className="field__label">Id (auto from title)</span>
             <input className="field-input" value={scenario.id} onChange={(e) => handleIdChange(e.target.value)} />
           </label>
-          <label className="field">
-            <span className="field__label">Category</span>
-            <input
-              className="field-input"
-              value={scenario.category}
-              onChange={(e) => set(["category"], e.target.value)}
-            />
-          </label>
+          {categoriesEnabled ? (
+            <label className="field">
+              <span className="field__label">Category</span>
+              <select
+                className="field-input"
+                value={scenario.category}
+                onChange={(e) => set(["category"], e.target.value)}
+              >
+                <option value="">Choose a category…</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c.name} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+                {/* A category typed before the list existed stays selectable,
+                    so opening an older scenario doesn't silently blank it. */}
+                {scenario.category && !CATEGORIES.some((c) => c.name === scenario.category) && (
+                  <option value={scenario.category}>{scenario.category} (current)</option>
+                )}
+              </select>
+              {categoryDescription(scenario.category) && (
+                <span className="field__hint">{categoryDescription(scenario.category)}</span>
+              )}
+            </label>
+          ) : (
+            <label className="field">
+              <span className="field__label">Category</span>
+              <input
+                className="field-input"
+                value={scenario.category}
+                onChange={(e) => set(["category"], e.target.value)}
+              />
+            </label>
+          )}
           <label className="field">
             <span className="field__label">Unit</span>
             <input className="field-input" value={scenario.unit} onChange={(e) => set(["unit"], e.target.value)} />

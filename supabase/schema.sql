@@ -351,6 +351,14 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into public.feature_flags (id, label, description)
+values (
+  'scenario-categories',
+  'Scenario categories',
+  'Adds the charting note types (Lab/Diagnostic, Medication, Pain, SOB/Respiratory and more) as a Category dropdown in the scenario builder, and a category filter on Home.'
+)
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------
 -- security_answers: 3 security questions set up at signup, used by the
 -- "forgot password" flow on the sign-in screen as an alternative to the

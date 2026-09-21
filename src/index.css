@@ -466,6 +466,12 @@ summary:focus-visible {
 
 .cases { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
 
+/* Category filter above the scenario list (behind the 'scenario-categories' flag). */
+.cat-filter { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: -1rem 0 1.5rem; }
+.cat-filter__btn--on { border-color: var(--chart); color: var(--chart); background: var(--chart-wash); }
+
+.field__hint { font-size: 0.85rem; color: var(--ink-soft); }
+
 .case {
   display: grid;
   gap: 0.25rem;
