@@ -12,12 +12,13 @@ function isStandalone() {
 }
 
 /**
- * A brief, self-dismissing nudge to add the app to the home screen —
- * mobile only, once per browser session, gone on its own after a few
- * seconds so it never sits in the way. Android/Chrome gets a real
- * "Install" button (the browser's own beforeinstallprompt, captured
- * below); iOS Safari has no such API, so it gets short instructions
- * instead — Apple only allows that flow from the Share sheet.
+ * A brief, self-dismissing nudge to install the app — mobile only, once
+ * per browser session, gone on its own after a few seconds so it never
+ * sits in the way. Android/Chrome gets a real "Install" button (the
+ * browser's own beforeinstallprompt, captured below); iOS Safari has no
+ * such API, so it gets short instructions instead, framed the same way
+ * ("install as an app") even though the actual Share-sheet menu item
+ * Apple gives it to tap is still labeled "Add to Home Screen".
  */
 export default function InstallHint() {
   const [installEvent, setInstallEvent] = useState(null);
@@ -90,11 +91,13 @@ export default function InstallHint() {
     <div className="install-hint" role="status">
       {platform === "ios" ? (
         <span className="install-hint__text">
-          Add to Home Screen: tap <ShareIcon className="install-hint__icon" /> then
-          "Add to Home Screen".
+          Install Charting Practice as an app: tap <ShareIcon className="install-hint__icon" />,
+          then "Add to Home Screen".
         </span>
       ) : (
-        <span className="install-hint__text">Install Charting Practice for quick, offline access.</span>
+        <span className="install-hint__text">
+          Install Charting Practice as an app for quick, offline access.
+        </span>
       )}
       {platform === "android" && (
         <button type="button" className="btn btn--go install-hint__btn" onClick={handleInstall}>
