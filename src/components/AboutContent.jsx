@@ -25,12 +25,19 @@ export default function AboutContent() {
         <p className="settings-row">
           Darryl McCottrell built Charting Practice — the idea, the product
           direction, and every decision about what it should do and how it
-          should feel. The scenarios themselves are written by a practicing
-          nurse, but the tool exists because Darryl saw a real gap between
-          what nursing programs teach and what new nurses are actually asked
-          to do under pressure, and set out to build something that closes
-          it — from the first working version through the real accounts and
-          admin controls this app now runs on.
+          should feel, from the first working version through the real
+          accounts and admin controls it runs on today. He saw a real gap
+          between what nursing programs teach and what new nurses are
+          actually asked to do under pressure, and set out to build
+          something that closes it.
+        </p>
+        <p className="settings-row">
+          The original scenarios are written by a practicing nurse. Newer
+          scenarios are drafted by AI, aiming for clinical accuracy and
+          checked against the app's own grading and safety checks — but
+          they stay in admin-only preview until a clinician has actually
+          reviewed them, since getting this content right matters more
+          here than almost anywhere else.
         </p>
       </section>
 
