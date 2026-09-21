@@ -72,7 +72,13 @@ export default function PublishDialog({ flags, initialVersion, error, busy, onCa
           <span className="field__label">What changed</span>
           <textarea
             className="field-input field-textarea"
-            rows={3}
+            // Already fully written for you above (suggestChangelog, one
+            // line per flag) — grows to fit it instead of a fixed 3 rows,
+            // so a multi-flag publish doesn't look cut off and in need of
+            // fixing when it's actually just ready to go. Edit it only if
+            // you want different wording. Capped so a very long changelog
+            // scrolls the dialog itself instead of growing without limit.
+            rows={Math.min(12, Math.max(3, changelog.split("\n").length + 1))}
             value={changelog}
             onChange={(e) => setChangelog(e.target.value)}
             placeholder="A sentence or two for the changelog — this is what everyone will see."
