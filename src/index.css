@@ -387,12 +387,15 @@ summary:focus-visible {
   overflow-y: auto;
 }
 .publish-dialog__title { margin: 0 0 0.75rem; font-size: 1.05rem; }
-.publish-dialog__flags {
-  margin: 0 0 1.1rem;
-  padding-left: 1.2rem;
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-}
+/* Each flag being published, its own label + description, divided by a
+   thin rule (same pattern as .whats-new__line) — this list itself is the
+   changelog preview; there's no separate "what changed" text to also
+   write or review. */
+.publish-dialog__flags { margin: 0 0 1.1rem; }
+.publish-dialog__flag { padding: 0.7rem 0; border-top: 1px solid var(--rule); }
+.publish-dialog__flag:first-child { padding-top: 0; border-top: none; }
+.publish-dialog__flag-label { margin: 0; font-size: 0.92rem; font-weight: 600; }
+.publish-dialog__flag-desc { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--ink-soft); }
 .publish-dialog__hint { display: block; margin-top: 0.3rem; font-size: 0.78rem; color: var(--stop); }
 
 /* WhatsNewModal's own header row: title + version badge on the left, an

@@ -5,22 +5,23 @@ const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
 
 /**
  * The form shown when publishing one or more feature flags: pick a
- * version number (prefilled with a suggested next patch bump) and write
- * a changelog blurb (prefilled with a suggestion built from the flags'
- * names/descriptions — template text, not AI-written; this app has no
- * LLM integration), which together become a new row in `releases` — see
- * utils/featureFlags.js's publishFeatureFlags(). Shares the same
- * backdrop/overlay behavior as ConfirmDialog, just with real form fields
- * instead of a yes/no message.
+ * version number (prefilled with a suggested next patch bump), then
+ * confirm. There's no separate "what changed" field to write — each
+ * flag's own label and description, listed right above the version
+ * field, *is* the changelog; the version's `changelog` column is filled
+ * in automatically from them (suggestChangelog) when confirming, the
+ * same text that would otherwise have been the editable field's default
+ * value. One thing to review, not two saying the same thing. Shares the
+ * same backdrop/overlay behavior as ConfirmDialog, just with a real form
+ * field instead of a yes/no message.
  *
  * Unlike ConfirmDialog, this only renders while there's something to
  * publish — the parent conditionally mounts it (see Previews.jsx), keyed
- * so a new publish request always starts from a clean version/changelog
- * instead of carrying over what was typed for a previous one.
+ * so a new publish request always starts from a clean version instead of
+ * carrying over what was typed for a previous one.
  */
 export default function PublishDialog({ flags, initialVersion, error, busy, onCancel, onConfirm }) {
   const [version, setVersion] = useState(initialVersion || "");
-  const [changelog, setChangelog] = useState(() => suggestChangelog(flags));
 
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onCancel();
@@ -29,11 +30,10 @@ export default function PublishDialog({ flags, initialVersion, error, busy, onCa
   }, [onCancel]);
 
   const versionValid = VERSION_PATTERN.test(version.trim());
-  const canConfirm = versionValid && changelog.trim().length > 0;
 
   function handleConfirm() {
-    if (!canConfirm) return;
-    onConfirm({ version: version.trim(), changelog: changelog.trim() });
+    if (!versionValid) return;
+    onConfirm({ version: version.trim(), changelog: suggestChangelog(flags) });
   }
 
   return (
@@ -49,11 +49,14 @@ export default function PublishDialog({ flags, initialVersion, error, busy, onCa
         <p className="field__label">
           {flags.length === 1 ? "Publishing" : `Publishing ${flags.length} features`}
         </p>
-        <ul className="publish-dialog__flags">
+        <div className="publish-dialog__flags">
           {flags.map((f) => (
-            <li key={f.id}>{f.label}</li>
+            <div className="publish-dialog__flag" key={f.id}>
+              <p className="publish-dialog__flag-label">{f.label}</p>
+              {f.description && <p className="publish-dialog__flag-desc">{f.description}</p>}
+            </div>
           ))}
-        </ul>
+        </div>
 
         <label className="field">
           <span className="field__label">Version</span>
@@ -68,30 +71,13 @@ export default function PublishDialog({ flags, initialVersion, error, busy, onCa
           )}
         </label>
 
-        <label className="field">
-          <span className="field__label">What changed</span>
-          <textarea
-            className="field-input field-textarea"
-            // Already fully written for you above (suggestChangelog, one
-            // line per flag) — grows to fit it instead of a fixed 3 rows,
-            // so a multi-flag publish doesn't look cut off and in need of
-            // fixing when it's actually just ready to go. Edit it only if
-            // you want different wording. Capped so a very long changelog
-            // scrolls the dialog itself instead of growing without limit.
-            rows={Math.min(12, Math.max(3, changelog.split("\n").length + 1))}
-            value={changelog}
-            onChange={(e) => setChangelog(e.target.value)}
-            placeholder="A sentence or two for the changelog — this is what everyone will see."
-          />
-        </label>
-
         {error && <p className="builder__error">{error}</p>}
 
         <div className="confirm-dialog__actions">
           <button type="button" className="btn btn--ghost" onClick={onCancel} disabled={busy}>
             Cancel
           </button>
-          <button type="button" className="btn btn--go" onClick={handleConfirm} disabled={!canConfirm || busy}>
+          <button type="button" className="btn btn--go" onClick={handleConfirm} disabled={!versionValid || busy}>
             {busy ? "Publishing…" : `Publish ${versionValid ? `v${version.trim()}` : ""}`}
           </button>
         </div>
