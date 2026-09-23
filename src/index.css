@@ -1174,6 +1174,71 @@ summary:focus-visible {
 .format-example__line .entry__time { margin-right: 0.4rem; }
 .format-example__note { margin: 0.75rem 0 0; font-size: 0.85rem; color: var(--ink-soft); }
 
+/* The same example, reachable on demand during care/documentation — see
+   components/FormatExampleBubble.jsx. Sits clear of the update-prompt /
+   install-hint banners (which anchor to the very bottom), and below
+   their z-index so it never fights them for a tap if both show at once. */
+.format-bubble {
+  position: fixed;
+  right: 1.25rem;
+  right: max(1.25rem, calc(env(safe-area-inset-right) + 0.75rem));
+  bottom: 6rem;
+  bottom: calc(6rem + env(safe-area-inset-bottom));
+  z-index: 34;
+}
+.format-bubble__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: var(--chart);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.format-bubble__toggle:hover { background: var(--chart-strong); transform: translateY(-1px); }
+.format-bubble__toggle svg { width: 22px; height: 22px; }
+.format-bubble__popover {
+  position: absolute;
+  bottom: calc(100% + 0.6rem);
+  right: 0;
+  width: min(88vw, 24rem);
+  max-height: 60vh;
+  max-height: 60dvh;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 1rem;
+  animation: confirmPopIn 220ms var(--ease);
+}
+.format-bubble__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+.format-bubble__title { font-size: 0.92rem; font-weight: 600; }
+.format-bubble__close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  border-radius: var(--radius-sm);
+}
+.format-bubble__close svg { width: 14px; height: 14px; }
+.format-bubble__close:hover { background: var(--chart-wash); color: var(--chart); }
+
 .section-head {
   display: flex;
   justify-content: space-between;

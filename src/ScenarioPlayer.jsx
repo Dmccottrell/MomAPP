@@ -5,6 +5,7 @@ import ShiftLog from "./components/ShiftLog";
 import NoteEditor from "./components/NoteEditor";
 import NoteFeedback from "./components/NoteFeedback";
 import FormatExample from "./components/FormatExample";
+import FormatExampleBubble from "./components/FormatExampleBubble";
 import { gradeNote, noteTips } from "./utils/grading";
 import { addMinutes } from "./utils/time";
 import { loadRun, saveRun, clearRun, addHistoryEntry } from "./utils/storage";
@@ -245,6 +246,10 @@ export default function ScenarioPlayer({
           />
         )}
       </main>
+
+      {flowImprovements && (phase === "care" || phase === "documentation") && (
+        <FormatExampleBubble />
+      )}
     </div>
   );
 }
