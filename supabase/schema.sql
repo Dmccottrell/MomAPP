@@ -412,6 +412,14 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into public.feature_flags (id, label, description)
+values (
+  'scenario-flow-improvements',
+  'Scenario flow improvements',
+  'Before a scenario starts, a generic example of chronological, timestamped charting. While writing the note, a "Back to care" link to review the shift log without losing your draft.'
+)
+on conflict (id) do nothing;
+
 -- ---------------------------------------------------------------------
 -- security_answers: 3 security questions set up at signup, used by the
 -- "forgot password" flow on the sign-in screen as an alternative to the

@@ -1151,6 +1151,29 @@ summary:focus-visible {
 .objectives h3 { font-size: 0.9rem; margin: 0 0 0.5rem; color: var(--ink-soft); }
 .objectives ol { margin: 0; padding-left: 1.3rem; }
 
+/* A generic, made-up example of good timestamped charting, shown before a
+   scenario starts — see components/FormatExample.jsx for why it's never
+   the scenario's own modelNote. Lines echo .entry's time + text layout so
+   it reads as the same convention they'll see later in the shift log. */
+.format-example { margin-top: 1.6rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); }
+.format-example__title { font-size: 0.9rem; margin: 0 0 0.4rem; color: var(--ink-soft); }
+.format-example__lede { margin: 0 0 0.75rem; font-size: 0.92rem; }
+.format-example__sample {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+}
+.format-example__line {
+  margin: 0 0 0.6rem;
+  font-family: var(--serif);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.format-example__line:last-child { margin-bottom: 0; }
+.format-example__line .entry__time { margin-right: 0.4rem; }
+.format-example__note { margin: 0.75rem 0 0; font-size: 0.85rem; color: var(--ink-soft); }
+
 .section-head {
   display: flex;
   justify-content: space-between;
@@ -1268,6 +1291,7 @@ summary:focus-visible {
 
 /* ---------------- notepad ---------------- */
 
+.doc__back { margin: 0 0 1rem; }
 .doc__hint { color: var(--ink-soft); margin: -0.5rem 0 1rem; font-size: 0.92rem; }
 .notepad {
   width: 100%;

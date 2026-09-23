@@ -35,6 +35,7 @@ import {
   SCENARIO_BATCH_HN1_FLAG_ID,
   CARD_SPOTLIGHT_FLAG_ID,
   MOBILE_INSTALL_HINT_FLAG_ID,
+  SCENARIO_FLOW_IMPROVEMENTS_FLAG_ID,
 } from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
@@ -100,6 +101,7 @@ export default function App() {
   const [scenarioBatchHN1Enabled, setScenarioBatchHN1Enabled] = useState(false);
   const [cardSpotlightEnabled, setCardSpotlightEnabled] = useState(false);
   const [installHintEnabled, setInstallHintEnabled] = useState(false);
+  const [scenarioFlowImprovements, setScenarioFlowImprovements] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -168,6 +170,9 @@ export default function App() {
   //    scenario card — see index.css's .case--spotlight rules.
   //  - 'mobile-install-hint' turns on the brief "add to home screen" nudge
   //    on mobile — see components/InstallHint.jsx.
+  //  - 'scenario-flow-improvements' turns on the charting-format example
+  //    before a scenario starts and the "back to care" link while writing
+  //    the note — see ScenarioPlayer.jsx.
   useEffect(() => {
     if (!session || !profile) return;
     let cancelled = false;
@@ -183,6 +188,7 @@ export default function App() {
         setScenarioBatchHN1Enabled(on(SCENARIO_BATCH_HN1_FLAG_ID));
         setCardSpotlightEnabled(on(CARD_SPOTLIGHT_FLAG_ID));
         setInstallHintEnabled(on(MOBILE_INSTALL_HINT_FLAG_ID));
+        setScenarioFlowImprovements(on(SCENARIO_FLOW_IMPROVEMENTS_FLAG_ID));
       })
       .catch(() => {});
     return () => {
@@ -301,6 +307,7 @@ export default function App() {
         scenario={activeScenario}
         profile={profile}
         smartGrading={smartGrading}
+        flowImprovements={scenarioFlowImprovements}
         onExit={exitScenario}
       />
     );

@@ -2,13 +2,21 @@
  * The free-text note editor shown once the learner has finished caring for
  * the patient. Shows a live word count and gates submission on a minimum
  * length, with a collapsible recall panel of the shift log in case they
- * need to check a finding while writing.
+ * need to check a finding while writing. `onBack` (optional) returns to
+ * the full care screen to review it properly instead of just the recall
+ * panel's flattened summary — nothing taken or typed so far is lost,
+ * since ScenarioPlayer keeps `taken`/`log`/`note` regardless of phase.
  */
-export default function NoteEditor({ documentation, note, onChange, onSubmit, log }) {
+export default function NoteEditor({ documentation, note, onChange, onSubmit, log, onBack }) {
   const wordCount = note.trim().split(/\s+/).filter(Boolean).length;
 
   return (
     <section className="panel">
+      {onBack && (
+        <button type="button" className="btn btn--ghost btn--sm doc__back" onClick={onBack}>
+          ← Back to care
+        </button>
+      )}
       <h3 className="section-head">{documentation.prompt}</h3>
       <p className="doc__hint">
         Write it the way you would in the chart. Your shift log is below if
