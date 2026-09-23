@@ -135,7 +135,17 @@ export default function Previews({ profile }) {
       .join(", ");
   }
 
+  // The schedule (if any) a given flag is queued under — a flag already
+  // waiting on a scheduled publish shouldn't also offer its own "Publish"
+  // button in the list below: publishing it by hand in the meantime would
+  // leave the cron job to run again later against a flag that's already
+  // live, either erroring on the version or publishing it a second time.
+  function scheduleFor(flagId) {
+    return schedules?.find((s) => s.flag_ids.includes(flagId));
+  }
+
   const preview = flags?.filter((f) => f.status === "preview") ?? [];
+  const publishablePreview = preview.filter((f) => !scheduleFor(f.id));
   const published = flags?.filter((f) => f.status === "published") ?? [];
   const latestVersion = releases?.[0]?.version;
 
@@ -154,29 +164,38 @@ export default function Previews({ profile }) {
         <div className="preview-group">
           <div className="preview-group__head">
             <h3 className="field__label field__label--spaced">In preview</h3>
-            {preview.length > 1 && (
-              <button className="btn btn--go btn--sm" onClick={() => openPublish(preview)}>
-                Publish all ({preview.length})
+            {publishablePreview.length > 1 && (
+              <button className="btn btn--go btn--sm" onClick={() => openPublish(publishablePreview)}>
+                Publish all ({publishablePreview.length})
               </button>
             )}
           </div>
           {flags === null ? null : preview.length === 0 ? (
             <p className="settings-row--muted">Nothing in preview right now.</p>
           ) : (
-            preview.map((f) => (
-              <div className="account-row" key={f.id}>
-                <div className="account-row__info">
-                  <p className="account-row__name">{f.label}</p>
-                  {f.description && <p className="account-row__email">{f.description}</p>}
-                  <p className="account-row__meta">Added {formatDate(f.created_at)}</p>
+            preview.map((f) => {
+              const schedule = scheduleFor(f.id);
+              return (
+                <div className="account-row" key={f.id}>
+                  <div className="account-row__info">
+                    <p className="account-row__name">{f.label}</p>
+                    {f.description && <p className="account-row__email">{f.description}</p>}
+                    <p className="account-row__meta">
+                      {schedule
+                        ? `Scheduled for ${formatDateTime(schedule.scheduled_for)}`
+                        : `Added ${formatDate(f.created_at)}`}
+                    </p>
+                  </div>
+                  <div className="account-row__actions">
+                    {!schedule && (
+                      <button className="btn btn--go btn--sm" onClick={() => openPublish([f])}>
+                        Publish
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="account-row__actions">
-                  <button className="btn btn--go btn--sm" onClick={() => openPublish([f])}>
-                    Publish
-                  </button>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
