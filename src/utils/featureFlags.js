@@ -120,16 +120,56 @@ export function isFeatureEnabled(flag, profile) {
 }
 
 /**
- * A starting-point changelog blurb for whichever flags are about to be
- * published, from their names and descriptions — template text, not
- * anything AI-written. One line per flag so every feature being
- * published explains its own change, not just a list of names; freely
- * editable before actually publishing. Prefills PublishDialog's "What
- * changed" field.
+ * The changelog text for whichever flags are about to be published, from
+ * their own names and descriptions — template text, not anything
+ * AI-written. One line per flag so every feature being published explains
+ * its own change. PublishDialog shows this list read-only (see its own
+ * comment) and this is what actually lands in the `releases` row —
+ * there's no separate "what changed" field to write by hand.
  */
 export function suggestChangelog(flags) {
   if (!flags || flags.length === 0) return "";
   return flags
     .map((f) => (f.description ? `${f.label} — ${f.description}` : `Added ${f.label}.`))
     .join("\n");
+}
+
+/**
+ * Every scheduled (not-yet-fired) publish, soonest first — see
+ * Previews.jsx's "Scheduled" list and PublishDialog's "Later" option.
+ * A row moves to 'completed' or 'failed' once the cron job runs it and
+ * drops out of this list either way — this is only what's still waiting.
+ */
+export async function listPendingSchedules() {
+  const { data, error } = await supabase
+    .from("scheduled_publishes")
+    .select("*")
+    .eq("status", "pending")
+    .order("scheduled_for", { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Queues a publish for a future time instead of running it now — same
+ * shape as publishFeatureFlags(), plus when. A database-level cron job
+ * (see supabase/schema.sql's run_due_scheduled_publishes()) picks it up
+ * once `scheduledFor` has passed and runs the actual publish, so this
+ * works even if nobody has the app open at that moment.
+ */
+export async function schedulePublish(flags, { version, changelog, scheduledFor, createdBy }) {
+  const { error } = await supabase.from("scheduled_publishes").insert({
+    flag_ids: flags.map((f) => f.id),
+    version,
+    changelog,
+    scheduled_for: scheduledFor,
+    created_by: createdBy,
+  });
+  if (error) throw error;
+}
+
+/** Cancels a still-pending scheduled publish — it just never runs. */
+export async function cancelSchedule(id) {
+  const { error } = await supabase.from("scheduled_publishes").delete().eq("id", id).eq("status", "pending");
+  if (error) throw error;
 }

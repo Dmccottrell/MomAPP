@@ -397,6 +397,7 @@ summary:focus-visible {
 .publish-dialog__flag-label { margin: 0; font-size: 0.92rem; font-weight: 600; }
 .publish-dialog__flag-desc { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--ink-soft); }
 .publish-dialog__hint { display: block; margin-top: 0.3rem; font-size: 0.78rem; color: var(--stop); }
+.publish-dialog__schedule-input { margin-top: 0.6rem; }
 
 /* WhatsNewModal's own header row: title + version badge on the left, an
    always-visible close button on the right — independent of whether

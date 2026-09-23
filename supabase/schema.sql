@@ -274,6 +274,91 @@ values (
 on conflict (version) do nothing;
 
 -- ---------------------------------------------------------------------
+-- scheduled_publishes: a publish (one or more flags, a version, a
+-- changelog — exactly what PublishDialog already builds) queued for a
+-- future time instead of running immediately. A pg_cron job checks every
+-- minute for rows whose time has come and runs the same publish logic
+-- utils/featureFlags.js's publishFeatureFlags() does by hand: flip the
+-- flags to published, stamp them with the version, and write the
+-- releases row — all inside run_due_scheduled_publishes() below, which
+-- runs as the function owner (security definer) since pg_cron has no
+-- Supabase Auth session for the RLS policy below to check. Admin-only
+-- end to end; nothing here is meant for a regular household member to see.
+-- ---------------------------------------------------------------------
+
+create table if not exists public.scheduled_publishes (
+  id uuid primary key default gen_random_uuid(),
+  flag_ids jsonb not null,
+  version text not null,
+  changelog text not null,
+  scheduled_for timestamptz not null,
+  status text not null default 'pending' check (status in ('pending', 'completed', 'failed')),
+  error text,
+  created_by uuid references public.profiles(id),
+  created_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+
+alter table public.scheduled_publishes enable row level security;
+
+drop policy if exists "Admins can manage scheduled publishes" on public.scheduled_publishes;
+create policy "Admins can manage scheduled publishes"
+  on public.scheduled_publishes for all using (
+    exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin)
+  );
+
+create or replace function public.run_due_scheduled_publishes()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  r record;
+begin
+  for r in
+    select * from public.scheduled_publishes
+    where status = 'pending' and scheduled_for <= now()
+    order by scheduled_for asc
+  loop
+    begin
+      insert into public.releases (version, changelog, published_flags, published_by)
+      values (
+        r.version,
+        r.changelog,
+        (
+          select coalesce(jsonb_agg(jsonb_build_object('id', f.id, 'label', f.label, 'description', f.description)), '[]'::jsonb)
+          from public.feature_flags f
+          where f.id in (select jsonb_array_elements_text(r.flag_ids))
+        ),
+        r.created_by
+      );
+
+      update public.feature_flags
+      set status = 'published', published_at = now(), published_in_version = r.version
+      where id in (select jsonb_array_elements_text(r.flag_ids));
+
+      update public.scheduled_publishes
+      set status = 'completed', completed_at = now()
+      where id = r.id;
+    exception when others then
+      update public.scheduled_publishes
+      set status = 'failed', error = sqlerrm, completed_at = now()
+      where id = r.id;
+    end;
+  end loop;
+end;
+$$;
+
+create extension if not exists pg_cron;
+
+select cron.schedule(
+  'run-due-scheduled-publishes',
+  '* * * * *',
+  $$select public.run_due_scheduled_publishes();$$
+);
+
+-- ---------------------------------------------------------------------
 -- Profile photo, and keeping profiles.email in sync after someone
 -- changes their email (not just on signup — see utils/auth.js's
 -- updateEmail()). Both back Settings → Account's expanded tools, gated

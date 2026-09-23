@@ -1,11 +1,28 @@
 import { useEffect, useState } from "react";
 import PublishDialog from "../components/PublishDialog";
 import ReleaseHistoryList from "../components/ReleaseHistoryList";
-import { listFeatureFlags, unpublishFeatureFlag, publishFeatureFlags } from "../utils/featureFlags";
+import {
+  listFeatureFlags,
+  unpublishFeatureFlag,
+  publishFeatureFlags,
+  listPendingSchedules,
+  schedulePublish,
+  cancelSchedule,
+} from "../utils/featureFlags";
 import { listReleases, suggestNextVersion, maxVersion } from "../utils/releases";
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+function formatDateTime(iso) {
+  return new Date(iso).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 /**
@@ -17,11 +34,17 @@ function formatDate(iso) {
  * (see utils/featureFlags.js's isFeatureEnabled); "published" is live for
  * the whole household, and every publish — one flag or several at once —
  * becomes a permanent row in the `releases` table with the version and
- * changelog the admin wrote.
+ * changelog built from the flags themselves (PublishDialog's own
+ * comment). A publish can also be scheduled for later instead of run
+ * immediately — see the "Scheduled" list and PublishDialog's "Later"
+ * option — which is handled entirely by a database-level cron job
+ * (supabase/schema.sql's run_due_scheduled_publishes()), so it still
+ * fires even if nobody has the app open when the time comes.
  */
 export default function Previews({ profile }) {
   const [flags, setFlags] = useState(null);
   const [releases, setReleases] = useState(null);
+  const [schedules, setSchedules] = useState(null);
   const [loadError, setLoadError] = useState("");
 
   const [publishRequest, setPublishRequest] = useState(null);
@@ -33,10 +56,11 @@ export default function Previews({ profile }) {
   }, []);
 
   function refresh() {
-    Promise.all([listFeatureFlags(), listReleases()])
-      .then(([f, r]) => {
+    Promise.all([listFeatureFlags(), listReleases(), listPendingSchedules()])
+      .then(([f, r, s]) => {
         setFlags(f);
         setReleases(r);
+        setSchedules(s);
       })
       .catch((err) => setLoadError(err.message || "Couldn't load previews."));
   }
@@ -71,6 +95,44 @@ export default function Previews({ profile }) {
     } finally {
       setPublishBusy(false);
     }
+  }
+
+  async function confirmSchedule({ version, changelog, scheduledFor }) {
+    setPublishBusy(true);
+    setPublishError("");
+    try {
+      await schedulePublish(publishRequest, {
+        version,
+        changelog,
+        scheduledFor,
+        createdBy: profile.id,
+      });
+      setPublishRequest(null);
+      refresh();
+    } catch (err) {
+      setPublishError(err.message || "Couldn't schedule that.");
+    } finally {
+      setPublishBusy(false);
+    }
+  }
+
+  async function handleCancelSchedule(id) {
+    try {
+      await cancelSchedule(id);
+      refresh();
+    } catch (err) {
+      setLoadError(err.message || "Couldn't cancel that.");
+    }
+  }
+
+  // A schedule stores just flag ids — resolve each back to its current
+  // label for display (a flag could in principle be renamed later; the
+  // id it was scheduled under still resolves correctly either way).
+  function flagLabelsFor(flagIds) {
+    if (!flags) return flagIds.join(", ");
+    return flagIds
+      .map((id) => flags.find((f) => f.id === id)?.label || id)
+      .join(", ");
   }
 
   const preview = flags?.filter((f) => f.status === "preview") ?? [];
@@ -117,6 +179,26 @@ export default function Previews({ profile }) {
             ))
           )}
         </div>
+
+        {schedules && schedules.length > 0 && (
+          <div className="preview-group">
+            <h3 className="field__label field__label--spaced">Scheduled</h3>
+            {schedules.map((s) => (
+              <div className="account-row" key={s.id}>
+                <div className="account-row__info">
+                  <p className="account-row__name">{flagLabelsFor(s.flag_ids)}</p>
+                  <p className="account-row__email">Will publish as v{s.version}</p>
+                  <p className="account-row__meta">Scheduled for {formatDateTime(s.scheduled_for)}</p>
+                </div>
+                <div className="account-row__actions">
+                  <button className="btn btn--ghost btn--sm" onClick={() => handleCancelSchedule(s.id)}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="preview-group">
           <h3 className="field__label field__label--spaced">Published</h3>
@@ -166,6 +248,7 @@ export default function Previews({ profile }) {
           busy={publishBusy}
           onCancel={() => setPublishRequest(null)}
           onConfirm={confirmPublish}
+          onSchedule={confirmSchedule}
         />
       )}
     </>
