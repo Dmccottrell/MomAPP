@@ -9,6 +9,7 @@ import FormatExampleBubble from "./components/FormatExampleBubble";
 import { gradeNote, noteTips } from "./utils/grading";
 import { addMinutes } from "./utils/time";
 import { loadRun, saveRun, clearRun, addHistoryEntry } from "./utils/storage";
+import { pickChartingFormatExample } from "./utils/chartingFormatExample";
 
 /**
  * Runs a single scenario from start to finish.
@@ -33,6 +34,14 @@ export default function ScenarioPlayer({
 }) {
   // Read once, at mount, whatever run was last saved for this scenario.
   const [resumed] = useState(() => loadRun(profile.id, scenario.id));
+
+  // Picked fresh on mount (a new scenario, or reopening one) and again on
+  // restart() (hitting Begin again on one already in progress), excluding
+  // whichever index was shown last time so a restart never repeats the
+  // same example — see utils/chartingFormatExample.js. Shared by
+  // FormatExample and FormatExampleBubble so the same lines stay
+  // consistent with each other within one run.
+  const [formatExample, setFormatExample] = useState(() => pickChartingFormatExample());
 
   const [phase, setPhase] = useState(resumed?.phase ?? "brief");
   const [taken, setTaken] = useState(resumed?.taken ?? []);
@@ -134,6 +143,7 @@ export default function ScenarioPlayer({
     setNote("");
     setGraded(null);
     setTips([]);
+    setFormatExample((prev) => pickChartingFormatExample(prev.index));
   }
 
   const p = scenario.patient;
@@ -172,7 +182,7 @@ export default function ScenarioPlayer({
                 ))}
               </ol>
             </div>
-            {flowImprovements && <FormatExample />}
+            {flowImprovements && <FormatExample lines={formatExample.lines} />}
             <button className="btn btn--go" onClick={() => setPhase("care")}>
               Begin
             </button>
@@ -248,7 +258,7 @@ export default function ScenarioPlayer({
       </main>
 
       {flowImprovements && (phase === "care" || phase === "documentation") && (
-        <FormatExampleBubble />
+        <FormatExampleBubble lines={formatExample.lines} />
       )}
     </div>
   );

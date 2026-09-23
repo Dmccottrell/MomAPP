@@ -1,18 +1,19 @@
-import { CHARTING_FORMAT_SAMPLE_LINES } from "../utils/chartingFormatExample";
-
 /**
  * A quick "here's the shape of a good note" reference shown before a
  * scenario begins — one timestamp per entry, in the order things actually
- * happened, not everything noticed dumped at the end. Deliberately generic
- * (see utils/chartingFormatExample.js) so it teaches the convention
- * without giving away any real scenario's content. The same content stays
- * reachable once the scenario is under way via FormatExampleBubble.
+ * happened, not everything noticed dumped at the end. `lines` comes from
+ * ScenarioPlayer's pickChartingFormatExample() (utils/chartingFormatExample.js) —
+ * deliberately generic content, picked fresh each time the brief screen is
+ * shown, so it teaches the convention without giving away any real
+ * scenario's content and without going stale on a repeat run. The same
+ * lines stay reachable once the scenario is under way via
+ * FormatExampleBubble.
  *
  * Doesn't apply to how the *care* steps get clicked through below — those
  * can be taken in whatever order makes sense in the moment; it's only the
  * note afterward that should read chronologically.
  */
-export default function FormatExample() {
+export default function FormatExample({ lines }) {
   return (
     <div className="format-example">
       <h3 className="format-example__title">Charting format</h3>
@@ -21,7 +22,7 @@ export default function FormatExample() {
         entry — not everything at once, at the end. For example:
       </p>
       <div className="format-example__sample">
-        {CHARTING_FORMAT_SAMPLE_LINES.map((line) => (
+        {lines.map((line) => (
           <p className="format-example__line" key={line.at}>
             <span className="entry__time">{line.at}</span> {line.text}
           </p>

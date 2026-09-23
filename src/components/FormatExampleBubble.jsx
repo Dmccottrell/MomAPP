@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { InfoIcon, CloseIcon } from "./icons";
-import { CHARTING_FORMAT_SAMPLE_LINES } from "../utils/chartingFormatExample";
 
 /**
  * A small floating reference, reachable throughout "care" and
  * "documentation", for anyone who wants to re-check the charting-format
  * example (see FormatExample.jsx, shown once on the scenario's brief
  * screen) without leaving where they are or losing a note in progress —
- * it's just local open/closed state, no navigation involved.
+ * it's just local open/closed state, no navigation involved. `lines` is
+ * the same set ScenarioPlayer picked and showed on the brief screen for
+ * this run, passed down so the two stay consistent with each other.
  */
-export default function FormatExampleBubble() {
+export default function FormatExampleBubble({ lines }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -28,7 +29,7 @@ export default function FormatExampleBubble() {
             </button>
           </div>
           <div className="format-example__sample">
-            {CHARTING_FORMAT_SAMPLE_LINES.map((line) => (
+            {lines.map((line) => (
               <p className="format-example__line" key={line.at}>
                 <span className="entry__time">{line.at}</span> {line.text}
               </p>
