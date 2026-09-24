@@ -350,6 +350,11 @@ begin
 end;
 $$;
 
+-- Only the cron job (running as the function's owner) should call this.
+-- Supabase grants EXECUTE on public-schema functions to anon/authenticated
+-- by default, which would expose it at /rest/v1/rpc/run_due_scheduled_publishes.
+revoke execute on function public.run_due_scheduled_publishes() from public, anon, authenticated;
+
 create extension if not exists pg_cron;
 
 select cron.schedule(
