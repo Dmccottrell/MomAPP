@@ -170,6 +170,7 @@
       {
         "id": "notify-provider",
         "label": "Provider notified, with time and order to transfer",
+        "rejectNegated": true,
         "keywords": ["notified", "provider", "dr.", "911", "transfer"],
         "needs": ["time"],
         "why": "Documents the order authorizing emergency transfer, not a unilateral decision to send him out."
@@ -177,6 +178,7 @@
       {
         "id": "family-notified",
         "label": "Family notified of the transfer",
+        "rejectNegated": true,
         "keywords": ["family", "son", "notified"],
         "why": "Required, and it's part of a complete transfer record."
       },

@@ -154,6 +154,7 @@
       {
         "id": "notify-provider",
         "label": "Provider notified of the medication gap, with time and outcome",
+        "rejectNegated": true,
         "keywords": ["notified", "provider", "dr.", "order"],
         "needs": ["time"],
         "why": "Shows the gap was closed through the right channel, not worked around."
@@ -167,6 +168,7 @@
       {
         "id": "med-given",
         "label": "Today's dose given, with time and site",
+        "rejectNegated": true,
         "keywords": ["enoxaparin", "given", "subq", "abdomen"],
         "needs": ["time"],
         "why": "Confirms the gap didn't turn into an actual missed dose."

@@ -176,6 +176,7 @@
       {
         "id": "notify",
         "label": "Provider notified, with time and new orders",
+        "rejectNegated": true,
         "keywords": ["notified", "provider", "md", "np", "orders"],
         "needs": ["time"],
         "why": "Times and names. 'MD made aware' with no time is not documentation."
@@ -183,6 +184,7 @@
       {
         "id": "family",
         "label": "Family notified",
+        "rejectNegated": true,
         "keywords": ["daughter", "family", "notified"],
         "smartKeywords": ["daughter", "family"],
         "why": "Required after a fall, and it protects you when the family calls back."

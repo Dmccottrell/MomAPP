@@ -152,6 +152,7 @@
       {
         "id": "notify-provider",
         "label": "Provider notified, with time and orders",
+        "rejectNegated": true,
         "keywords": ["notified", "provider", "dr.", "order", "catheter"],
         "needs": ["time"],
         "why": "Documents this was an authorized procedure, not a unilateral decision."

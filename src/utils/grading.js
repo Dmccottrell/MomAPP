@@ -21,6 +21,16 @@ const ALIASES = {
 // it out ("did not climb over") rather than asserting it.
 const NEGATION = /\b(no|not|never|without|denies|didn't|wasn't|isn't)\b[^.;]*$/;
 
+// For a `rejectNegated` requirement: a keyword that the note says did NOT
+// happen — "did not notify provider", "unable to reach provider", "provider
+// not notified", "not given". Tighter than NEGATION on purpose: the negating
+// word must sit right before the keyword (at most two words between) or
+// right after it, so "no response to juice so notified provider" still
+// counts as notifying.
+const NEGATED_BEFORE = /\b(?:no|not|never|without|didn't|did not|wasn't|was not|unable to|couldn't|could not)\s+(?:[\w.'-]+\s+){0,2}$/;
+const NEGATED_AFTER = /^[\w.'-]*\s+(?:(?:was|were|is|has|have|had)\s+)?(?:not|never)\b/;
+const NEGATED_HINT = "Your note says this wasn't done — the scenario needs it done and charted.";
+
 // "Evidence" a requirement can demand alongside its keyword (`needs` on the
 // requirement). A number is a digit run that isn't part of a word, so the 2
 // in "SpO2" doesn't count. A time is 21:18, 2118 or 2 pm — not 128/76.
@@ -83,11 +93,31 @@ function fuzzyMatch(words, keyword) {
   return null;
 }
 
-/** The note text that satisfied a keyword (the keyword, an alias, or the misspelt word), or null. */
-function findKeyword(haystack, words, keyword) {
+/** Whether any occurrence of `term` in the note is stated without being negated. */
+function hasUnnegated(haystack, term) {
+  const pattern = new RegExp(wordStartPattern(term).source, "g");
+  for (const m of haystack.matchAll(pattern)) {
+    const before = haystack.slice(Math.max(0, m.index - 40), m.index);
+    const after = haystack.slice(m.index + m[0].length, m.index + m[0].length + 30);
+    if (!NEGATED_BEFORE.test(before) && !NEGATED_AFTER.test(after)) return true;
+  }
+  return false;
+}
+
+/**
+ * The note text that satisfied a keyword (the keyword, an alias, or the
+ * misspelt word), or null. With `rejectNegated`, a term only counts where
+ * at least one mention of it isn't negated; `negated` collects the terms
+ * that were found but only ever negated, for the hint.
+ */
+function findKeyword(haystack, words, keyword, rejectNegated, negated) {
   const terms = [keyword, ...(ALIASES[keyword.trim().toLowerCase()] || [])];
-  const exact = terms.find((t) => wordStartPattern(t).test(haystack));
-  return exact ?? fuzzyMatch(words, keyword);
+  const fuzzy = fuzzyMatch(words, keyword);
+  const found = [...terms.filter((t) => wordStartPattern(t).test(haystack)), ...(fuzzy ? [fuzzy] : [])];
+  if (!rejectNegated) return found[0] ?? null;
+  const ok = found.find((t) => hasUnnegated(haystack, t));
+  if (ok === undefined && found.length) negated.push(found[0]);
+  return ok ?? null;
 }
 
 function forbiddenAsserted(haystack, phrase) {
@@ -136,10 +166,13 @@ function missingEvidence(haystack, matchedTerms, needs) {
  * long keywords tolerate a typo, a forbidden phrase that is negated ("did
  * not climb over") isn't counted, and a requirement's `needs` (["time"],
  * ["number"]) must be backed up by an actual time or number next to the
- * keyword — otherwise it's "missing" with a `hint`.
+ * keyword — otherwise it's "missing" with a `hint`. A requirement with
+ * `rejectNegated` (something that must be *done*, like notifying the
+ * provider) doesn't count a keyword the note says didn't happen ("provider
+ * not notified").
  *
  * @param {string} text - the learner's note
- * @param {Array<{id: string, keywords?: string[], smartKeywords?: string[], forbidden?: string[]}>} requirements
+ * @param {Array<{id: string, keywords?: string[], smartKeywords?: string[], forbidden?: string[], needs?: string[], rejectNegated?: boolean}>} requirements
  *   - scenario.documentation.requirements
  * @returns {Array} each requirement plus `status` ("met" | "missing" | "violated"),
  *   `matched` (the words in the note that triggered the status), and an
@@ -161,8 +194,15 @@ export function gradeNote(text, requirements) {
     if (!keywords || keywords.length === 0) {
       return { ...req, status: "met", matched: [] };
     }
-    const matched = keywords.map((k) => findKeyword(haystack, words, k)).filter((m) => m !== null);
-    if (!matched.length) return { ...req, status: "missing", matched };
+    const negated = [];
+    const matched = keywords
+      .map((k) => findKeyword(haystack, words, k, req.rejectNegated, negated))
+      .filter((m) => m !== null);
+    if (!matched.length) {
+      return negated.length
+        ? { ...req, status: "missing", matched, hint: NEGATED_HINT }
+        : { ...req, status: "missing", matched };
+    }
 
     if (req.needs?.length) {
       const hint = missingEvidence(haystack, matched, req.needs);

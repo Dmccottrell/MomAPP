@@ -156,6 +156,7 @@
       {
         "id": "notify-surgeon",
         "label": "Surgical team notified, with time and orders received",
+        "rejectNegated": true,
         "keywords": ["notified", "surgeon", "dr.", "orders", "consult"],
         "needs": ["time"],
         "why": "This is a limb-threatening concern — the time it was escalated matters for the record."
@@ -163,6 +164,7 @@
       {
         "id": "held-opioid",
         "label": "Opioid held pending evaluation",
+        "rejectNegated": true,
         "keywords": ["held", "opioid", "oxycodone"],
         "why": "Shows the medication decision was deliberate, tied to the new order, not an oversight."
       },

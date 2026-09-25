@@ -186,6 +186,7 @@
       {
         "id": "notify",
         "label": "Provider notified, with time and new orders",
+        "rejectNegated": true,
         "keywords": ["notified", "dr.", "provider", "np", "orders", "sbar"],
         "needs": ["time"],
         "why": "Times and names, and what changed as a result."

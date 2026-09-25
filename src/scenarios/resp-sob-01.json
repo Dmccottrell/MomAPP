@@ -165,6 +165,7 @@
       {
         "id": "notify-provider",
         "label": "Provider notified, with time and new orders",
+        "rejectNegated": true,
         "keywords": ["notified", "provider", "dr.", "orders", "furosemide"],
         "needs": ["time"],
         "why": "Times and orders — this shows the escalation actually happened and what came of it."

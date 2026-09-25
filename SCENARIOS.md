@@ -189,6 +189,13 @@ may also list:
   sentence as the matched keyword. Without one the requirement is marked
   missing, with a hint saying what to add. Use it where the `why` says
   "with time" or "measurements". Scenarios built in the app don't set it.
+- `"rejectNegated": true`, for something that has to be *done* — notifying the
+  provider or family, giving or holding a med. A keyword the note says didn't
+  happen ("provider not notified", "did not notify", "unable to reach provider")
+  isn't credited, and the learner gets a hint saying so. Leave it off for
+  assessment findings, where "denies nausea" or "no edema" is a legitimate
+  pertinent negative. `npm test` checks that every scenario's model note still
+  meets all of its own requirements, so run it after adding a scenario.
 
 **Forbidden words** flip the check — used for things that should *not* appear:
 

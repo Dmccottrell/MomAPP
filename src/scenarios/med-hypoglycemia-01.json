@@ -171,6 +171,7 @@
       {
         "id": "notify-provider",
         "label": "Provider notified, with time and new orders",
+        "rejectNegated": true,
         "keywords": ["notified", "provider", "dr.", "orders", "glargine"],
         "needs": ["time"],
         "why": "This event needs to change tonight's insulin plan, not repeat itself."
@@ -178,6 +179,7 @@
       {
         "id": "held-dose",
         "label": "Scheduled insulin held or adjusted as a result",
+        "rejectNegated": true,
         "keywords": ["held", "reduce", "adjusted", "16 units"],
         "why": "Documents the safety action taken, not just the recovery."
       }

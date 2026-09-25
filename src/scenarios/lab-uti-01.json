@@ -161,6 +161,7 @@
       {
         "id": "notify-provider",
         "label": "Provider notified, with time and new orders",
+        "rejectNegated": true,
         "keywords": ["notified", "provider", "dr.", "orders"],
         "needs": ["time"],
         "why": "Times and names — this is what makes the escalation verifiable."
@@ -174,6 +175,7 @@
       {
         "id": "med-given",
         "label": "New medication given, with time and dose",
+        "rejectNegated": true,
         "keywords": ["cephalexin", "mg", "given", "administered"],
         "needs": ["time"],
         "why": "The actual first dose administration needs a timestamp like any medication."

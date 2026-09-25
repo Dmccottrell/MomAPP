@@ -251,6 +251,7 @@ Other commands:
 
 ```bash
 npm run build     # production build into dist/
+npm test          # grading tests, incl. every scenario's model note
 npm run preview   # serve the production build locally
 npx eslint .      # lint
 ```

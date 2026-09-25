@@ -170,6 +170,7 @@
       {
         "id": "notify-provider",
         "label": "Provider notified, with time and orders received",
+        "rejectNegated": true,
         "keywords": ["notified", "provider", "dr.", "orders", "ua"],
         "needs": ["time"],
         "why": "Documents the escalation and what was ordered as a result."

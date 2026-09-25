@@ -167,6 +167,7 @@
       {
         "id": "notify-provider-sbar",
         "label": "Provider notified with SBAR content, time, and orders received",
+        "rejectNegated": true,
         "keywords": ["sbar", "notified", "provider", "dr.", "orders"],
         "needs": ["time"],
         "why": "This is the core of the note — what was reported, when, and what came back."

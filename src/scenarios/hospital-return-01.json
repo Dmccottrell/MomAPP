@@ -157,6 +157,7 @@
       {
         "id": "notify-provider",
         "label": "Provider notified, with time and orders for the care plan update",
+        "rejectNegated": true,
         "keywords": ["notified", "provider", "dr.", "orders"],
         "needs": ["time"],
         "why": "The changes found need a provider-authorized update to the plan of care, not just a chart note."
