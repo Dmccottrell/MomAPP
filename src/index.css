@@ -61,10 +61,9 @@ html { font-size: var(--text-scale); }
    selector the way the OS-level media query's is. */
 :root[data-motion="reduce"] * { transition: none !important; animation: none !important; }
 
-/* Behind the 'nav-scroll-fix' feature flag (App.jsx toggles the class). The
-   closed nav drawer is parked off-screen at translateX(100%); inside the
-   backdrop-filter nav bar it counts toward page width, so clip it here. */
-html.no-hscroll { overflow-x: hidden; }
+/* The closed nav drawer is parked off-screen at translateX(100%); inside
+   the backdrop-filter nav bar it counts toward page width, so clip it here. */
+html { overflow-x: hidden; }
 
 /* System preference drives the palette when the user hasn't overridden it. */
 @media (prefers-color-scheme: dark) {
@@ -542,7 +541,7 @@ summary:focus-visible {
 
 .home { max-width: 60ch; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
 
-/* Behind the 'care-settings' flag: a persistent vertical nav for Hospital /
+/* A persistent vertical nav for Hospital /
    Nursing home sits beside the page instead of inside the Filter panel,
    which keeps only Category (see .home-filter below). .home-main keeps
    the original single-column reading width; .home itself widens to fit
@@ -594,8 +593,7 @@ summary:focus-visible {
 
 .cases { list-style: none; padding: 0; margin: 0; display: grid; gap: calc(1rem * var(--density-mult)); }
 
-/* One collapsible Filter tab above the scenario list (behind the
-   'scenario-categories' and 'care-settings' flags). Closed by default. */
+/* One collapsible Filter tab above the scenario list. Closed by default. */
 .home-filter { margin: -1rem 0 1.5rem; }
 .home-filter__bar { display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem; }
 .home-filter__toggle { display: inline-flex; align-items: center; gap: 0.45rem; }
@@ -647,9 +645,7 @@ summary:focus-visible {
 }
 .case:hover { border-color: var(--chart); transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
-/* Cursor-follow spotlight — behind the 'card-spotlight' feature flag
-   (App.jsx only adds this class and Home.jsx's mousemove handler once
-   it's on). Position tracked in Home.jsx's trackSpotlight(), color pulled
+/* Cursor-follow spotlight on Home's scenario cards. Position tracked in Home.jsx's trackSpotlight(), color pulled
    from the active accent so it matches whichever of the 5 presets and
    light/dark mode the viewer has chosen. */
 .case--spotlight {
@@ -762,26 +758,7 @@ summary:focus-visible {
   text-underline-offset: 2px;
 }
 
-/* Settings' own page-level tab bar — distinct from the theme picker's
-   .segmented radiogroup below, so it can wrap on a narrow screen instead
-   of squeezing every tab onto one line. */
-.settings-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
-.settings-tab {
-  background: transparent;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-  font-size: 0.88rem;
-  color: var(--ink-soft);
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
-}
-.settings-tab:hover { border-color: var(--chart); color: var(--chart); }
-.settings-tab--active,
-.settings-tab--active:hover { background: var(--chart); border-color: var(--chart); color: #fff; }
-
-/* Settings navigation, behind the 'appearance-redesign' flag — a row
-   list with chevrons instead of pill tabs, sidebar on a wide screen and
+/* Settings navigation — a row list with chevrons, sidebar on a wide screen and
    stacked above the content on a narrow one (same responsive pattern as
    Home's care-setting sidebar). */
 .settings-layout { display: flex; align-items: flex-start; gap: 2.5rem; }

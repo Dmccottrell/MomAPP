@@ -7,20 +7,11 @@
 import { supabase } from "./supabaseClient";
 
 // Every flag is seeded directly in supabase/schema.sql (there's no
-// "add a flag" UI in Previews — see its own comment) and gets a stable id
-// here, so the feature it gates can look itself up without matching on a
-// label that might change.
-export const ACCOUNT_PROFILE_TOOLS_FLAG_ID = "account-profile-tools";
-export const NAV_SCROLL_FIX_FLAG_ID = "nav-scroll-fix";
-export const SMART_NOTE_GRADING_FLAG_ID = "smart-note-grading";
-export const SCENARIO_CATEGORIES_FLAG_ID = "scenario-categories";
-export const CARE_SETTINGS_FLAG_ID = "care-settings";
-export const SINGLE_ABOUT_FLAG_ID = "single-about";
+// "add a flag" UI in Previews — see its own comment). A flag still gating
+// code gets a stable id here, so the feature can look itself up without
+// matching on a label that might change; once a flag is published for
+// good, its gate and id are removed from the code.
 export const SCENARIO_BATCH_HN1_FLAG_ID = "scenario-batch-hn-1";
-export const CARD_SPOTLIGHT_FLAG_ID = "card-spotlight";
-export const APPEARANCE_REDESIGN_FLAG_ID = "appearance-redesign";
-export const MOBILE_INSTALL_HINT_FLAG_ID = "mobile-install-hint";
-export const SCENARIO_FLOW_IMPROVEMENTS_FLAG_ID = "scenario-flow-improvements";
 
 /** Every feature flag, oldest first. */
 export async function listFeatureFlags() {

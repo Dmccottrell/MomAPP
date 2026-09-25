@@ -52,12 +52,7 @@ function blankScenario() {
  * deliberately separate from the Home list of preset scenarios — these
  * are shared, editable, deletable content, not the shipped set.
  */
-export default function MyScenarios({
-  profile,
-  onPlay,
-  categoriesEnabled = false,
-  careSettingsEnabled = false,
-}) {
+export default function MyScenarios({ profile, onPlay }) {
   const [scenarios, setScenarios] = useState(null);
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState("");
@@ -102,8 +97,6 @@ export default function MyScenarios({
     return (
       <ScenarioBuilder
         initial={editing}
-        categoriesEnabled={categoriesEnabled}
-        careSettingsEnabled={careSettingsEnabled}
         onSave={handleSave}
         onCancel={() => setEditing(null)}
       />
@@ -140,7 +133,7 @@ export default function MyScenarios({
             <li key={s.id}>
               <div className="case case--custom">
                 <span className="case__cat">
-                  {[careSettingsEnabled && s.setting, s.category || "Custom"].filter(Boolean).join(" · ")}
+                  {[s.setting, s.category || "Custom"].filter(Boolean).join(" · ")}
                 </span>
                 <span className="case__title">{s.title || "Untitled scenario"}</span>
                 <span className="case__meta">

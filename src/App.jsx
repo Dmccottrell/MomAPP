@@ -24,19 +24,7 @@ import {
 } from "./utils/profiles";
 import { listCustomScenarios, isBuilderEnabled } from "./utils/customScenarios";
 import { latestRelease } from "./utils/releases";
-import {
-  listFeatureFlags,
-  isFeatureEnabled,
-  NAV_SCROLL_FIX_FLAG_ID,
-  SMART_NOTE_GRADING_FLAG_ID,
-  SCENARIO_CATEGORIES_FLAG_ID,
-  CARE_SETTINGS_FLAG_ID,
-  SINGLE_ABOUT_FLAG_ID,
-  SCENARIO_BATCH_HN1_FLAG_ID,
-  CARD_SPOTLIGHT_FLAG_ID,
-  MOBILE_INSTALL_HINT_FLAG_ID,
-  SCENARIO_FLOW_IMPROVEMENTS_FLAG_ID,
-} from "./utils/featureFlags";
+import { listFeatureFlags, isFeatureEnabled, SCENARIO_BATCH_HN1_FLAG_ID } from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
 import changeOfCondition01 from "./scenarios/change-of-condition-01.json";
@@ -94,14 +82,7 @@ export default function App() {
   const [builderEnabled, setBuilderEnabledState] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
   const [whatsNew, setWhatsNew] = useState(null);
-  const [smartGrading, setSmartGrading] = useState(false);
-  const [categoriesEnabled, setCategoriesEnabled] = useState(false);
-  const [careSettingsEnabled, setCareSettingsEnabled] = useState(false);
-  const [singleAbout, setSingleAbout] = useState(false);
   const [scenarioBatchHN1Enabled, setScenarioBatchHN1Enabled] = useState(false);
-  const [cardSpotlightEnabled, setCardSpotlightEnabled] = useState(false);
-  const [installHintEnabled, setInstallHintEnabled] = useState(false);
-  const [scenarioFlowImprovements, setScenarioFlowImprovements] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -150,45 +131,19 @@ export default function App() {
     isBuilderEnabled().then(setBuilderEnabledState).catch(() => setBuilderEnabledState(false));
   }, [session, view]);
 
-  // Preview flags that change app-wide behavior. In preview only the admin
-  // gets each one; once published everyone does. Re-checked on each nav
-  // switch so publishing/unpublishing shows up without a reload.
-  //  - 'nav-scroll-fix' turns on html.no-hscroll (index.css), which clips
-  //    the closed nav drawer's off-screen overflow.
-  //  - 'smart-note-grading' switches gradeNote() to word-aware matching —
-  //    see utils/grading.js.
-  //  - 'scenario-categories' turns the builder's Category into a dropdown of
-  //    the note types in utils/categories.js and adds Home's category filter.
-  //  - 'care-settings' splits scenarios into Hospital / Nursing home on Home
-  //    and adds a Care setting field to the builder — see utils/careSettings.js.
-  //  - 'single-about' drops Settings' About tab (the nav bar's About page is
-  //    the one place for it) and shows the latest version at the bottom of it.
-  //  - 'scenario-batch-hn-1' adds SCENARIO_BATCH_HN1's 10 scenarios to what
-  //    Home and History show — held back until their clinical content has
-  //    been reviewed, unlike a scenario added straight to SCENARIOS.
-  //  - 'card-spotlight' turns on Home's cursor-tracking glow on each
-  //    scenario card — see index.css's .case--spotlight rules.
-  //  - 'mobile-install-hint' turns on the brief "add to home screen" nudge
-  //    on mobile — see components/InstallHint.jsx.
-  //  - 'scenario-flow-improvements' turns on the charting-format example
-  //    before a scenario starts and the "back to care" link while writing
-  //    the note — see ScenarioPlayer.jsx.
+  // 'scenario-batch-hn-1' adds SCENARIO_BATCH_HN1's 10 scenarios to what
+  // Home and History show — kept as a flag (unlike features that shipped
+  // and had their flag checks removed) so unreviewed clinical content can
+  // be pulled back at any time. Re-checked on each nav switch so
+  // publishing/unpublishing shows up without a reload.
   useEffect(() => {
     if (!session || !profile) return;
     let cancelled = false;
     listFeatureFlags()
       .then((flags) => {
         if (cancelled) return;
-        const on = (id) => isFeatureEnabled(flags.find((f) => f.id === id), profile);
-        document.documentElement.classList.toggle("no-hscroll", on(NAV_SCROLL_FIX_FLAG_ID));
-        setSmartGrading(on(SMART_NOTE_GRADING_FLAG_ID));
-        setCategoriesEnabled(on(SCENARIO_CATEGORIES_FLAG_ID));
-        setCareSettingsEnabled(on(CARE_SETTINGS_FLAG_ID));
-        setSingleAbout(on(SINGLE_ABOUT_FLAG_ID));
-        setScenarioBatchHN1Enabled(on(SCENARIO_BATCH_HN1_FLAG_ID));
-        setCardSpotlightEnabled(on(CARD_SPOTLIGHT_FLAG_ID));
-        setInstallHintEnabled(on(MOBILE_INSTALL_HINT_FLAG_ID));
-        setScenarioFlowImprovements(on(SCENARIO_FLOW_IMPROVEMENTS_FLAG_ID));
+        const flag = flags.find((f) => f.id === SCENARIO_BATCH_HN1_FLAG_ID);
+        setScenarioBatchHN1Enabled(isFeatureEnabled(flag, profile));
       })
       .catch(() => {});
     return () => {
@@ -303,13 +258,7 @@ export default function App() {
   let content;
   if (activeScenario) {
     content = (
-      <ScenarioPlayer
-        scenario={activeScenario}
-        profile={profile}
-        smartGrading={smartGrading}
-        flowImprovements={scenarioFlowImprovements}
-        onExit={exitScenario}
-      />
+      <ScenarioPlayer scenario={activeScenario} profile={profile} onExit={exitScenario} />
     );
   } else if (view === "history") {
     content = <History scenarios={allScenarios} profile={profile} onSelectScenario={selectScenario} />;
@@ -317,36 +266,13 @@ export default function App() {
     // Guards the same access check the nav bar uses — if it changed since
     // this view was selected (e.g. the admin just revoked access), this
     // falls through to Home instead of rendering the builder anyway.
-    content = (
-      <MyScenarios
-        profile={profile}
-        onPlay={selectScenario}
-        categoriesEnabled={categoriesEnabled}
-        careSettingsEnabled={careSettingsEnabled}
-      />
-    );
+    content = <MyScenarios profile={profile} onPlay={selectScenario} />;
   } else if (view === "about") {
-    content = <About showVersion={singleAbout} />;
+    content = <About />;
   } else if (view === "settings") {
-    content = (
-      <Settings
-        profile={profile}
-        onProfileChange={setProfile}
-        onSignOut={handleSignOut}
-        hideAboutTab={singleAbout}
-      />
-    );
+    content = <Settings profile={profile} onProfileChange={setProfile} onSignOut={handleSignOut} />;
   } else {
-    content = (
-      <Home
-        scenarios={visibleScenarios}
-        profile={profile}
-        onSelect={selectScenario}
-        categoriesEnabled={categoriesEnabled}
-        careSettingsEnabled={careSettingsEnabled}
-        spotlightEnabled={cardSpotlightEnabled}
-      />
-    );
+    content = <Home scenarios={visibleScenarios} profile={profile} onSelect={selectScenario} />;
   }
 
   return (
@@ -363,7 +289,7 @@ export default function App() {
         {content}
       </div>
       <WhatsNewModal release={whatsNew} onDismiss={dismissWhatsNew} />
-      {installHintEnabled && <InstallHint />}
+      <InstallHint />
       <Analytics />
     </div>
   );

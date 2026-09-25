@@ -54,9 +54,8 @@ function Switch({ label, hint, checked, onChange }) {
 }
 
 /**
- * The redesigned Appearance tab (behind the 'appearance-redesign' feature
- * flag) — one page, subtle dividers between groups instead of a stack of
- * boxed sections, plus the new settings the redesign brief asked for:
+ * The Appearance tab — one page, subtle dividers between groups instead
+ * of a stack of boxed sections:
  * Density, Corner radius, Animations, Reduce motion, High contrast, a
  * custom accent color, a live preview, and Reset appearance. Every value
  * and setter is a prop from Settings.jsx, which owns the actual

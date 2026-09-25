@@ -5,14 +5,13 @@ import { latestRelease } from "../utils/releases";
 /**
  * What this app is, and who built it. A straightforward credits/mission
  * page — just context for anyone using the app. The actual write-up lives
- * in AboutContent.jsx. With `showVersion` (the 'single-about' flag) the
- * latest published version is shown as a quiet footer at the bottom.
+ * in AboutContent.jsx. The latest published version is shown as a quiet
+ * footer at the bottom.
  */
-export default function About({ showVersion = false }) {
+export default function About() {
   const [version, setVersion] = useState(null);
 
   useEffect(() => {
-    if (!showVersion) return;
     let cancelled = false;
     latestRelease().then((release) => {
       if (!cancelled && release) setVersion(release.version);
@@ -20,7 +19,7 @@ export default function About({ showVersion = false }) {
     return () => {
       cancelled = true;
     };
-  }, [showVersion]);
+  }, []);
 
   return (
     <div className="page">
@@ -31,7 +30,7 @@ export default function About({ showVersion = false }) {
 
       <AboutContent />
 
-      {showVersion && version && <p className="settings-footer">Charting Practice v{version}</p>}
+      {version && <p className="settings-footer">Charting Practice v{version}</p>}
     </div>
   );
 }

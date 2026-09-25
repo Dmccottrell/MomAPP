@@ -25,13 +25,7 @@ import { pickChartingFormatExample } from "./utils/chartingFormatExample";
  * or mid-"documentation" resumes rather than starting over. A completed
  * run is recorded to the shared database instead (see submitNote).
  */
-export default function ScenarioPlayer({
-  scenario,
-  profile,
-  smartGrading = false,
-  flowImprovements = false,
-  onExit,
-}) {
+export default function ScenarioPlayer({ scenario, profile, onExit }) {
   // Read once, at mount, whatever run was last saved for this scenario.
   const [resumed] = useState(() => loadRun(profile.id, scenario.id));
 
@@ -113,9 +107,9 @@ export default function ScenarioPlayer({
    * a network round-trip to see their own score.
    */
   function submitNote() {
-    const result = gradeNote(note, scenario.documentation.requirements, { smart: smartGrading });
+    const result = gradeNote(note, scenario.documentation.requirements);
     setGraded(result);
-    setTips(smartGrading ? noteTips(note) : []);
+    setTips(noteTips(note));
     setPhase("feedback");
     addHistoryEntry(
       {
@@ -182,7 +176,7 @@ export default function ScenarioPlayer({
                 ))}
               </ol>
             </div>
-            {flowImprovements && <FormatExample lines={formatExample.lines} />}
+            <FormatExample lines={formatExample.lines} />
             <button className="btn btn--go" onClick={() => setPhase("care")}>
               Begin
             </button>
@@ -212,7 +206,7 @@ export default function ScenarioPlayer({
               {allDone ? (
                 <>
                   <p className="gate__text">
-                    {flowImprovements && note.trim()
+                    {note.trim()
                       ? "Reviewed what you needed? Back to your note."
                       : `${p.name} is stable and back in bed. Now chart it.`}
                   </p>
@@ -220,7 +214,7 @@ export default function ScenarioPlayer({
                     className="btn btn--go"
                     onClick={() => setPhase("documentation")}
                   >
-                    {flowImprovements && note.trim() ? "Continue the note" : "Write the note"}
+                    {note.trim() ? "Continue the note" : "Write the note"}
                   </button>
                 </>
               ) : (
@@ -240,7 +234,7 @@ export default function ScenarioPlayer({
             onChange={setNote}
             onSubmit={submitNote}
             log={log}
-            onBack={flowImprovements ? () => setPhase("care") : undefined}
+            onBack={() => setPhase("care")}
           />
         )}
 
@@ -257,7 +251,7 @@ export default function ScenarioPlayer({
         )}
       </main>
 
-      {flowImprovements && (phase === "care" || phase === "documentation") && (
+      {(phase === "care" || phase === "documentation") && (
         <FormatExampleBubble lines={formatExample.lines} />
       )}
     </div>

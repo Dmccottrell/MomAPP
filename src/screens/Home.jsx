@@ -7,22 +7,14 @@ import { ChevronIcon } from "../components/icons";
  * The scenario picker. Each card shows the scenario's basics plus, once
  * the signed-in user has attempted it, their most recent score for it.
  */
-export default function Home({
-  scenarios,
-  profile,
-  onSelect,
-  categoriesEnabled = false,
-  careSettingsEnabled = false,
-  spotlightEnabled = false,
-}) {
+export default function Home({ scenarios, profile, onSelect }) {
   const [lastByScenario, setLastByScenario] = useState({});
   const [setting, setSetting] = useState("");
   const [category, setCategory] = useState("");
 
   // Setting narrows first ("" = All, which also includes scenarios with no
   // setting yet), then category narrows within it.
-  const inSetting =
-    careSettingsEnabled && setting ? scenarios.filter((s) => s.setting === setting) : scenarios;
+  const inSetting = setting ? scenarios.filter((s) => s.setting === setting) : scenarios;
 
   // Only categories that have a scenario in the current setting, in the
   // order they first appear — an empty filter button would just lead to an
@@ -30,7 +22,7 @@ export default function Home({
   // hidden until there are two. A category picked under a previous setting
   // that no longer exists here falls back to "All".
   const categories = [...new Set(inSetting.map((s) => s.category).filter(Boolean))];
-  const showFilter = categoriesEnabled && categories.length > 1;
+  const showFilter = categories.length > 1;
   const activeCategory = showFilter && categories.includes(category) ? category : "";
   const visible = activeCategory ? inSetting.filter((s) => s.category === activeCategory) : inSetting;
 
@@ -73,30 +65,20 @@ export default function Home({
   }, [profile.id]);
 
   return (
-    <div className={careSettingsEnabled ? "home home--with-sidebar" : "home"}>
-      {careSettingsEnabled && (
-        <nav className="home-sidebar" aria-label="Care setting">
+    <div className="home home--with-sidebar">
+      <nav className="home-sidebar" aria-label="Care setting">
+        {["", ...CARE_SETTINGS].map((name) => (
           <button
             type="button"
-            className={setting === "" ? "home-sidebar__link home-sidebar__link--active" : "home-sidebar__link"}
-            aria-current={setting === "" ? "true" : undefined}
-            onClick={() => setSetting("")}
+            key={name || "all"}
+            className={setting === name ? "home-sidebar__link home-sidebar__link--active" : "home-sidebar__link"}
+            aria-current={setting === name ? "true" : undefined}
+            onClick={() => setSetting(name)}
           >
-            All
+            {name || "All"}
           </button>
-          {CARE_SETTINGS.map((name) => (
-            <button
-              type="button"
-              key={name}
-              className={setting === name ? "home-sidebar__link home-sidebar__link--active" : "home-sidebar__link"}
-              aria-current={setting === name ? "true" : undefined}
-              onClick={() => setSetting(name)}
-            >
-              {name}
-            </button>
-          ))}
-        </nav>
-      )}
+        ))}
+      </nav>
 
       <div className="home-main">
         <header className="home__head">
@@ -165,12 +147,12 @@ export default function Home({
             return (
               <li key={s.id}>
                 <button
-                  className={spotlightEnabled ? "case case--spotlight" : "case"}
+                  className="case case--spotlight"
                   onClick={() => onSelect(s)}
-                  onMouseMove={spotlightEnabled ? trackSpotlight : undefined}
+                  onMouseMove={trackSpotlight}
                 >
                   <span className="case__cat">
-                    {[careSettingsEnabled && s.setting, s.category].filter(Boolean).join(" · ")}
+                    {[s.setting, s.category].filter(Boolean).join(" · ")}
                   </span>
                   <span className="case__title">{s.title}</span>
                   <span className="case__meta">

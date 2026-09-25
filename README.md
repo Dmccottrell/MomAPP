@@ -144,8 +144,9 @@ becomes a real, dated changelog entry:
 
 - **A feature flag** (`feature_flags` table) starts "in preview" — enabled
   only for the admin, via `utils/featureFlags.js`'s `isFeatureEnabled()`.
-  The 'account-profile-tools' flag (Settings → Account's expanded tools)
-  is the one real feature actually gated on one today.
+  Once a flag is published for good, its check is removed from the code;
+  'scenario-batch-hn-1' (a batch of newer scenarios) is the one still
+  gated today.
 - Adding a flag **auto-suggests its description from the name you type**
   (editable, same "auto until overridden" pattern as the scenario
   builder's id-from-title) — template text, not AI-written; this app has
@@ -281,12 +282,11 @@ src/
 │   ├── ScenarioBuilder.jsx     The scenario-authoring form
 │   ├── About.jsx               Full mission/credits write-up (see
 │   │                            components/AboutContent.jsx) in its own page
-│   ├── Settings.jsx            The tab shell: Appearance/Account/About/
+│   ├── Settings.jsx            The tab shell: Appearance/Account/
 │   │                            What's new for everyone, User management/
 │   │                            Previews for admins; the version number is a
 │   │                            quiet footer at the bottom, not per-tab
-│   ├── AccountTools.jsx        Photo/email/password/social links, gated
-│   │                            behind the 'account-profile-tools' flag
+│   ├── AccountTools.jsx        Photo/email/password/social links
 │   ├── UserManagement.jsx      Admin: builder access + accounts (reset,
 │   │                            promote/demote, delete)
 │   └── Previews.jsx            Admin: feature flags + publishing + changelog
@@ -296,8 +296,8 @@ src/
 │   │                           initials-in-a-circle colored per name
 │   ├── icons.jsx              The handful of line icons used in the nav etc.
 │   ├── Notice.jsx              The warning banner used on builder screens
-│   ├── AboutContent.jsx        The About write-up, shared by the About
-│   │                            screen and Settings' About tab
+│   ├── AboutContent.jsx        The About write-up shown on the About
+│   │                            screen
 │   ├── ConfirmDialog.jsx       In-app replacement for window.confirm()
 │   ├── PublishDialog.jsx       Version + changelog form for publishing flags
 │   ├── ReleaseHistoryList.jsx  Read-only changelog list (Settings' What's

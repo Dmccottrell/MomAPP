@@ -3,8 +3,8 @@
 // judge.
 
 // Common charting shorthand a nurse might write instead of the keyword a
-// scenario lists. Only used by the "smart" matcher, and only when the
-// scenario's own keyword is one of these keys — so a scenario that lists
+// scenario lists. Only applies when the scenario's own keyword is one of
+// these keys — so a scenario that lists
 // "hr" also accepts "pulse", without every scenario having to repeat them.
 const ALIASES = {
   bp: ["b/p", "blood pressure"],
@@ -130,49 +130,41 @@ function missingEvidence(haystack, matchedTerms, needs) {
  *      fail), or the note contains at least one of them.
  *   3. "missing"  — none of the keywords were found.
  *
- * By default matching is case-insensitive substring matching, so partial
- * words like "anticoagul" intentionally match both "anticoagulant" and
- * "anticoagulated". With `{ smart: true }` (behind the 'smart-note-grading'
- * feature flag) matching is word-aware instead: keywords match only at the
- * start of a word (short ones as whole words), common shorthand is
- * accepted, long keywords tolerate a typo, a forbidden phrase that is
- * negated ("did not climb over") isn't counted, and a requirement's
- * `needs` (["time"], ["number"]) must be backed up by an actual time or
- * number next to the keyword — otherwise it's "missing" with a `hint`.
+ * Matching is case-insensitive and word-aware: keywords match only at the
+ * start of a word (short ones as whole words), so partial stems like
+ * "anticoagul" still match "anticoagulated"; common shorthand is accepted,
+ * long keywords tolerate a typo, a forbidden phrase that is negated ("did
+ * not climb over") isn't counted, and a requirement's `needs` (["time"],
+ * ["number"]) must be backed up by an actual time or number next to the
+ * keyword — otherwise it's "missing" with a `hint`.
  *
  * @param {string} text - the learner's note
- * @param {Array<{id: string, keywords?: string[], forbidden?: string[]}>} requirements
+ * @param {Array<{id: string, keywords?: string[], smartKeywords?: string[], forbidden?: string[]}>} requirements
  *   - scenario.documentation.requirements
- * @param {{smart?: boolean}} [options]
  * @returns {Array} each requirement plus `status` ("met" | "missing" | "violated"),
- *   `matched` (the words in the note that triggered the status), and, in
- *   smart mode, an optional `hint` explaining why a mentioned item wasn't credited
+ *   `matched` (the words in the note that triggered the status), and an
+ *   optional `hint` explaining why a mentioned item wasn't credited
  */
-export function gradeNote(text, requirements, { smart = false } = {}) {
+export function gradeNote(text, requirements) {
   const haystack = text.toLowerCase();
   const words = haystack.match(/[a-z]+/g) || [];
-  const hasForbidden = (f) =>
-    smart ? forbiddenAsserted(haystack, f) : haystack.includes(f.toLowerCase());
 
   return requirements.map((req) => {
-    const forbidden = (req.forbidden || []).filter(hasForbidden);
+    const forbidden = (req.forbidden || []).filter((f) => forbiddenAsserted(haystack, f));
     if (forbidden.length) {
       return { ...req, status: "violated", matched: forbidden };
     }
-    // A requirement can list `smartKeywords` to use instead of `keywords`
-    // when smart grading is on — for tightening a keyword that's too broad
-    // (e.g. a bare "notified" also credits telling the provider) without
-    // changing what everyone else gets until the flag is published.
-    const keywords = (smart && req.smartKeywords) || req.keywords;
+    // `smartKeywords`, when a requirement lists them, replace `keywords` —
+    // for tightening a keyword that's too broad (e.g. a bare "notified"
+    // also credits telling the provider).
+    const keywords = req.smartKeywords || req.keywords;
     if (!keywords || keywords.length === 0) {
       return { ...req, status: "met", matched: [] };
     }
-    const matched = smart
-      ? keywords.map((k) => findKeyword(haystack, words, k)).filter((m) => m !== null)
-      : keywords.filter((k) => haystack.includes(k.toLowerCase()));
+    const matched = keywords.map((k) => findKeyword(haystack, words, k)).filter((m) => m !== null);
     if (!matched.length) return { ...req, status: "missing", matched };
 
-    if (smart && req.needs?.length) {
+    if (req.needs?.length) {
       const hint = missingEvidence(haystack, matched, req.needs);
       if (hint) return { ...req, status: "missing", matched, hint };
     }
@@ -184,7 +176,7 @@ const VAGUE_WORDS = /\b(appears?|appeared|seems?|seemed|apparently|probably|poss
 
 /**
  * Wording to tighten in a note — not scored, just advice, shown on the
- * feedback screen when smart grading is on. Flags guessy words (charting
+ * feedback screen. Flags guessy words (charting
  * what you observed beats what things "seem") and a note with no times.
  *
  * @param {string} text - the learner's note

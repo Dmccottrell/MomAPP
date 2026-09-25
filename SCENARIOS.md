@@ -30,13 +30,13 @@ file, a missing comma is the first thing to check.
 Admission/Readmission, Transfer, Hospital Return, Pain, SOB/Respiratory,
 Altered Mental Status (AMS), Catheter/Foley, Provider Notification, Routine,
 Quarterly. Use one of those names exactly for a preset scenario so it groups
-with the rest. When the "Scenario categories" preview flag is on, the in-app
-builder offers them as a dropdown and Home can filter by them.
+with the rest. The in-app builder offers them as a dropdown and Home can
+filter by them.
 
 `setting` says where the scenario takes place: `"Hospital"` or `"Nursing home"` (see
 `src/utils/careSettings.js`). It's optional; a scenario without one shows only under
-Home's "All" tab. When the "Hospital / Nursing home split" preview flag is on, Home
-shows a tab for each and the in-app builder asks for it.
+Home's "All" tab. Home's sidebar shows a tab for each, and the in-app builder asks
+for it.
 
 ### Objectives
 
@@ -175,8 +175,7 @@ of them counts. Partial words work — `"anticoagul"` matches both
 "anticoagulant" and "anticoagulated". Being generous here matters, because a
 learner marked wrong for correct-but-different wording learns the wrong lesson.
 
-**Smart-grading extras** (only used once the "Smarter note grading" preview flag
-is on): matching is by whole words — keywords of three letters or fewer must
+**Smart-grading extras**: matching is by whole words — keywords of three letters or fewer must
 match a whole word, longer ones still match as word starts, and common
 shorthand like "pulse" or "doctor" is accepted for `hr` and `provider`, and
 long keywords (7+ letters, no spaces) tolerate a one-letter typo. A requirement

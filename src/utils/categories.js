@@ -1,7 +1,6 @@
 // The note types a scenario can be filed under, from the nurse who writes
-// the cases. Behind the 'scenario-categories' feature flag: when it's on,
-// the scenario builder's Category becomes a dropdown of these (with each
-// one's description underneath) and Home can filter by category.
+// the cases. The scenario builder's Category is a dropdown of these (with
+// each one's description underneath) and Home can filter by category.
 //
 // A scenario's `category` is stored as plain text — the name below — so
 // scenarios saved before this list existed ("Risk management", "Clinical
