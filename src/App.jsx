@@ -25,6 +25,7 @@ import {
 import { listCustomScenarios, isBuilderEnabled } from "./utils/customScenarios";
 import { latestRelease } from "./utils/releases";
 import { withViewTransition } from "./utils/viewTransition";
+import { flushPendingHistory } from "./utils/storage";
 import fall01 from "./scenarios/fall-01.json";
 import changeOfCondition01 from "./scenarios/change-of-condition-01.json";
 import labUti01 from "./scenarios/lab-uti-01.json";
@@ -117,6 +118,17 @@ export default function App() {
       cancelled = true;
     };
   }, [session, profileAttempt]);
+
+  // Saves any runs finished while offline (see flushPendingHistory) —
+  // once the profile loads, and again whenever the connection comes back.
+  // Re-runs on nav switches too, so Home/History pick up what landed.
+  useEffect(() => {
+    if (!profile) return;
+    const flush = () => flushPendingHistory(profile.id).catch(() => {});
+    flush();
+    window.addEventListener("online", flush);
+    return () => window.removeEventListener("online", flush);
+  }, [profile, view]);
 
   // Re-checked on every nav switch — cheap, and keeps "who else can build
   // scenarios" changes from Settings reflected without extra plumbing.

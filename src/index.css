@@ -1385,6 +1385,16 @@ summary:focus-visible {
 .score__of { font-size: 1.5rem; color: var(--ink-soft); }
 .score__label { color: var(--ink-soft); font-size: 0.95rem; }
 
+/* One line under the score when this run couldn't be saved to history
+   right away — see NoteFeedback's saveStatus. */
+.save-note {
+  margin: -0.5rem 0 1.25rem;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--flag);
+  background: var(--flag-wash);
+  font-size: 0.9rem;
+}
+
 .rubric { list-style: none; padding: 0; margin: 0 0 2rem; display: grid; gap: 0.5rem; }
 .rubric__item {
   border: 1px solid var(--rule);

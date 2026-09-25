@@ -46,6 +46,7 @@ export default function ScenarioPlayer({ scenario, profile, onExit }) {
   const [note, setNote] = useState(resumed?.note ?? "");
   const [graded, setGraded] = useState(null);
   const [tips, setTips] = useState([]);
+  const [saveStatus, setSaveStatus] = useState(null);
 
   // Keep the saved run in sync with state. Only "care" and "documentation"
   // are worth resuming — "brief" has nothing to lose, and "feedback" is
@@ -104,13 +105,16 @@ export default function ScenarioPlayer({ scenario, profile, onExit }) {
    * records the attempt to history, and advances to the feedback screen.
    * The feedback screen shows immediately on the local grade — the history
    * write happens in the background, since the learner shouldn't wait on
-   * a network round-trip to see their own score.
+   * a network round-trip to see their own score. If it can't reach the
+   * server the run is kept on this device and saved later (see
+   * flushPendingHistory), and the feedback screen says so.
    */
   function submitNote() {
     const result = gradeNote(note, scenario.documentation.requirements);
     setGraded(result);
     setTips(noteTips(note));
     setPhase("feedback");
+    setSaveStatus(null);
     addHistoryEntry(
       {
         scenarioId: scenario.id,
@@ -120,10 +124,9 @@ export default function ScenarioPlayer({ scenario, profile, onExit }) {
         missteps,
       },
       profile.id
-    ).catch(() => {
-      // The grade is already on screen; a failed history write just means
-      // this attempt won't show up on Home/History later.
-    });
+    )
+      .then(setSaveStatus)
+      .catch(() => setSaveStatus("failed"));
   }
 
   /** Resets every piece of run state so the same scenario can be replayed from the brief screen. */
@@ -137,6 +140,7 @@ export default function ScenarioPlayer({ scenario, profile, onExit }) {
     setNote("");
     setGraded(null);
     setTips([]);
+    setSaveStatus(null);
     setFormatExample((prev) => pickChartingFormatExample(prev.index));
   }
 
@@ -242,6 +246,7 @@ export default function ScenarioPlayer({ scenario, profile, onExit }) {
           <NoteFeedback
             graded={graded}
             tips={tips}
+            saveStatus={saveStatus}
             missteps={missteps}
             note={note}
             documentation={scenario.documentation}

@@ -63,17 +63,87 @@ function fromRow(row) {
   };
 }
 
-/** Records a completed run to this user's history. */
+// A completed run whose insert failed — offline, a dropped connection —
+// waits here, per user on this device, and is retried by
+// flushPendingHistory() rather than silently lost. Each row carries its
+// own id (made on this device), so a retry of an insert that actually
+// landed the first time is just a duplicate-key error, treated as done.
+function pendingKey(userId) {
+  return scopedKey(userId, "pendingHistory");
+}
+
+function readPending(userId) {
+  return read(pendingKey(userId)) || [];
+}
+
+function writePending(userId, rows) {
+  if (rows.length) write(pendingKey(userId), rows);
+  else remove(pendingKey(userId));
+}
+
+/**
+ * Inserts one history row. Resolves true once it's in the table (or
+ * already was), false if the server couldn't be reached, and throws if
+ * the server refused it — a refusal won't succeed on retry either.
+ */
+async function insertHistoryRow(row) {
+  const { error } = await supabase.from("history").insert(row);
+  if (!error || error.code === "23505") return true;
+  // supabase-js reports a failed fetch (offline, network drop) as an
+  // error with no Postgres/PostgREST code; a real refusal (RLS, bad
+  // data) always has one.
+  if (!error.code) return false;
+  throw error;
+}
+
+/**
+ * Records a completed run to this user's history. Resolves "saved", or
+ * "queued" when the server couldn't be reached — the run is then kept on
+ * this device and added by flushPendingHistory() once it's back online.
+ */
 export async function addHistoryEntry(entry, userId) {
-  const { error } = await supabase.from("history").insert({
+  const row = {
+    id: crypto.randomUUID(),
     user_id: userId,
     scenario_id: entry.scenarioId,
     scenario_title: entry.scenarioTitle,
     score: entry.score,
     total: entry.total,
     missteps: entry.missteps,
-  });
-  if (error) throw error;
+    completed_at: new Date().toISOString(),
+  };
+  let saved = false;
+  try {
+    saved = await insertHistoryRow(row);
+  } catch (err) {
+    if (err?.code) throw err;
+  }
+  if (saved) return "saved";
+  writePending(userId, [...readPending(userId), row]);
+  return "queued";
+}
+
+/**
+ * Retries every run still waiting on this device, oldest first. Stops at
+ * the first one the server can't be reached for (the rest would fail the
+ * same way); drops one the server refuses outright. Resolves the number
+ * of runs that made it into history.
+ */
+export async function flushPendingHistory(userId) {
+  const pending = readPending(userId);
+  let done = 0;
+  for (const row of pending) {
+    let reached = true;
+    try {
+      reached = await insertHistoryRow(row);
+    } catch {
+      // Refused — drop it rather than retrying forever.
+    }
+    if (!reached) break;
+    done += 1;
+  }
+  if (done) writePending(userId, readPending(userId).filter((r) => !pending.slice(0, done).some((p) => p.id === r.id)));
+  return done;
 }
 
 /** This user's completed runs, newest first (admins get everyone's — see history.jsx and RLS). */
@@ -84,7 +154,13 @@ export async function listHistory(userId) {
     .eq("user_id", userId)
     .order("completed_at", { ascending: false });
   if (error) throw error;
-  return data.map(fromRow);
+  // Runs still waiting to be saved show up too, so a run finished offline
+  // doesn't look lost in the meantime.
+  const saved = new Set(data.map((r) => r.id));
+  const waiting = readPending(userId).filter((r) => !saved.has(r.id));
+  return [...waiting, ...data]
+    .sort((a, b) => b.completed_at.localeCompare(a.completed_at))
+    .map(fromRow);
 }
 
 /** Every learner's history — only actually returns rows for an admin; RLS filters it to "own only" otherwise. */

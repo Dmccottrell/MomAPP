@@ -9,10 +9,15 @@ import { splitByMatches } from "../utils/highlight";
  * The note itself is rendered with the words that earned or cost credit
  * highlighted in place, so the learner can see exactly what the grader
  * keyed off of rather than just a matched-keyword list next to the rubric.
+ *
+ * `saveStatus` is how recording this run to history went: "queued" (no
+ * connection — kept on this device and saved later) and "failed" (the
+ * server refused it) each get a one-line note; "saved" and null say nothing.
  */
 export default function NoteFeedback({
   graded,
   tips = [],
+  saveStatus = null,
   missteps,
   note,
   documentation,
@@ -43,6 +48,16 @@ export default function NoteFeedback({
             ` · ${missteps} misstep${missteps === 1 ? "" : "s"} during care`}
         </span>
       </div>
+
+      {saveStatus === "queued" && (
+        <p className="save-note">
+          You're offline, so this attempt is saved on this device for now. It'll be
+          added to your history once you're back online.
+        </p>
+      )}
+      {saveStatus === "failed" && (
+        <p className="save-note">Couldn't save this attempt to your history.</p>
+      )}
 
       <ul className="rubric">
         {graded.map((g) => (
