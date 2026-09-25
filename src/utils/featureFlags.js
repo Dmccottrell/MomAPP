@@ -11,7 +11,6 @@ import { supabase } from "./supabaseClient";
 // code gets a stable id here, so the feature can look itself up without
 // matching on a label that might change; once a flag is published for
 // good, its gate and id are removed from the code.
-export const SCENARIO_BATCH_HN1_FLAG_ID = "scenario-batch-hn-1";
 
 /** Every feature flag, oldest first. */
 export async function listFeatureFlags() {

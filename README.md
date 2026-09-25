@@ -144,9 +144,7 @@ becomes a real, dated changelog entry:
 
 - **A feature flag** (`feature_flags` table) starts "in preview" — enabled
   only for the admin, via `utils/featureFlags.js`'s `isFeatureEnabled()`.
-  Once a flag is published for good, its check is removed from the code;
-  'scenario-batch-hn-1' (a batch of newer scenarios) is the one still
-  gated today.
+  Once a flag is published for good, its check is removed from the code.
 - Adding a flag **auto-suggests its description from the name you type**
   (editable, same "auto until overridden" pattern as the scenario
   builder's id-from-title) — template text, not AI-written; this app has

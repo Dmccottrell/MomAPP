@@ -34,10 +34,9 @@ export default function AboutContent() {
         <p className="settings-row">
           The original scenarios are written by a practicing nurse. Newer
           scenarios are drafted by AI, aiming for clinical accuracy and
-          checked against the app's own grading and safety checks — but
-          they stay in admin-only preview until a clinician has actually
-          reviewed them, since getting this content right matters more
-          here than almost anywhere else.
+          checked against the app's own grading and safety checks — and a
+          clinician reviews each one before it's added, since getting this
+          content right matters more here than almost anywhere else.
         </p>
       </section>
 

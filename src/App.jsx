@@ -24,7 +24,6 @@ import {
 } from "./utils/profiles";
 import { listCustomScenarios, isBuilderEnabled } from "./utils/customScenarios";
 import { latestRelease } from "./utils/releases";
-import { listFeatureFlags, isFeatureEnabled, SCENARIO_BATCH_HN1_FLAG_ID } from "./utils/featureFlags";
 import { withViewTransition } from "./utils/viewTransition";
 import fall01 from "./scenarios/fall-01.json";
 import changeOfCondition01 from "./scenarios/change-of-condition-01.json";
@@ -43,12 +42,9 @@ import foley01 from "./scenarios/foley-01.json";
 // only code change needed when Mom writes a new case. See SCENARIOS.md for
 // the full field reference. Scenarios built in-app (My Scenarios) live in
 // the shared database instead — see utils/customScenarios.js.
-const SCENARIOS = [fall01, changeOfCondition01];
-
-// AI-drafted, not yet clinically reviewed — gated behind
-// SCENARIO_BATCH_HN1_FLAG_ID (preview/admin-only until published) rather
-// than added straight to SCENARIOS like a reviewed scenario would be.
-const SCENARIO_BATCH_HN1 = [
+const SCENARIOS = [
+  fall01,
+  changeOfCondition01,
   labUti01,
   medHypoglycemia01,
   painPostop01,
@@ -82,7 +78,6 @@ export default function App() {
   const [builderEnabled, setBuilderEnabledState] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
   const [whatsNew, setWhatsNew] = useState(null);
-  const [scenarioBatchHN1Enabled, setScenarioBatchHN1Enabled] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -130,26 +125,6 @@ export default function App() {
     listCustomScenarios().then(setCustomScenarios).catch(() => setCustomScenarios([]));
     isBuilderEnabled().then(setBuilderEnabledState).catch(() => setBuilderEnabledState(false));
   }, [session, view]);
-
-  // 'scenario-batch-hn-1' adds SCENARIO_BATCH_HN1's 10 scenarios to what
-  // Home and History show — kept as a flag (unlike features that shipped
-  // and had their flag checks removed) so unreviewed clinical content can
-  // be pulled back at any time. Re-checked on each nav switch so
-  // publishing/unpublishing shows up without a reload.
-  useEffect(() => {
-    if (!session || !profile) return;
-    let cancelled = false;
-    listFeatureFlags()
-      .then((flags) => {
-        if (cancelled) return;
-        const flag = flags.find((f) => f.id === SCENARIO_BATCH_HN1_FLAG_ID);
-        setScenarioBatchHN1Enabled(isFeatureEnabled(flag, profile));
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [session, profile, view]);
 
   // Shows the "what's new" popup once per account per version — see
   // WhatsNewModal.jsx. A profile that's never been checked
@@ -243,17 +218,11 @@ export default function App() {
 
   const showBuilder = builderEnabled && canBuildScenarios(profile);
 
-  // Reviewed presets plus, only once published (or for the admin previewing
-  // it), the unreviewed batch — see SCENARIO_BATCH_HN1's comment above.
-  const visibleScenarios = scenarioBatchHN1Enabled
-    ? [...SCENARIOS, ...SCENARIO_BATCH_HN1]
-    : SCENARIOS;
-
   // History needs to resolve a completed run's scenario id back to a
   // playable scenario object even when that scenario was built in-app, so
   // "Practice again" works for custom scenarios too — Home and My Scenarios
   // otherwise keep the two lists deliberately separate.
-  const allScenarios = [...visibleScenarios, ...customScenarios];
+  const allScenarios = [...SCENARIOS, ...customScenarios];
 
   let content;
   if (activeScenario) {
@@ -272,7 +241,7 @@ export default function App() {
   } else if (view === "settings") {
     content = <Settings profile={profile} onProfileChange={setProfile} onSignOut={handleSignOut} />;
   } else {
-    content = <Home scenarios={visibleScenarios} profile={profile} onSelect={selectScenario} />;
+    content = <Home scenarios={SCENARIOS} profile={profile} onSelect={selectScenario} />;
   }
 
   return (
